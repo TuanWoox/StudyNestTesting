@@ -13,15 +13,15 @@ import { ERole } from '../utils/enums/ERole';
 import { adminMenus, userMenus } from '../constants/menus';
 
 interface InnerLayoutProps {
-    role: ERole;
+    role: string;
 }
 
 const InnerLayout = ({ role }: InnerLayoutProps) => {
     const navigate = useNavigate();
     const [darkMode, setDarkMode] = useState(false);
 
-    const layoutTitle = role === ERole.ADMIN ? 'Admin Panel' : 'Study Nest';
-    const menus = role === ERole.ADMIN ? adminMenus : userMenus;
+    const layoutTitle = role === ERole.Admin ? 'Admin Panel' : 'Study Nest';
+    const menus = role === ERole.Admin ? adminMenus : userMenus;
 
     const menu = (
         <Menu

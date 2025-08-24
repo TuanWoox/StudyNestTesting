@@ -31,7 +31,7 @@ export const router = createBrowserRouter([
     },
     {
         path: "/user",
-        element: <InnerLayout role={ERole.USER} />,
+        element: <InnerLayout role={ERole.User} />,
         children: [
             { index: true, element: <Navigate to="/user/notes" /> },
             { path: "notes", element: <Notes /> },
@@ -42,7 +42,7 @@ export const router = createBrowserRouter([
     },
     {
         path: "/admin",
-        element: <InnerLayout role={ERole.ADMIN} />,
+        element: <InnerLayout role={ERole.Admin} />,
         children: [
             { index: true, element: <Navigate to="/admin/dashboard" /> },
             { path: "dashboard", element: <Dashboard /> },
