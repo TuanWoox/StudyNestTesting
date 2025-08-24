@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace StudyNest.Common.Interfaces
+namespace StudyNest.Common.Utils.Enums
 {
-    internal class ExampleInterface
+    public enum UserRoleEnum
     {
+        admin,
+        user
     }
 }
