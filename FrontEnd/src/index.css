@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+
+
+
+/* Avoid Conflict With Tailwind For EditjorJS */
+.editor-output {
+    /* Instead of all: unset, use a safer reset */
+    box-sizing: border-box;
+    padding: 1rem;
+    line-height: 1.5;
+    width: 100%;
+    position: relative;
+    /* Required for correct toolbar positioning */
+}
+
+.editor-output h1 {
+    @apply text-4xl font-bold mb-2;
+}
+
+.editor-output h2 {
+    @apply text-3xl font-semibold mb-2;
+}
+
+.editor-output h3 {
+    @apply text-2xl font-semibold mb-2;
+}
+
+.editor-output h4 {
+    @apply text-xl font-medium mb-2;
+}
+
+.editor-output h5 {
+    @apply text-lg font-medium mb-2;
+}
+
+.editor-output h6 {
+    @apply text-base font-medium mb-2;
+}
