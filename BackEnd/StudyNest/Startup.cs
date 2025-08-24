@@ -1,15 +1,25 @@
-﻿using Microsoft.AspNetCore.Server.Kestrel.Core;
+﻿using Asp.Versioning; 
+using Asp.Versioning.ApiExplorer;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Microsoft.Win32;
 using Newtonsoft.Json;
 using StudyNest.Business.Repository;
+using StudyNest.Business.v1;
+using StudyNest.Common.DbEntities.Identities;
+using StudyNest.Common.Interfaces;
 using StudyNest.Common.Utils.Configuration;
+using StudyNest.Common.Utils.Extensions;
 using StudyNest.Data;
 using StudyNest.Middleware;
 using System.Text.Json.Serialization;
-using Asp.Versioning; 
-using Asp.Versioning.ApiExplorer;
-
+using System.Threading.Tasks;
 
 
 namespace StudyNest
@@ -44,14 +54,14 @@ namespace StudyNest
 
             AddCorsDomain(services);
             AddControllerWithNewtonsoftJson(services);
-            ConfigureJwt(services);
+            ConfigureAuthService(services);
             ConfigureDatabase(services);
             ConfigurePolicy(services);
             ConfigureScopedServices(services);
             AddSwaggerService(services);
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IApiVersionDescriptionProvider provider)
+        public async void Configure(IApplicationBuilder app, IWebHostEnvironment env, IApiVersionDescriptionProvider provider)
         {
             #region Development Configuration
             app.UseCors("CorsPolicy");
@@ -81,6 +91,7 @@ namespace StudyNest
             {
                 endpoints.MapControllers();
             });
+            await InitData(app.ApplicationServices);
         }
 
         #region Add Api Versioning
@@ -126,7 +137,7 @@ namespace StudyNest
                     {
                         options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
                         options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
-                        options.SerializerSettings.PreserveReferencesHandling = PreserveReferencesHandling.Objects;
+                        //options.SerializerSettings.PreserveReferencesHandling = PreserveReferencesHandling.Objects;
                     })
                     .AddJsonOptions(options =>
                     {
@@ -135,11 +146,86 @@ namespace StudyNest
         }
         #endregion
 
-        #region Configure JWT
-        private void ConfigureJwt(IServiceCollection services)
+        #region Configure Auth And JWT
+        private void ConfigureAuthService(IServiceCollection services)
         {
-            
+            // Configure the antiforgery service to expect the CSRF token in a custom header named "X-XSRF-TOKEN"
+            services.AddAntiforgery(options => options.HeaderName = "X-XSRF-TOKEN");
+            // Add authentication services and specify that JWT Bearer is the default scheme
+            services.AddAuthentication(x =>
+            {
+                // Set the default scheme used to authenticate users
+                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                // Set the default scheme used when authentication fails (e.g., for returning 401 Unauthorized)
+                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                // Configure how JWT tokens should be validated
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    // Require that the token contains a valid "iss" (issuer) claim
+                    ValidateIssuer = true,
+                    // Require that the token contains a valid "aud" (audience) claim
+                    ValidateAudience = true,
+                    // Ensure the token has not expired
+                    ValidateLifetime = true,
+                    // Ensure the token was signed with a valid and trusted signing key
+                    ValidateIssuerSigningKey = true,
+                    // Set the expected issuer (e.g., your application or auth server domain)
+                    ValidIssuer = Configuration["Jwt:Issuer"],
+                    // Set the expected audience (e.g., the client app or API consumers)
+                    ValidAudience = Configuration["Jwt:Audience"],
+                    // Set the secret key used to validate the signature of the token
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                        System.Text.Encoding.UTF8.GetBytes(Configuration["Jwt:Key"]))
+                };
+                // Customize how the token is retrieved from incoming requests
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        // Try to read the token from the query string (useful for WebSockets or SignalR)
+                        var accessToken = context.Request.Query["access_token"];
+                        // If a token is found in the query string, use it
+                        if (!string.IsNullOrEmpty(accessToken))
+                        {
+                            context.Token = accessToken;
+                        }
+                        return Task.CompletedTask;
+                    }
+                };
+            });
+            // Configure Identity with strong password rules and email confirmation
+            IdentityBuilder builder = services.AddIdentityCore<ApplicationUser>(opt =>
+            {
+                opt.Password.RequiredLength = 6;
+                opt.Password.RequireDigit = true;
+                opt.Password.RequireNonAlphanumeric = true;
+                opt.Password.RequireUppercase = true;
+                opt.Password.RequireLowercase = true;
+                // Require email confirmation before login
+                opt.SignIn.RequireConfirmedEmail = true;
+            }).AddRoles<ApplicationRole>();
+            // Add support for custom roles
+            builder = new IdentityBuilder(builder.UserType, typeof(ApplicationRole), builder.Services);
+            // Set token (e.g., email confirmation, reset password) expiration time
+            int expiredToken = int.TryParse(Configuration.GetSection("TokenLifespan").Value, out int parsedValue) ? parsedValue : 10;
+            builder.Services.Configure<DataProtectionTokenProviderOptions>(o => o.TokenLifespan = TimeSpan.FromMinutes(expiredToken));
+            // Register Identity services
+            builder.AddEntityFrameworkStores<ApplicationDbContext>();
+            builder.AddRoleValidator<RoleValidator<ApplicationRole>>();
+            builder.AddRoleManager<RoleManager<ApplicationRole>>();
+            builder.AddSignInManager<SignInManager<ApplicationUser>>();
+            builder.AddTokenProvider<DataProtectorTokenProvider<ApplicationUser>>(TokenOptions.DefaultProvider);
+            // Configure SignalR for real-time communication
+            services.AddSignalR(hubOptions =>
+            {
+                hubOptions.EnableDetailedErrors = true;
+                hubOptions.KeepAliveInterval = TimeSpan.FromSeconds(5);
+            });
         }
+
         #endregion
 
         #region Configure Database
@@ -217,6 +303,24 @@ namespace StudyNest
         }
         #endregion
 
+        #region Init Default Data 
+        private async Task InitData(IServiceProvider serviceProvider)
+        {
+            try
+            {
+                using (var scope = serviceProvider.CreateScope())
+                {
+                    var userBusiness = scope.ServiceProvider.GetRequiredService<IUserBusiness>();
+                    await userBusiness.InitData();
+                }
+            }
+            catch (Exception ex)
+            {
+                StudyNestLogger.Instance.Error(ex);
+
+            }
+        }
+        #endregion
     }
 
 }
