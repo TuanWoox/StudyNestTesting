@@ -2,44 +2,26 @@ import { useState } from 'react';
 import { PageContainer, ProLayout } from '@ant-design/pro-components';
 import { useNavigate, Outlet } from 'react-router-dom';
 import {
-    DashboardOutlined,
     UserOutlined,
-    MessageOutlined,
     SettingOutlined,
     LogoutOutlined,
-    FileTextOutlined,
-    EditOutlined,
-    BarChartOutlined,
 } from '@ant-design/icons';
 import { Avatar, Dropdown, Menu, ConfigProvider, theme, Space } from 'antd';
 import { SunIcon, MoonIcon } from '@heroicons/react/24/outline';
 import logo from '../assets/react.svg'
+import { ERole } from '../utils/enums/ERole';
+import { adminMenus, userMenus } from '../constants/menus';
 
 interface InnerLayoutProps {
-    role: 'admin' | 'user';
+    role: ERole;
 }
 
 const InnerLayout = ({ role }: InnerLayoutProps) => {
     const navigate = useNavigate();
     const [darkMode, setDarkMode] = useState(false);
 
-    // Menu cho Admin
-    const adminMenus = [
-        { path: '/admin/dashboard', name: 'Dashboard', icon: <DashboardOutlined /> },
-        { path: '/admin/users', name: 'Manage Users', icon: <UserOutlined /> },
-        { path: '/admin/feedback', name: 'Feedback', icon: <MessageOutlined /> },
-    ];
-
-    // Menu cho User
-    const userMenus = [
-        { path: '/user/notes', name: 'Notes', icon: <FileTextOutlined /> },
-        { path: '/user/quiz', name: 'Quiz', icon: <EditOutlined /> },
-        { path: '/user/analytics', name: 'Analytics', icon: <BarChartOutlined /> },
-        { path: '/user/feedback', name: 'Feedback', icon: <MessageOutlined /> },
-    ];
-
-    const layoutTitle = role === 'admin' ? 'Admin Panel' : 'Study Nest';
-    const menus = role === 'admin' ? adminMenus : userMenus;
+    const layoutTitle = role === ERole.ADMIN ? 'Admin Panel' : 'Study Nest';
+    const menus = role === ERole.ADMIN ? adminMenus : userMenus;
 
     const menu = (
         <Menu
@@ -92,7 +74,7 @@ const InnerLayout = ({ role }: InnerLayoutProps) => {
                     menuItemRender={(item, dom) => (
                         <div
                             onClick={() => navigate(item.path || '/')}
-                            className="hover:opacity-50 transition"
+                            className="hover:opacity-70 transition"
                         >
                             {dom}
                         </div>
