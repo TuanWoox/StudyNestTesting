@@ -8,9 +8,8 @@ using Microsoft.Extensions.Http;
 using System.Threading.Tasks;
 using StudyNest.Common.Interfaces;
 using StudyNest.Business.v1;
-using StudyNest.Business.Services.Llm.Abtractions;
-using StudyNest.Business.Services.Llm;
-using StudyNest.Business.Services.Llm.Providers;
+using StudyNest.Common.Llm;
+using StudyNest.Common.Llm.Providers;
 
 namespace StudyNest.Business.Repository
 {

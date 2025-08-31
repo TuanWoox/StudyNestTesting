@@ -3,7 +3,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
-namespace StudyNest.Business.Services.Llm
+namespace StudyNest.Common.Llm
 {
     public class QuizGenerationPipeline
     {

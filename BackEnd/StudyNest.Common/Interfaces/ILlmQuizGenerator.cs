@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace StudyNest.Business.Services.Llm.Abtractions
+namespace StudyNest.Common.Interfaces
 {
     public interface ILlmQuizGenerator
     {

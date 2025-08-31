@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Configuration;
 using Microsoft.VisualBasic;
-using StudyNest.Business.Services.Llm.Abtractions;
+using StudyNest.Common.Interfaces;
 using StudyNest.Common.Models.DTOs.EntityDTO.Quiz;
 using StudyNest.Common.Utils.Extensions;
 using System;
@@ -12,7 +12,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using static System.Net.Mime.MediaTypeNames;
 
-namespace StudyNest.Business.Services.Llm.Providers
+namespace StudyNest.Common.Llm.Providers
 {
     public class GeminiClient : ILlmClient
     {

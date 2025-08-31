@@ -1,4 +1,4 @@
-﻿using StudyNest.Business.Services.Llm.Abtractions;
+﻿using StudyNest.Common.Interfaces;
 using StudyNest.Common.Models.DTOs.EntityDTO.Quiz;
 using StudyNest.Common.Utils.Extensions;
 using System;
@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace StudyNest.Business.Services.Llm
+namespace StudyNest.Common.Llm
 {
     public class LlmQuizGenerator : ILlmQuizGenerator
     {
