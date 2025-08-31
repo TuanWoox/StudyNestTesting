@@ -1,0 +1,73 @@
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.VisualBasic;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Query.Expressions.Internal;
+using StudyNest.Common.DbEntities.Entities;
+using StudyNest.Common.Interfaces;
+using StudyNest.Common.Models.DTOs.CoreDTO;
+using StudyNest.Common.Models.DTOs.EntityDTO.Quiz;
+using StudyNest.Common.Utils.Extensions;
+
+namespace StudyNest.Controllers
+{
+    [Route("api/v{version:apiVersion}/[controller]")]
+    [ApiController]
+    [Authorize]
+    public class QuizController : ControllerBase
+    {
+        private readonly IQuizBusiness _quizBusiness;
+
+        public QuizController(IQuizBusiness quizBusiness)
+        {
+            this._quizBusiness = quizBusiness;
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        public async Task<IActionResult> GetAllQuiz()
+        {
+            var rs = new ReturnResult<List<QuizDTO>>();
+            try
+            {
+                rs = await _quizBusiness.GetAllQuiz();
+            }
+            catch (Exception ex)
+            {
+                StudyNestLogger.Instance.Error(ex);
+            }
+            return Ok(rs);
+        }
+
+        [AllowAnonymous]
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetQuizDetail(string id)
+        {
+            var rs = new ReturnResult<Quiz>();
+            try
+            {
+                rs = await _quizBusiness.GetQuizDetail(id);
+            }
+            catch (Exception ex)
+            {
+                StudyNestLogger.Instance.Error(ex);
+            }
+            return Ok(rs);
+        }
+        [AllowAnonymous]
+        [HttpPost("Generate")]
+        public async Task<IActionResult> CreateQuiz([FromBody] CreateQuizDTO model)
+        {
+            var rs = new ReturnResult<SelectQuizDTO>();
+            try
+            {
+                rs = await _quizBusiness.GenerateAsync(model);
+            }
+            catch (Exception ex)
+            {
+                StudyNestLogger.Instance.Error(ex);
+            }
+            return Ok(rs);
+        }
+    }
+}
