@@ -55,7 +55,7 @@ namespace StudyNest.Controllers
             return Ok(rs);
         }
         [AllowAnonymous]
-        [HttpPost("Generate")]
+        [HttpPost]
         public async Task<IActionResult> CreateQuiz([FromBody] CreateQuizDTO model)
         {
             var rs = new ReturnResult<SelectQuizDTO>();

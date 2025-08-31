@@ -38,15 +38,11 @@ namespace StudyNest.Business.v1
             try
             {
                 var quiz = await _llm.GenerateAsync(prompt);
-                var quizId = Guid.NewGuid().ToString();
                 var newQuiz = new Quiz()
                 {
-                    //Id = quizId,
                     Title = quiz.Title,
                     Questions = quiz.Questions.Select((q, index) => new Question
                     {
-                        //Id = Guid.NewGuid().ToString(),
-                        //QuizId = quizId,
                         Name = q.Text,
                         Type = q.Type,
                         Explanation = q.Explanation,
@@ -55,7 +51,6 @@ namespace StudyNest.Business.v1
                         CorrectTrueFalse = q.Type == "TF" ? q.CorrectTrueFalse : null,
                         Choices = q.Choices.Select((c, choiceIndex) => new Choice
                         {
-                            //Id = Guid.NewGuid().ToString(),
                             Text = c,
                             OrderNo = choiceIndex + 1
                         }).ToList()
