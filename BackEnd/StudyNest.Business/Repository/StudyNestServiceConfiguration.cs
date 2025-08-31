@@ -8,6 +8,8 @@ using Microsoft.Extensions.Http;
 using System.Threading.Tasks;
 using StudyNest.Common.Interfaces;
 using StudyNest.Business.v1;
+using StudyNest.Common.Llm;
+using StudyNest.Common.Llm.Providers;
 
 namespace StudyNest.Business.Repository
 {
@@ -19,6 +21,10 @@ namespace StudyNest.Business.Repository
             services.AddScoped(typeof(IRepository<,>), typeof(Repository<,>));
             services.AddScoped<IUserBusiness, UserBusiness>();
             services.AddScoped<IAuthBusiness, AuthBusiness>();
+            services.AddScoped<IQuizBusiness, QuizBusiness>();
+            services.AddScoped<ILlmQuizGenerator, LlmQuizGenerator>();
+            services.AddScoped<QuizGenerationPipeline>();
+            services.AddHttpClient<ILlmClient, GeminiClient>();
             return services;
         }
     }
