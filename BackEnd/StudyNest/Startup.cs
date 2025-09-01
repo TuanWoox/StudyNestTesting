@@ -165,9 +165,9 @@ namespace StudyNest
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     // Require that the token contains a valid "iss" (issuer) claim
-                    ValidateIssuer = true,
+                    ValidateIssuer = false,
                     // Require that the token contains a valid "aud" (audience) claim
-                    ValidateAudience = true,
+                    ValidateAudience = false,
                     // Ensure the token has not expired
                     ValidateLifetime = true,
                     // Ensure the token was signed with a valid and trusted signing key
@@ -253,10 +253,11 @@ namespace StudyNest
             // Allows access to HttpContext in services via IHttpContextAccessor outside controllers
             services.AddHttpContextAccessor();
             // Registers AutoMapper with the custom mapping profile. used to map DTO to real entity and vice versa
-            services.AddAutoMapper(cfg =>
+            services.AddAutoMapper((serviceProvider, cfg) =>
             {
-                cfg.AddProfile(new StudyNestMapper());
-            });
+                cfg.LicenseKey = Configuration.GetValue<string>("AutoMapper:LicenseKey");
+            }, typeof(StudyNestMapper).Assembly);
+
         }
         #endregion
 

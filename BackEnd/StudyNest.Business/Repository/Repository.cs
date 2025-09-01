@@ -181,6 +181,9 @@ namespace StudyNest.Business.Repository
                     {
                         returnResult.Result = _mapper.Map<TEntity>(updatedEntity.Entity);
                     }
+                } else
+                {
+                    returnResult.Message = string.Format(ResponseMessage.MESSAGE_UPDATE_ERROR, typeof(TEntity).Name, entity.Id);
                 }
             }
             catch (Exception ex)

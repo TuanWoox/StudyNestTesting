@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -27,6 +28,13 @@ namespace StudyNest.Common.Utils.Extensions
                 result = data.First().ToString().ToUpper() + data.Substring(1);
             }
             return result;
+        }
+        public static string GetUserId(this ClaimsPrincipal principal)
+        {
+            if (principal == null)
+                throw new ArgumentNullException(nameof(principal));
+
+            return principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         }
         public static DateRangeFilter GetDateTimeByQuarter(int quarter)
         {

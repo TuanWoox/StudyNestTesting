@@ -34,6 +34,14 @@ namespace StudyNest.Data
         {
             base.OnModelCreating(builder);
 
+            //Add Global Query Filters for Soft Delete
+            foreach (var entityType in builder.Model.GetEntityTypes())
+            {
+                if (typeof(IDeleted).IsAssignableFrom(entityType.ClrType))
+                {
+                    entityType.AddSoftDeleteQueryFilter();
+                }
+            }
             #region Configure ASP.NET Relationships
             // One note can belong to one user, one user can have many notes
             builder.Entity<Note>()
