@@ -45,7 +45,7 @@ namespace StudyNest.Business.v1
             ReturnResult<Folder> result = new ReturnResult<Folder>();
             try
             {
-                var existing = await _dbContext.Folders.Where(x => x.Id == id).Include(x => x.Notes).FirstOrDefaultAsync();
+                var existing = await _dbContext.Folders.Where(x => x.Id == id && x.OwnerId == _userContext.UserId).Include(x => x.Notes).FirstOrDefaultAsync();
                 if(existing == null)
                 {
                     result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "folder", id);
@@ -63,15 +63,25 @@ namespace StudyNest.Business.v1
             ReturnResult<Folder> result = new ReturnResult<Folder>();
             try
             {
-                var formatNewEntity = new Folder
+                var formatNewEntity = new CreateFolderDTO
                 {
-                    FolderName = newEntity.FolderName.Trim(),
+                    FolderName = newEntity.FolderName,
                     OwnerId = _userContext.UserId
                 };
                 if(string.IsNullOrEmpty(formatNewEntity.OwnerId) || string.IsNullOrEmpty(formatNewEntity.FolderName))
                 {
                     result.Message = "Invalid fields data";
-                } else result = await _repository.CreateAsync(formatNewEntity);
+                } else
+                {
+                    var existingFolder = await _dbContext.Folders.Where(x => x.OwnerId == formatNewEntity.OwnerId && x.FolderName.Equals(formatNewEntity.FolderName)).FirstOrDefaultAsync();
+                    if(existingFolder != null)
+                    {
+                        result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_EXIST,"Folder name " + formatNewEntity.FolderName);
+                    } else
+                    {
+                        result = await _repository.CreateAsync(formatNewEntity);
+                    }
+                }
             }
             catch(Exception ex)
             {
@@ -85,7 +95,21 @@ namespace StudyNest.Business.v1
             ReturnResult<Folder> result = new ReturnResult<Folder>();
             try
             {
-                result = await _repository.UpdateAsync(newEntity);
+                var existingFolder = await _dbContext.Folders.Where(x => x.Id == newEntity.Id && x.OwnerId == _userContext.UserId).FirstOrDefaultAsync();
+                if(existingFolder == null)
+                {
+                    result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "folder", newEntity.Id);
+                    return result;
+                }
+                else
+                {
+                    var sameNameFolder = await _dbContext.Folders.Where(x => x.Id != newEntity.Id && x.OwnerId == _userContext.UserId && x.FolderName.Equals(newEntity.FolderName)).FirstOrDefaultAsync();
+                    if(sameNameFolder != null)
+                    {
+                        result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_EXIST, "Folder name " + newEntity.FolderName);
+                        return result;
+                    } else  result = await _repository.UpdateAsync(newEntity);
+                }
             }
             catch(Exception ex)
             {
@@ -99,14 +123,14 @@ namespace StudyNest.Business.v1
             var result = new ReturnResult<bool>();
             try
             {
-                var foldersToDelete = await _dbContext.Folders.Where(x => x.Id == id).ToListAsync();
+                var foldersToDelete = await _dbContext.Folders.Where(x => x.Id == id && x.OwnerId == _userContext.UserId).ToListAsync();
                 if (!foldersToDelete.Any())
                 {
                     result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "folder", id);
                     return result;
                 }
                 _dbContext.RemoveRange(foldersToDelete);
-                var notesToDelete = await _dbContext.Notes.Where(x => x.FolderId == id).ToListAsync();
+                var notesToDelete = await _dbContext.Notes.Where(x => x.FolderId == id && x.OwnerId == _userContext.UserId).ToListAsync();
                 if (notesToDelete.Any())
                 {
                     _dbContext.RemoveRange(notesToDelete);
@@ -129,14 +153,14 @@ namespace StudyNest.Business.v1
             ReturnResult<int> result = new ReturnResult<int>();
             try
             {
-                var foldersToDelete = await _dbContext.Folders.Where(x => ids.Contains(x.Id)).ToListAsync();
+                var foldersToDelete = await _dbContext.Folders.Where(x => ids.Contains(x.Id) && x.OwnerId == _userContext.UserId).ToListAsync();
                 if (!foldersToDelete.Any())
                 {
                     result.Message = ResponseMessage.MESSAGE_ALL_ITEM_NOT_FOUND;
                     return result;
                 }
                 _dbContext.RemoveRange(foldersToDelete);
-                var notesToDelete = await _dbContext.Notes.Where(x => ids.Contains(x.FolderId)).ToListAsync();
+                var notesToDelete = await _dbContext.Notes.Where(x => ids.Contains(x.FolderId) && x.OwnerId == _userContext.UserId).ToListAsync();
                 if (notesToDelete.Any())
                 {
                     _dbContext.RemoveRange(notesToDelete);

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using StudyNest.Common.Attributes;
 using StudyNest.Common.DbEntities.BaseEntity;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ namespace StudyNest.Common.Models.DTOs.EntityDTO.Folder
     [AutoMap(typeof(DbEntities.Entities.Folder), ReverseMap = true, PreserveReferences = true)]
     public class UpdateFolderDTO: BaseKey
     {
-        [Required]
+        [TrimmedRequired]
         public string FolderName { get; set; }
     }
 }
