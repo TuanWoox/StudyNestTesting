@@ -57,8 +57,8 @@ namespace StudyNest.Business.v1
                 if (!isPasswordValid)
                 {
                     result.Message = "Password is incorrect";
-                }
-                result.Result = await GenerateJwtToken(existingUser, model.RememberMe);
+
+                } else result.Result = await GenerateJwtToken(existingUser, model.RememberMe);
             }
             catch (Exception ex)
             {

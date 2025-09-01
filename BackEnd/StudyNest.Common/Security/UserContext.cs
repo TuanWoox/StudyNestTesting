@@ -1,0 +1,20 @@
+﻿using Microsoft.AspNetCore.Http;
+using StudyNest.Common.Interfaces;
+using StudyNest.Common.Utils.Extensions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace StudyNest.Common.Security
+{
+    public class HttpUserContext : IUserContext
+    {
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        public HttpUserContext(IHttpContextAccessor httpContextAccessor)
+            => _httpContextAccessor = httpContextAccessor;
+
+        public string UserId => _httpContextAccessor.HttpContext?.User?.GetUserId();
+    }
+}
