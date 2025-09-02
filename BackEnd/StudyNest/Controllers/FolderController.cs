@@ -13,7 +13,7 @@ namespace StudyNest.Controllers
     [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
     [Authorize]
-    public class FolderController : Controller
+    public class FolderController : ControllerBase
     {
         public IFolderBusiness _folderBusiness;
         public FolderController(IFolderBusiness folderBusiness)
@@ -98,7 +98,7 @@ namespace StudyNest.Controllers
             ReturnResult<int> result = new ReturnResult<int>();
             try
             {
-                result = await _folderBusiness.DeleteByList(page.Selected);
+                result = await _folderBusiness.DeleteListFolder(page.Selected);
             }
             catch(Exception ex)
             {

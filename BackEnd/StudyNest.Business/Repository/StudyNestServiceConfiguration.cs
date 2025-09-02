@@ -25,6 +25,8 @@ namespace StudyNest.Business.Repository
             services.AddScoped<IQuizBusiness, QuizBusiness>();
             services.AddScoped<ILlmQuizGenerator, LlmQuizGenerator>();
             services.AddScoped<IFolderBusiness, FolderBusiness>();
+            services.AddScoped<ITagBusiness, TagBusiness>();
+            services.AddScoped<INoteTagBusiness, NoteTagBusiness>();
             services.AddScoped<QuizGenerationPipeline>();
             services.AddHttpClient<ILlmClient, GeminiClient>();
             services.AddScoped<IUserContext,HttpUserContext>();
