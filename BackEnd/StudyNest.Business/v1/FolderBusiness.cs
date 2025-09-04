@@ -71,16 +71,14 @@ namespace StudyNest.Business.v1
                 if(string.IsNullOrEmpty(formatNewEntity.OwnerId) || string.IsNullOrEmpty(formatNewEntity.FolderName))
                 {
                     result.Message = "Invalid fields data";
-                } else
+                } 
+                else
                 {
                     var existingFolder = await _dbContext.Folders.Where(x => x.OwnerId == formatNewEntity.OwnerId && x.FolderName.Equals(formatNewEntity.FolderName)).FirstOrDefaultAsync();
                     if(existingFolder != null)
                     {
                         result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_EXIST,"Folder name " + formatNewEntity.FolderName);
-                    } else
-                    {
-                        result = await _repository.CreateAsync(formatNewEntity);
-                    }
+                    } else result = await _repository.CreateAsync(formatNewEntity);
                 }
             }
             catch(Exception ex)
@@ -101,15 +99,7 @@ namespace StudyNest.Business.v1
                     result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "folder", newEntity.Id);
                     return result;
                 }
-                else
-                {
-                    var sameNameFolder = await _dbContext.Folders.Where(x => x.Id != newEntity.Id && x.OwnerId == _userContext.UserId && x.FolderName.Equals(newEntity.FolderName)).FirstOrDefaultAsync();
-                    if(sameNameFolder != null)
-                    {
-                        result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_EXIST, "Folder name " + newEntity.FolderName);
-                        return result;
-                    } else  result = await _repository.UpdateAsync(newEntity);
-                }
+                else result = await _repository.UpdateAsync(newEntity);
             }
             catch(Exception ex)
             {
@@ -123,60 +113,98 @@ namespace StudyNest.Business.v1
             var result = new ReturnResult<bool>();
             try
             {
-                var foldersToDelete = await _dbContext.Folders.Where(x => x.Id == id && x.OwnerId == _userContext.UserId).ToListAsync();
-                if (!foldersToDelete.Any())
+                var folder = await _dbContext.Folders
+                    .FirstOrDefaultAsync(x => x.Id == id && x.OwnerId == _userContext.UserId);
+
+                if (folder == null)
                 {
                     result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "folder", id);
                     return result;
                 }
-                _dbContext.RemoveRange(foldersToDelete);
-                var notesToDelete = await _dbContext.Notes.Where(x => x.FolderId == id && x.OwnerId == _userContext.UserId).ToListAsync();
+
+                // Delete related Notes first (because of foreign key constraint)
+                var notesToDelete = await _dbContext.Notes
+                    .Where(x => x.FolderId == id && x.OwnerId == _userContext.UserId)
+                    .ToListAsync();
+
                 if (notesToDelete.Any())
                 {
-                    _dbContext.RemoveRange(notesToDelete);
+                    _dbContext.Notes.RemoveRange(notesToDelete);
                 }
-                if (await _dbContext.SaveChangesAsync() > 0)
+
+                // Now delete the Folder
+                _dbContext.Folders.Remove(folder);
+
+                if (await _dbContext.SaveChangesAsync() <= 0)
+                {
+                    result.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
+                }
+                else
                 {
                     result.Result = true;
                 }
-                else result.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
             }
             catch (Exception ex)
             {
                 StudyNestLogger.Instance.Error(ex);
                 result.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
             }
+
             return result;
         }
-        public async Task<ReturnResult<int>> DeleteByList(List<string> ids)
+
+        public async Task<ReturnResult<int>> DeleteListFolder(List<string> ids)
         {
-            ReturnResult<int> result = new ReturnResult<int>();
+            var result = new ReturnResult<int>();
             try
             {
-                var foldersToDelete = await _dbContext.Folders.Where(x => ids.Contains(x.Id) && x.OwnerId == _userContext.UserId).ToListAsync();
-                if (!foldersToDelete.Any())
+                if (ids == null || !ids.Any())
                 {
-                    result.Message = ResponseMessage.MESSAGE_ALL_ITEM_NOT_FOUND;
+                    result.Message = ResponseMessage.MESSAGE_ITEM_NOT_FOUND;
                     return result;
                 }
-                _dbContext.RemoveRange(foldersToDelete);
-                var notesToDelete = await _dbContext.Notes.Where(x => ids.Contains(x.FolderId) && x.OwnerId == _userContext.UserId).ToListAsync();
+
+                var foldersToDelete = await _dbContext.Folders
+                    .Where(x => ids.Contains(x.Id) && x.OwnerId == _userContext.UserId)
+                    .ToListAsync();
+
+                if (!foldersToDelete.Any())
+                {
+                    result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "folders", string.Join(",", ids));
+                    return result;
+                }
+
+                // Delete related Notes first
+                var notesToDelete = await _dbContext.Notes
+                    .Where(x => ids.Contains(x.FolderId) && x.OwnerId == _userContext.UserId)
+                    .ToListAsync();
+
                 if (notesToDelete.Any())
                 {
-                    _dbContext.RemoveRange(notesToDelete);
+                    _dbContext.Notes.RemoveRange(notesToDelete);
                 }
-                if (await _dbContext.SaveChangesAsync() > 0)
+
+                // Now delete Folders
+                _dbContext.Folders.RemoveRange(foldersToDelete);
+
+                if (await _dbContext.SaveChangesAsync() <= 0)
+                {
+                    result.Result = 0;
+                    result.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
+                }
+                else
                 {
                     result.Result = foldersToDelete.Count;
                 }
-                else result.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 StudyNestLogger.Instance.Error(ex);
                 result.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
             }
+
             return result;
         }
+
     }
 }

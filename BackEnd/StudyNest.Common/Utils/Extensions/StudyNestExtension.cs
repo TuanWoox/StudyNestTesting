@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace StudyNest.Common.Utils.Extensions
@@ -28,6 +30,25 @@ namespace StudyNest.Common.Utils.Extensions
                 result = data.First().ToString().ToUpper() + data.Substring(1);
             }
             return result;
+        }
+        public static string UppercaseFirstLetters(this string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+                return input;
+
+            TextInfo textInfo = CultureInfo.CurrentCulture.TextInfo;
+            return textInfo.ToTitleCase(input.ToLower());
+        }
+        public static string ToKebabCase(this string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+                return input;
+            // Step 1: Insert dash before capital letters (for PascalCase / camelCase)
+            string result = Regex.Replace(input, @"([a-z0-9])([A-Z])", "$1-$2");
+            // Step 2: Replace spaces and underscores with dash
+            result = Regex.Replace(result, @"[\s_]+", "-");
+            // Step 3: Convert to lowercase
+            return result.ToLowerInvariant();
         }
         public static string GetUserId(this ClaimsPrincipal principal)
         {

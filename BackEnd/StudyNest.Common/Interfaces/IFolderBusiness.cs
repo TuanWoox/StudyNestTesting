@@ -17,6 +17,6 @@ namespace StudyNest.Common.Interfaces
         public Task<ReturnResult<Folder>> CreateNew(CreateFolderDTO folder);
         public Task<ReturnResult<Folder>> UpdateFolder(UpdateFolderDTO folder);
         public Task<ReturnResult<bool>> DeleteById(string id);
-        public Task<ReturnResult<int>> DeleteByList(List<string> ids);
+        public Task<ReturnResult<int>> DeleteListFolder(List<string> ids);
     }
 }

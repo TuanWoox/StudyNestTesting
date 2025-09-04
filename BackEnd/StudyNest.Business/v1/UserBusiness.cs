@@ -119,6 +119,7 @@ namespace StudyNest.Business.v1
             {
                 await InitRoleData();
                 await InitUserData(UserRoleEnum.user, "tuanwoox");
+                await InitUserData(UserRoleEnum.admin, "tuanwooxadmin");
             } 
             catch(Exception ex)
             {
