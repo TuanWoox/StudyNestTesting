@@ -26,10 +26,12 @@ namespace StudyNest.Business.Repository
             services.AddScoped<ILlmQuizGenerator, LlmQuizGenerator>();
             services.AddScoped<IFolderBusiness, FolderBusiness>();
             services.AddScoped<ITagBusiness, TagBusiness>();
+            services.AddScoped<INoteBusiness, NoteBusiness>();
             services.AddScoped<INoteTagBusiness, NoteTagBusiness>();
             services.AddScoped<QuizGenerationPipeline>();
             services.AddHttpClient<ILlmClient, GeminiClient>();
             services.AddScoped<IUserContext,HttpUserContext>();
+            services.AddScoped<IImageService, ImageService>();
             return services;
         }
     }

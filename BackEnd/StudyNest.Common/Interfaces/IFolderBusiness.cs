@@ -14,9 +14,9 @@ namespace StudyNest.Common.Interfaces
     {
         public Task<ReturnResult<PagedData<SelectFolderDTO, string>>> GetPaging(Page<string> page);
         public Task<ReturnResult<Folder>> GetOneById(string id);
-        public Task<ReturnResult<Folder>> CreateNew(CreateFolderDTO folder);
+        public Task<ReturnResult<Folder>> CreateFolder(CreateFolderDTO newEntity);
         public Task<ReturnResult<Folder>> UpdateFolder(UpdateFolderDTO folder);
-        public Task<ReturnResult<bool>> DeleteById(string id);
-        public Task<ReturnResult<int>> DeleteListFolder(List<string> ids);
+        public Task<ReturnResult<bool>> DeleteFolder(string id);
+        public Task<ReturnResult<int>> DeleteFolders(List<string> ids);
     }
 }

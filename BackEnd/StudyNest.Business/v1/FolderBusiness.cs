@@ -18,11 +18,13 @@ namespace StudyNest.Business.v1
         public ApplicationDbContext _dbContext;
         public IRepository<Folder, string> _repository;
         public IUserContext _userContext;
-        public FolderBusiness(ApplicationDbContext _dbContext, IRepository<Folder,string> repository, IUserContext userContext)
+        public INoteBusiness _noteBusiness;
+        public FolderBusiness(ApplicationDbContext _dbContext, IRepository<Folder,string> repository, IUserContext userContext, INoteBusiness noteBusiness)
         {
             this._dbContext = _dbContext;
             this._repository = repository;
             this._userContext = userContext;
+            this._noteBusiness = noteBusiness;
         }
       
         public async Task<ReturnResult<PagedData<SelectFolderDTO, string>>> GetPaging(Page<string> page)
@@ -30,10 +32,44 @@ namespace StudyNest.Business.v1
             ReturnResult<PagedData<SelectFolderDTO, string>> result = new ReturnResult<PagedData<SelectFolderDTO, string>>();
             try
             {
-                var query = _dbContext.Folders.Where(x => x.OwnerId == _userContext.UserId).AsQueryable();
+                var query = _dbContext.Folders.Where(x => x.OwnerId == _userContext.UserId)
+                                            .Include(x => x.Notes)
+                                                .ThenInclude(x => x.NoteTags)
+                                                    .ThenInclude(x => x.Tag)
+                                            .AsNoTracking()
+                                            .AsQueryable();
                 result.Result = await _repository.GetPagingAsync<Page<string>, SelectFolderDTO>(query, page);
+                //Translate to exclude unnecessary fields
+                if(result.Result.Data.Any())
+                {
+                    result.Result.Data = result.Result.Data.Select(x => new SelectFolderDTO
+                    {
+                        Id = x.Id,
+                        FolderName = x.FolderName,
+                        DateCreated = x.DateCreated,
+                        DateModified = x.DateModified,
+                        Notes = x.Notes.Select(n => new Note
+                        {
+                            Id = n.Id,
+                            Title = n.Title,
+                            Content = n.Content,
+                            DateCreated = n.DateCreated,
+                            DateModified = n.DateModified,
+                            NoteTags = n.NoteTags.Select(nt => new NoteTag
+                            {
+                                NoteId = nt.NoteId,
+                                TagId = nt.TagId,
+                                Tag = new Tag
+                                {
+                                    Id = nt.Tag.Id,
+                                    Name = nt.Tag.Name
+                                }
+                            }).ToList()
+                        }).ToList()
+                    }).ToList();
+                }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 StudyNestLogger.Instance.Error(ex);
                 result.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
@@ -45,7 +81,12 @@ namespace StudyNest.Business.v1
             ReturnResult<Folder> result = new ReturnResult<Folder>();
             try
             {
-                var existing = await _dbContext.Folders.Where(x => x.Id == id && x.OwnerId == _userContext.UserId).Include(x => x.Notes).FirstOrDefaultAsync();
+                var existing = await _dbContext.Folders.Where(x => x.Id == id && x.OwnerId == _userContext.UserId)
+                                                    .Include(x => x.Notes)
+                                                        .ThenInclude( x => x.NoteTags)
+                                                        .ThenInclude( x => x.Tag)
+                                                    .AsNoTracking()
+                                                    .FirstOrDefaultAsync();
                 if(existing == null)
                 {
                     result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "folder", id);
@@ -58,7 +99,7 @@ namespace StudyNest.Business.v1
             }
             return result;
         }
-        public async Task<ReturnResult<Folder>> CreateNew(CreateFolderDTO newEntity)
+        public async Task<ReturnResult<Folder>> CreateFolder(CreateFolderDTO newEntity)
         {
             ReturnResult<Folder> result = new ReturnResult<Folder>();
             try
@@ -108,7 +149,7 @@ namespace StudyNest.Business.v1
             }
             return result;
         }
-        public async Task<ReturnResult<bool>> DeleteById(string id)
+        public async Task<ReturnResult<bool>> DeleteFolder(string id)
         {
             var result = new ReturnResult<bool>();
             try
@@ -122,14 +163,15 @@ namespace StudyNest.Business.v1
                     return result;
                 }
 
-                // Delete related Notes first (because of foreign key constraint)
+                // Delete related Notes first
                 var notesToDelete = await _dbContext.Notes
                     .Where(x => x.FolderId == id && x.OwnerId == _userContext.UserId)
+                    .Select(x => x.Id)
                     .ToListAsync();
 
                 if (notesToDelete.Any())
                 {
-                    _dbContext.Notes.RemoveRange(notesToDelete);
+                    await _noteBusiness.DeleteNotes(notesToDelete);
                 }
 
                 // Now delete the Folder
@@ -153,7 +195,7 @@ namespace StudyNest.Business.v1
             return result;
         }
 
-        public async Task<ReturnResult<int>> DeleteListFolder(List<string> ids)
+        public async Task<ReturnResult<int>> DeleteFolders(List<string> ids)
         {
             var result = new ReturnResult<int>();
             try
@@ -177,11 +219,12 @@ namespace StudyNest.Business.v1
                 // Delete related Notes first
                 var notesToDelete = await _dbContext.Notes
                     .Where(x => ids.Contains(x.FolderId) && x.OwnerId == _userContext.UserId)
+                    .Select(x => x.Id)
                     .ToListAsync();
 
                 if (notesToDelete.Any())
                 {
-                    _dbContext.Notes.RemoveRange(notesToDelete);
+                    await _noteBusiness.DeleteNotes(notesToDelete);
                 }
 
                 // Now delete Folders

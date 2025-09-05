@@ -56,7 +56,7 @@ namespace StudyNest.Controllers
             ReturnResult<Folder> result = new ReturnResult<Folder>();
             try
             {
-                result = await _folderBusiness.CreateNew(newEntity);
+                result = await _folderBusiness.CreateFolder(newEntity);
             }
             catch(Exception ex)
             {
@@ -84,7 +84,7 @@ namespace StudyNest.Controllers
             ReturnResult<bool> result = new ReturnResult<bool>();
             try
             {
-                result = await _folderBusiness.DeleteById(id);
+                result = await _folderBusiness.DeleteFolder(id);
             }
             catch(Exception ex)
             {
@@ -98,7 +98,7 @@ namespace StudyNest.Controllers
             ReturnResult<int> result = new ReturnResult<int>();
             try
             {
-                result = await _folderBusiness.DeleteListFolder(page.Selected);
+                result = await _folderBusiness.DeleteFolders(page.Selected);
             }
             catch(Exception ex)
             {

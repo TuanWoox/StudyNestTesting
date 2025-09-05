@@ -1,13 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using StudyNest.Common.Attributes;
+using StudyNest.Business.v1;
 using StudyNest.Common.DbEntities.Entities;
 using StudyNest.Common.Interfaces;
 using StudyNest.Common.Models.DTOs.CoreDTO;
-using StudyNest.Common.Models.DTOs.EntityDTO.Tag;
+using StudyNest.Common.Models.DTOs.EntityDTO.Note;
 using StudyNest.Common.Models.Paging;
-using StudyNest.Common.Utils.Enums;
 using StudyNest.Common.Utils.Extensions;
 
 namespace StudyNest.Controllers
@@ -15,22 +14,21 @@ namespace StudyNest.Controllers
     [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
     [Authorize]
-    [RoleAuthorize([UserRoleEnum.admin])]
-    public class TagController : ControllerBase
+    public class NoteController : ControllerBase
     {
-        public ITagBusiness _tagBusiness;
-        public TagController(ITagBusiness tagBusiness)
+        public INoteBusiness _noteBusiness;
+        public NoteController(INoteBusiness noteBusiness)
+
         {
-            this._tagBusiness = tagBusiness;
+            this._noteBusiness = noteBusiness;
         }
-        [AllowAnonymous]
-        [HttpPost("GetPaging")]
-        public IActionResult GetPaging(Page page)
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetOneById(string id)
         {
-            ReturnResult<PagedData<SelectTagDTO, string>> result = new ReturnResult<PagedData<SelectTagDTO, string>>();
+            ReturnResult<Note> result = new ReturnResult<Note>();
             try
             {
-                result = _tagBusiness.GetPaging(page).Result;
+                result = await _noteBusiness.GetOneById(id);
             }
             catch (Exception ex)
             {
@@ -38,13 +36,13 @@ namespace StudyNest.Controllers
             }
             return Ok(result);
         }
-        [HttpGet("{id}")]
-        public IActionResult GetById(string id)
+        [HttpPost("GetPaging")]
+        public async Task<IActionResult> GetPaging(Page<string> page, bool isExported = false)
         {
-            ReturnResult<Tag> result = new ReturnResult<Tag>();
+            ReturnResult<PagedData<SelectNoteDTO, string>> result = new ReturnResult<PagedData<SelectNoteDTO, string>>();
             try
             {
-                result = _tagBusiness.GetOneById(id).Result;
+                result = await _noteBusiness.GetPaging(page, isExported);
             }
             catch (Exception ex)
             {
@@ -53,12 +51,12 @@ namespace StudyNest.Controllers
             return Ok(result);
         }
         [HttpPost]
-        public IActionResult CreateTag(CreateTagDTO newEntity)
+        public async Task<IActionResult> CreateNote(CreateNoteDTO newEntity)
         {
-            ReturnResult<Tag> result = new ReturnResult<Tag>();
+            ReturnResult<Note> result = new ReturnResult<Note>();
             try
             {
-                result = _tagBusiness.CreateTag(newEntity.Name).Result;
+                result = await _noteBusiness.CreateNote(newEntity);
             }
             catch (Exception ex)
             {
@@ -67,12 +65,12 @@ namespace StudyNest.Controllers
             return Ok(result);
         }
         [HttpPut]
-        public IActionResult UpdateTag(UpdateTagDTO newEntity)
+        public async Task<IActionResult> UpdateNote(UpdateNoteDTO updateEntity)
         {
-            ReturnResult<Tag> result = new ReturnResult<Tag>();
+            ReturnResult<Note> result = new ReturnResult<Note>();
             try
             {
-                result = _tagBusiness.UpdateTag(newEntity).Result;
+                result = await _noteBusiness.UpdateNote(updateEntity);
             }
             catch (Exception ex)
             {
@@ -81,12 +79,12 @@ namespace StudyNest.Controllers
             return Ok(result);
         }
         [HttpDelete("{id}")]
-        public IActionResult DeleteById(string id)
+        public async Task<IActionResult> DeleteNoteById(string id)
         {
             ReturnResult<bool> result = new ReturnResult<bool>();
             try
             {
-                result = _tagBusiness.DeleteTag(id).Result;
+                result = await _noteBusiness.DeleteNote(id);
             }
             catch (Exception ex)
             {
@@ -94,13 +92,13 @@ namespace StudyNest.Controllers
             }
             return Ok(result);
         }
-        [HttpPost("DeleteListTag")]
-        public IActionResult DeleteListTag(Page<string> page)
+        [HttpPost("DeleteNotes")]
+        public async Task<IActionResult> DeleteNotes(Page<string> page)
         {
             ReturnResult<int> result = new ReturnResult<int>();
             try
             {
-                result = _tagBusiness.DeleteTags(page.Selected).Result;
+                result = await _noteBusiness.DeleteNotes(page.Selected);
             }
             catch (Exception ex)
             {

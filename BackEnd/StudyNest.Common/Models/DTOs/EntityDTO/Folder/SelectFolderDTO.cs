@@ -2,12 +2,6 @@
 using StudyNest.Common.DbEntities.BaseEntity;
 using StudyNest.Common.DbEntities.Entities;
 using StudyNest.Common.DbEntities.Identities;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace StudyNest.Common.Models.DTOs.EntityDTO.Folder
 {
@@ -17,6 +11,6 @@ namespace StudyNest.Common.Models.DTOs.EntityDTO.Folder
         public string FolderName { get; set; }
         public string OwnerId { get; set; }
         public ApplicationUser Owner { get; set; }
-        public ICollection<Note> Notes { get; set; } = new List<Note>();
+        public ICollection<DbEntities.Entities.Note> Notes { get; set; } = new List<DbEntities.Entities.Note>();
     }
 }
