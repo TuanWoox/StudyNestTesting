@@ -39,41 +39,12 @@ namespace StudyNest.Business.v1
             try
             {
                 var query = _dbContext.Notes.Where(n => n.OwnerId == _userContext.UserId)
-                                            .Include( n => n.Folder)
-                                            .Include( n => n.NoteTags)
-                                                .ThenInclude( n => n.Tag)
+                                            .Include(n => n.Folder)
+                                            .Include(n => n.NoteTags)
+                                               .ThenInclude(n => n.Tag)
                                             .AsNoTracking()
                                             .AsQueryable();
                 result.Result =  await _repository.GetPagingAsync<Page<string>,SelectNoteDTO>(query,page,isExported);
-                //Translate to exclude unnecessary fields
-                if (result.Result.Data.Any())
-                {
-                    result.Result.Data = result.Result.Data.Select(x => new SelectNoteDTO
-                    {
-                        Id = x.Id,
-                        OwnerId = x.OwnerId,
-                        DateCreated = x.DateCreated,
-                        DateModified = x.DateModified,
-                        Title = x.Title,
-                        Content = x.Content,
-                        Folder = new Folder
-                        {
-                            Id = x.Folder.Id,
-                            FolderName = x.Folder.FolderName,
-                            OwnerId = x.Folder.OwnerId
-                        },
-                        NoteTags = x.NoteTags.Select(nt => new NoteTag
-                        {
-                            NoteId = nt.NoteId,
-                            TagId = nt.TagId,
-                            Tag = new Tag
-                            {
-                                Id = nt.Tag.Id,
-                                Name = nt.Tag.Name
-                            }
-                        }).ToList()
-                    }).ToList();
-                }
             }
             catch (Exception ex)
             {

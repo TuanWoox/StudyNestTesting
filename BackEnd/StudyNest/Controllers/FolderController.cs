@@ -20,7 +20,20 @@ namespace StudyNest.Controllers
         {
             this._folderBusiness = folderBusiness;
         }
-        
+        [HttpPost("GetPaging")]
+        public async Task<IActionResult> GetPaging(Page<string> page)
+        {
+            ReturnResult<PagedData<SelectFolderDTO, string>> result = new ReturnResult<PagedData<SelectFolderDTO, string>>();
+            try
+            {
+                result = await _folderBusiness.GetPaging(page);
+            }
+            catch (Exception ex)
+            {
+                StudyNestLogger.Instance.Error(ex);
+            }
+            return Ok(result);
+        }
         [HttpGet("{id}")]
         public async Task<IActionResult> GetOneById(string id)
         {
@@ -35,21 +48,6 @@ namespace StudyNest.Controllers
             }
             return Ok(result);
         }
-        [HttpPost("GetPaging")]
-        public async Task<IActionResult> GetPaging(Page<string> page)
-        {
-            ReturnResult<PagedData<SelectFolderDTO, string>> result = new ReturnResult<PagedData<SelectFolderDTO, string>>();
-            try
-            {
-                result = await _folderBusiness.GetPaging(page);
-            }
-            catch(Exception ex)
-            {
-                StudyNestLogger.Instance.Error(ex);
-            }
-            return Ok(result);
-        }
-
         [HttpPost]
         public async Task<IActionResult> CreateFolder(CreateFolderDTO newEntity)
         {
@@ -92,7 +90,7 @@ namespace StudyNest.Controllers
             }
             return Ok(result);
         }
-        [HttpPost("Delete")]
+        [HttpPost("DeleteFolders")]
         public async Task<IActionResult> DeleteListFolder(Page<string> page)
         {
             ReturnResult<int> result = new ReturnResult<int>();

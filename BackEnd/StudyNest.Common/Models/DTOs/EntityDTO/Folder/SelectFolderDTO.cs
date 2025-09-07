@@ -2,6 +2,7 @@
 using StudyNest.Common.DbEntities.BaseEntity;
 using StudyNest.Common.DbEntities.Entities;
 using StudyNest.Common.DbEntities.Identities;
+using System.Text.Json.Serialization;
 
 namespace StudyNest.Common.Models.DTOs.EntityDTO.Folder
 {
@@ -10,7 +11,6 @@ namespace StudyNest.Common.Models.DTOs.EntityDTO.Folder
     {
         public string FolderName { get; set; }
         public string OwnerId { get; set; }
-        public ApplicationUser Owner { get; set; }
         public ICollection<DbEntities.Entities.Note> Notes { get; set; } = new List<DbEntities.Entities.Note>();
     }
 }

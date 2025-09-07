@@ -39,7 +39,45 @@ namespace StudyNest.Business.v1
             catch (Exception ex)
             {
                 StudyNestLogger.Instance.Error(ex);
-                result.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
+            }
+            return result;
+        } 
+        public async Task<ReturnResult<PagedData<SelectTagDTO, string>>> GetOwnPaging(Page<string> page)
+        {
+            ReturnResult<PagedData<SelectTagDTO, string>> result = new ReturnResult<PagedData<SelectTagDTO, string>>();
+            try
+            {
+                var query = _dbContext.Tags.Include(x => x.NoteTags)
+                                        .ThenInclude(x => x.Note)
+                                        .ThenInclude( x => x.Folder)
+                                        .Where(x => x.NoteTags.Any(nt => nt.Note.OwnerId == _userContext.UserId))
+                                        .AsNoTracking()
+                                        .AsQueryable();
+                result.Result = await _repository.GetPagingAsync<Page<string>,SelectTagDTO>(query,page);
+                if(result.Result.Data.Any())
+                {
+                    var tagIds = result.Result.Data.Select(t => t.Id).ToList();
+                    var noteTags = await _dbContext.NoteTags
+                        .Where(nt => nt.Note.OwnerId == _userContext.UserId && tagIds.Contains(nt.TagId))
+                        .Include(nt => nt.Tag)
+                        .ToListAsync();
+                    // Assign them to their corresponding notes
+                    var noteDict = result.Result.Data
+                        .SelectMany(t => t.NoteTags.Select(nt => nt.Note))
+                        .ToDictionary(n => n.Id, n => n);
+                    foreach (var nt in noteTags)
+                    {
+                        if (noteDict.TryGetValue(nt.NoteId, out var note))
+                        {
+                            note.NoteTags.Add(nt);
+                        }
+                    }
+
+                }
+            }
+            catch(Exception ex)
+            {
+                StudyNestLogger.Instance.Error(ex);
             }
             return result;
         }
@@ -53,7 +91,6 @@ namespace StudyNest.Business.v1
             catch(Exception ex)
             {
                 StudyNestLogger.Instance.Error(ex);
-                result.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
             }
             return result;
         }
@@ -76,7 +113,6 @@ namespace StudyNest.Business.v1
             catch(Exception ex)
             {
                 StudyNestLogger.Instance.Error(ex);
-                result.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
             }
             return result;
         }
@@ -95,7 +131,6 @@ namespace StudyNest.Business.v1
             catch(Exception ex)
             {
                 StudyNestLogger.Instance.Error(ex);
-                result.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
             }
             return result;
         }
@@ -130,7 +165,6 @@ namespace StudyNest.Business.v1
             catch (Exception ex)
             {
                 StudyNestLogger.Instance.Error(ex);
-                result.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
             }
             return result;
         }
@@ -172,7 +206,6 @@ namespace StudyNest.Business.v1
             catch (Exception ex)
             {
                 StudyNestLogger.Instance.Error(ex);
-                result.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
             }
             return result;
         }
@@ -206,7 +239,6 @@ namespace StudyNest.Business.v1
             catch(Exception ex)
             {
                 StudyNestLogger.Instance.Error(ex);
-                result.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
             }
             return result;
         }
@@ -239,7 +271,6 @@ namespace StudyNest.Business.v1
             catch (Exception ex)
             {
                 StudyNestLogger.Instance.Error(ex);
-                result.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
             }
             return result;
         }

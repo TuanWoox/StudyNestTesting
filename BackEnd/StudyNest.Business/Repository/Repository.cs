@@ -6,6 +6,8 @@ using StudyNest.Data;
 using StudyNest.Common.Utils.Extensions;
 using StudyNest.Common.Utils.Helper;
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Microsoft.AspNetCore.Routing.Template;
 namespace StudyNest.Business.Repository
 {
     public class Repository<TEntity, TKey> : IRepository<TEntity, TKey> where TEntity : class, IBaseKey<TKey>
@@ -160,11 +162,12 @@ namespace StudyNest.Business.Repository
                         generalQuery = generalQuery.Where(x => page.Selected.Contains(x.Id)).AsQueryable();
                     }
                 }
-                var tempResult = await generalQuery.ToListAsync();
+                var tempQuery = generalQuery.ProjectTo<TResponse>(_mapper.ConfigurationProvider);
+                var tempResult = await tempQuery.ToListAsync();
 
                 if (tempResult != null && tempResult.Count > 0)
                 {
-                    result.Data = _mapper.Map<List<TResponse>>(tempResult);
+                    result.Data = tempResult;
                     result.Page.TotalElements = await query.CountAsync();
                 }
                 else

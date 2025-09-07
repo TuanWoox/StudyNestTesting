@@ -39,35 +39,6 @@ namespace StudyNest.Business.v1
                                             .AsNoTracking()
                                             .AsQueryable();
                 result.Result = await _repository.GetPagingAsync<Page<string>, SelectFolderDTO>(query, page);
-                //Translate to exclude unnecessary fields
-                if(result.Result.Data.Any())
-                {
-                    result.Result.Data = result.Result.Data.Select(x => new SelectFolderDTO
-                    {
-                        Id = x.Id,
-                        FolderName = x.FolderName,
-                        DateCreated = x.DateCreated,
-                        DateModified = x.DateModified,
-                        Notes = x.Notes.Select(n => new Note
-                        {
-                            Id = n.Id,
-                            Title = n.Title,
-                            Content = n.Content,
-                            DateCreated = n.DateCreated,
-                            DateModified = n.DateModified,
-                            NoteTags = n.NoteTags.Select(nt => new NoteTag
-                            {
-                                NoteId = nt.NoteId,
-                                TagId = nt.TagId,
-                                Tag = new Tag
-                                {
-                                    Id = nt.Tag.Id,
-                                    Name = nt.Tag.Name
-                                }
-                            }).ToList()
-                        }).ToList()
-                    }).ToList();
-                }
             }
             catch (Exception ex)
             {

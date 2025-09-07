@@ -8,6 +8,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace StudyNest.Common.Models.DTOs.EntityDTO.Note
@@ -23,7 +24,6 @@ namespace StudyNest.Common.Models.DTOs.EntityDTO.Note
         public string Status { get; set; }
         // Mapping to owner
         public string OwnerId { get; set; }
-        public ApplicationUser Owner { get; set; }
         //Mapping to Folder
         public string FolderId { get; set; }
         public DbEntities.Entities.Folder Folder { get; set; }

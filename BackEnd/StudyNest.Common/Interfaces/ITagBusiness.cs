@@ -13,6 +13,7 @@ namespace StudyNest.Common.Interfaces
     public interface ITagBusiness
     {
         public Task<ReturnResult<PagedData<SelectTagDTO, string>>> GetPaging(Page<string> pageTag);
+        public Task<ReturnResult<PagedData<SelectTagDTO, string>>> GetOwnPaging(Page<string> page);
         public Task<ReturnResult<Tag>> GetOneById(string id);
         public Task<ReturnResult<Tag>> CreateTag(string Name);
         public Task<ReturnResult<Tag>> UpdateTag(UpdateTagDTO newEntity);

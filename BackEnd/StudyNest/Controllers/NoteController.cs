@@ -22,20 +22,6 @@ namespace StudyNest.Controllers
         {
             this._noteBusiness = noteBusiness;
         }
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetOneById(string id)
-        {
-            ReturnResult<Note> result = new ReturnResult<Note>();
-            try
-            {
-                result = await _noteBusiness.GetOneById(id);
-            }
-            catch (Exception ex)
-            {
-                StudyNestLogger.Instance.Error(ex);
-            }
-            return Ok(result);
-        }
         [HttpPost("GetPaging")]
         public async Task<IActionResult> GetPaging(Page<string> page, bool isExported = false)
         {
@@ -43,6 +29,20 @@ namespace StudyNest.Controllers
             try
             {
                 result = await _noteBusiness.GetPaging(page, isExported);
+            }
+            catch (Exception ex)
+            {
+                StudyNestLogger.Instance.Error(ex);
+            }
+            return Ok(result);
+        }
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetOneById(string id)
+        {
+            ReturnResult<Note> result = new ReturnResult<Note>();
+            try
+            {
+                result = await _noteBusiness.GetOneById(id);
             }
             catch (Exception ex)
             {

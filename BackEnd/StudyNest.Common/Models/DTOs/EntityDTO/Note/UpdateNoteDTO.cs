@@ -1,4 +1,5 @@
-﻿using StudyNest.Common.Attributes;
+﻿using AutoMapper;
+using StudyNest.Common.Attributes;
 using StudyNest.Common.DbEntities.BaseEntity;
 using System;
 using System.Collections.Generic;
@@ -9,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace StudyNest.Common.Models.DTOs.EntityDTO.Note
 {
+    [AutoMap(typeof(DbEntities.Entities.Note), ReverseMap = true, PreserveReferences = true)]
     public class UpdateNoteDTO: BaseKey
     {
         [TrimmedRequired]

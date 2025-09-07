@@ -139,11 +139,6 @@ namespace StudyNest
                     {
                         options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
                         options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
-                        //options.SerializerSettings.PreserveReferencesHandling = PreserveReferencesHandling.Objects;
-                    })
-                    .AddJsonOptions(options =>
-                    {
-                        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
                     });
         }
         #endregion
@@ -259,7 +254,6 @@ namespace StudyNest
             {
                 cfg.LicenseKey = Configuration.GetValue<string>("AutoMapper:LicenseKey");
             }, typeof(StudyNestMapper).Assembly);
-
         }
         #endregion
 
