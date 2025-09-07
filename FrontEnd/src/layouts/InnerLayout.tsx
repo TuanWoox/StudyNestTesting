@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { PageContainer, ProLayout } from "@ant-design/pro-components";
+import { ProLayout } from "@ant-design/pro-components";
 import { useNavigate, Outlet } from "react-router-dom";
 import {
   UserOutlined,
@@ -8,9 +8,9 @@ import {
 } from "@ant-design/icons";
 import { Avatar, Dropdown, Menu, ConfigProvider, theme, Space } from "antd";
 import { SunIcon, MoonIcon } from "@heroicons/react/24/outline";
-import logo from "../assets/react.svg";
-import { ERole } from "../utils/enums/ERole";
-import { adminMenus, userMenus } from "../constants/menus";
+import logo from "@/assets/react.svg";
+import { ERole } from "@/utils/enums/ERole";
+import { adminMenus, userMenus } from "@/constants/menus";
 
 interface InnerLayoutProps {
   role: string;
@@ -62,9 +62,8 @@ const InnerLayout = ({ role }: InnerLayoutProps) => {
     >
       <div
         className={`transition-colors duration-500 ${
-          darkMode ? "bg-gray-900 text-white" : "bg-gray-50 text-black"
+          darkMode ? "bg-[#0f0f0f] text-white" : "bg-gray-50 text-black"
         }`}
-        style={{ minHeight: "100vh", height: "100dvh", overflow: "hidden" }}
       >
         <ProLayout
           title={layoutTitle}
@@ -84,6 +83,15 @@ const InnerLayout = ({ role }: InnerLayoutProps) => {
               {dom}
             </div>
           )}
+          style={{ height: "100dvh" }}
+          contentStyle={{
+            padding: 0,
+            display: "flex",
+            flexDirection: "column",
+            /* quan trọng: cho phép vùng content co lại, tránh tràn */
+            minHeight: 0,
+            overflow: "hidden",
+          }}
           rightContentRender={() => (
             <Space>
               {/* Toggle Dark Mode */}
@@ -120,8 +128,9 @@ const InnerLayout = ({ role }: InnerLayoutProps) => {
             </Space>
           )}
         >
-          <div className="transition-colors duration-500 min-h-screen">
-            <Outlet />
+          {/* quan trọng: min-h-0 + overflow-hidden để chặn tràn xuống dưới */}
+          <div className="flex-1 flex min-h-0 overflow-hidden transition-colors duration-500">
+            <Outlet context={darkMode} />
           </div>
         </ProLayout>
       </div>

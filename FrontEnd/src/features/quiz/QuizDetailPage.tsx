@@ -62,7 +62,6 @@ const QuizDetailPage: React.FC = () => {
       <Card
         style={{
           width: "100%",
-          height: "85vh",
           overflow: "auto",
           margin: "0 auto",
           boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
@@ -85,7 +84,6 @@ const QuizDetailPage: React.FC = () => {
       <Card
         style={{
           width: "100%",
-          height: "85vh",
           overflow: "auto",
           margin: "0 auto",
           boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
@@ -120,7 +118,6 @@ const QuizDetailPage: React.FC = () => {
     <Card
       style={{
         width: "100%",
-        height: "85vh",
         overflow: "auto",
         margin: "0 auto",
         boxShadow: "0 4px 24px rgba(0,0,0,0.08)",

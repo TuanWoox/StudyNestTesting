@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Button,
@@ -11,6 +11,7 @@ import {
   Skeleton,
   Empty,
   Popconfirm,
+  Tooltip,
 } from "antd";
 import type { TableProps } from "antd";
 import { QuizList } from "@/types/quiz/quiz";
@@ -30,41 +31,64 @@ const Quizzes: React.FC = () => {
   const { data: quizzes, isPending, isError, error } = useGetAllQuiz();
   const { deleteQuiz, deleteQuizAsync, isLoading } = useDeleteQuiz();
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(8);
   const columns: TableProps<QuizList>["columns"] = [
     {
       title: "#",
       key: "index",
-      render: (_: any, __: QuizList, index: number) => index + 1,
+      width: 50,
+      render: (_: unknown, __: QuizList, idx: number) =>
+        (page - 1) * pageSize + idx + 1,
     },
     {
       title: "Title",
       dataIndex: "title",
       key: "title",
+      width: 300, // Fixed width for title column
+      ellipsis: {
+        showTitle: false, // Prevent default tooltip
+      },
       render: (text, record: QuizList) => (
-        <Link to={`/user/quiz/${record.id}`}>
-          <Text strong style={{ color: "#1677ff", cursor: "pointer" }}>
-            {text}
-          </Text>
-        </Link>
+        <Tooltip placement="topLeft" title={text}>
+          <Link to={`/user/quiz/${record.id}`}>
+            <Text
+              strong
+              style={{
+                color: "#1677ff",
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                display: "block",
+              }}
+            >
+              {text}
+            </Text>
+          </Link>
+        </Tooltip>
       ),
     },
     {
       title: "Total Question",
-      dataIndex: "totalQuestion", // Updated to match API response field
+      dataIndex: "totalQuestion",
       key: "totalQuestion",
       align: "center",
+      width: 100,
     },
     {
       title: "Date Create",
-      dataIndex: "dateCreated", // Updated to match API response field
+      dataIndex: "dateCreated",
       key: "dateCreated",
       align: "center",
+      width: 100,
       render: (date: string) => formatDMY(date),
     },
     {
       title: "Action",
       key: "action",
       align: "center",
+      width: 140,
       render: (_: unknown, record: { id: string }) => (
         <Space size="middle">
           <Popconfirm
@@ -107,10 +131,15 @@ const Quizzes: React.FC = () => {
       <Card
         style={{
           width: "100%",
-          height: "85%",
+          height: "100%", // Fill available space
           boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
         }}
-        bodyStyle={{ padding: 32 }}
+        bodyStyle={{
+          padding: 32,
+          height: "100%", // Fill card height
+          display: "flex",
+          flexDirection: "column",
+        }}
       >
         <Flex
           justify="space-between"
@@ -120,7 +149,7 @@ const Quizzes: React.FC = () => {
           <Skeleton.Input active style={{ width: 300 }} />
           <Skeleton.Button active />
         </Flex>
-        <Skeleton active paragraph={{ rows: 5 }} />
+        <Skeleton active paragraph={{ rows: 5 }} style={{ flex: 1 }} />
       </Card>
     );
   }
@@ -131,11 +160,12 @@ const Quizzes: React.FC = () => {
       <Card
         style={{
           width: "100%",
-          height: "85%",
+          height: "100%", // Fill available space
           boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
         }}
         bodyStyle={{
           padding: 32,
+          height: "100%", // Fill card height
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
@@ -162,14 +192,21 @@ const Quizzes: React.FC = () => {
   const hasQuizzes = quizzes && quizzes.length > 0;
 
   return (
-    <>
+    <main
+      style={{ minHeight: "100dvh", display: "flex", flexDirection: "column" }}
+    >
       <Card
         style={{
           width: "100%",
-          height: "85%",
+          height: "100%", // Fill available space
           boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
         }}
-        bodyStyle={{ padding: 32 }}
+        bodyStyle={{
+          padding: 32,
+          height: "100%", // Fill card height
+          display: "flex",
+          flexDirection: "column",
+        }}
       >
         <Flex
           justify="space-between"
@@ -196,45 +233,76 @@ const Quizzes: React.FC = () => {
           </Link>
         </Flex>
 
-        {hasQuizzes ? (
-          <ConfigProvider
-            theme={{
-              components: {
-                Table: {
-                  borderColor: "#e4e4e4",
-                  headerBg: "#fafafa",
-                  headerColor: "#222",
-                  rowHoverBg: "#f0f5ff",
-                },
-              },
-            }}
-          >
-            <Table<QuizList>
-              columns={columns}
-              dataSource={quizzes}
-              rowKey="id"
-              pagination={{
-                pageSize: 5,
-                showTotal: (total, range) =>
-                  `${range[0]}-${range[1]} of ${total} items`,
+        {/* This div creates a flex container that will expand to fill remaining space */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            flex: 1,
+            minHeight: 0,
+          }}
+        >
+          {hasQuizzes ? (
+            <div className="table-fill">
+              <ConfigProvider
+                theme={{
+                  components: {
+                    Table: {
+                      borderColor: "#e4e4e4",
+                      headerBg: "#fafafa",
+                      headerColor: "#222",
+                      rowHoverBg: "#f0f5ff",
+                    },
+                  },
+                }}
+              >
+                <Table<QuizList>
+                  rowKey="id"
+                  columns={columns}
+                  dataSource={quizzes}
+                  pagination={{
+                    current: page,
+                    pageSize,
+                    onChange: (p, ps) => {
+                      setPage(p);
+                      setPageSize(ps);
+                    },
+                    showTotal: (total, range) =>
+                      `${range[0]}-${range[1]} of ${total} items`,
+                    position: ["bottomRight"],
+                  }}
+                  tableLayout="fixed" // fixed column widths
+                  sticky
+                  size="middle"
+                  style={{
+                    height: "93%",
+                    borderRadius: 8,
+                    overflow: "hidden",
+                  }}
+                />
+              </ConfigProvider>
+            </div>
+          ) : (
+            <Empty
+              style={{
+                flex: 1,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
               }}
-              style={{ borderRadius: 8, overflow: "hidden" }}
-            />
-          </ConfigProvider>
-        ) : (
-          <Empty
-            description="No quizzes found. Generate your first quiz!"
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-          >
-            <Link to="/user/quiz/generate">
-              <Button type="primary" icon={<PlusOutlined />}>
-                Generate Quiz
-              </Button>
-            </Link>
-          </Empty>
-        )}
+              description="No quizzes found. Generate your first quiz!"
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+            >
+              <Link to="/user/quiz/generate">
+                <Button type="primary" icon={<PlusOutlined />}>
+                  Generate Quiz
+                </Button>
+              </Link>
+            </Empty>
+          )}
+        </div>
       </Card>
-    </>
+    </main>
   );
 };
 
