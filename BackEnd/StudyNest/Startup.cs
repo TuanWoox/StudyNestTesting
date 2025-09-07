@@ -1,5 +1,6 @@
 ﻿using Asp.Versioning; 
 using Asp.Versioning.ApiExplorer;
+using CloudinaryDotNet;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -59,6 +60,7 @@ namespace StudyNest
             ConfigurePolicy(services);
             ConfigureScopedServices(services);
             AddSwaggerService(services);
+            ConfigureCloudinary(services);
         }
 
         public async void Configure(IApplicationBuilder app, IWebHostEnvironment env, IApiVersionDescriptionProvider provider)
@@ -137,11 +139,6 @@ namespace StudyNest
                     {
                         options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
                         options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
-                        //options.SerializerSettings.PreserveReferencesHandling = PreserveReferencesHandling.Objects;
-                    })
-                    .AddJsonOptions(options =>
-                    {
-                        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
                     });
         }
         #endregion
@@ -257,7 +254,6 @@ namespace StudyNest
             {
                 cfg.LicenseKey = Configuration.GetValue<string>("AutoMapper:LicenseKey");
             }, typeof(StudyNestMapper).Assembly);
-
         }
         #endregion
 
@@ -304,6 +300,22 @@ namespace StudyNest
         }
         #endregion
 
+        #region Configure Cloudinary
+        public void ConfigureCloudinary(IServiceCollection services)
+        {
+            var cloudName = Configuration.GetValue<string>("CloudinarySettings:CloudName");
+            var apiKey = Configuration.GetValue<string>("CloudinarySettings:ApiKey");
+            var apiSecret = Configuration.GetValue<string>("CloudinarySettings:ApiSecret");
+            // Ensure none of them are null/empty
+            if (!new[] { cloudName, apiKey, apiSecret }.Any(string.IsNullOrEmpty))
+            {
+                var account = new Account(cloudName, apiKey, apiSecret);
+                var cloudinary = new Cloudinary(account);
+                services.AddSingleton(cloudinary);
+            }
+        }
+        #endregion
+
         #region Init Default Data 
         private async Task InitData(IServiceProvider serviceProvider)
         {
@@ -322,6 +334,7 @@ namespace StudyNest
             }
         }
         #endregion
+    
     }
 
 }

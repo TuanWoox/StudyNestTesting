@@ -15,6 +15,7 @@ namespace StudyNest.Common.Models.DTOs.EntityDTO.Tag
     {
         [TrimmedRequired]
         public string Name { get; set; }
+        //Mappping to Notes
         public ICollection<NoteTag> NoteTags { get; set; } = new List<NoteTag>();
     }
 }

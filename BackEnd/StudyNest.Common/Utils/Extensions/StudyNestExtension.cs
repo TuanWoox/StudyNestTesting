@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -116,6 +117,14 @@ namespace StudyNest.Common.Utils.Extensions
                 }
             }
             return mainObject;
+        }
+        public static bool HasValidImageExtension(this IFormFile file)
+        {
+            string[] _allowedExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+            if (file == null || string.IsNullOrWhiteSpace(file.FileName) || file.Length == 0)
+                return false;
+            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            return _allowedExtensions.Contains(extension);
         }
     }
     public class DateRangeFilter

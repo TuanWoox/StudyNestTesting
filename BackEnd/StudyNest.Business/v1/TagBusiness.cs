@@ -28,7 +28,7 @@ namespace StudyNest.Business.v1
             this._userContext = userContext;
             this._repository = repository;
         }
-        public async Task<ReturnResult<PagedData<SelectTagDTO, string>>> GetTags(Page<string> page)
+        public async Task<ReturnResult<PagedData<SelectTagDTO, string>>> GetPaging(Page<string> page)
         {
             ReturnResult<PagedData<SelectTagDTO, string>> result = new ReturnResult<PagedData<SelectTagDTO, string>>();
             try
@@ -39,11 +39,40 @@ namespace StudyNest.Business.v1
             catch (Exception ex)
             {
                 StudyNestLogger.Instance.Error(ex);
-                result.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
+            }
+            return result;
+        } 
+        public async Task<ReturnResult<PagedData<SelectTagDTO, string>>> GetOwnPaging(Page<string> page)
+        {
+            ReturnResult<PagedData<SelectTagDTO, string>> result = new ReturnResult<PagedData<SelectTagDTO, string>>();
+            try
+            {
+                var query = _dbContext.Tags
+                                    .Include(t => t.NoteTags)
+                                        .ThenInclude(nt => nt.Note)
+                                            .ThenInclude(n => n.Folder)   
+                                    .Where(t => t.NoteTags.Any(nt => nt.Note.OwnerId == _userContext.UserId))
+                                    .AsNoTracking()
+                                    .AsQueryable();
+                result.Result = await _repository.GetPagingAsync<Page<string>,SelectTagDTO>(query,page);
+                foreach(var tag in result.Result.Data)
+                {
+                    foreach(var noteTag in tag.NoteTags)
+                    {
+                        noteTag.Note.NoteTags = await _dbContext.NoteTags.Where(x => x.NoteId == noteTag.Note.Id)
+                                                                        .Include(x => x.Tag)
+                                                                        .AsNoTracking()
+                                                                        .ToListAsync();
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                StudyNestLogger.Instance.Error(ex);
             }
             return result;
         }
-        public async Task<ReturnResult<Tag>> GetTagById(string id)
+        public async Task<ReturnResult<Tag>> GetOneById(string id)
         {
             ReturnResult<Tag> result = new ReturnResult<Tag>();
             try
@@ -53,7 +82,6 @@ namespace StudyNest.Business.v1
             catch(Exception ex)
             {
                 StudyNestLogger.Instance.Error(ex);
-                result.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
             }
             return result;
         }
@@ -76,7 +104,6 @@ namespace StudyNest.Business.v1
             catch(Exception ex)
             {
                 StudyNestLogger.Instance.Error(ex);
-                result.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
             }
             return result;
         }
@@ -95,11 +122,10 @@ namespace StudyNest.Business.v1
             catch(Exception ex)
             {
                 StudyNestLogger.Instance.Error(ex);
-                result.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
             }
             return result;
         }
-        public async Task<ReturnResult<bool>> DeleteById(string id)
+        public async Task<ReturnResult<bool>> DeleteTag(string id)
         {
             ReturnResult<bool> result = new ReturnResult<bool>();
             try
@@ -130,12 +156,11 @@ namespace StudyNest.Business.v1
             catch (Exception ex)
             {
                 StudyNestLogger.Instance.Error(ex);
-                result.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
             }
             return result;
         }
 
-        public async Task<ReturnResult<int>> DeleteListTag(List<string> ids)
+        public async Task<ReturnResult<int>> DeleteTags(List<string> ids)
         {
             var result = new ReturnResult<int>();
             try
@@ -172,7 +197,6 @@ namespace StudyNest.Business.v1
             catch (Exception ex)
             {
                 StudyNestLogger.Instance.Error(ex);
-                result.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
             }
             return result;
         }
@@ -206,7 +230,38 @@ namespace StudyNest.Business.v1
             catch(Exception ex)
             {
                 StudyNestLogger.Instance.Error(ex);
-                result.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
+            }
+            return result;
+        }
+        public async Task<ReturnResult<List<string>>> GetTagIdsByListOfName(List<string> tagsName)
+        {
+            ReturnResult<List<string>> result = new ReturnResult<List<string>>();
+            try
+            {
+                tagsName = tagsName.Select(name => name.ToKebabCase()).ToList();
+                var existingTagIds = await _dbContext.Tags.Where(x => tagsName.Contains(x.Name)).ToListAsync();
+                var notExistingTagNames = tagsName.Except(existingTagIds.Select(x => x.Name)).ToList();
+                foreach (var name in notExistingTagNames)
+                {
+                    if (string.IsNullOrEmpty(name)) continue;
+                    var resultCreateTag = await CreateTag(name);
+                    if (resultCreateTag.Result != null)
+                    {
+                        existingTagIds.Add(resultCreateTag.Result);
+                    }
+                }
+                if(existingTagIds.Any())
+                {
+                    result.Result = existingTagIds.Select(x => x.Id).ToList();
+                }
+                else
+                {
+                    result.Result = new List<string>();
+                }
+            }
+            catch (Exception ex)
+            {
+                StudyNestLogger.Instance.Error(ex);
             }
             return result;
         }
