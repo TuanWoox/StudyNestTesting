@@ -3,10 +3,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualBasic;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Query.Expressions.Internal;
+using StudyNest.Business.v1;
 using StudyNest.Common.DbEntities.Entities;
 using StudyNest.Common.Interfaces;
 using StudyNest.Common.Models.DTOs.CoreDTO;
-using StudyNest.Common.Models.DTOs.EntityDTO.Quiz;
+using StudyNest.Common.Models.DTOs.EntityDTO.Quizzes;
 using StudyNest.Common.Utils.Extensions;
 
 namespace StudyNest.Controllers
@@ -23,7 +24,6 @@ namespace StudyNest.Controllers
             this._quizBusiness = quizBusiness;
         }
 
-        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> GetAllQuiz()
         {
@@ -39,7 +39,6 @@ namespace StudyNest.Controllers
             return Ok(rs);
         }
 
-        [AllowAnonymous]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetQuizDetail(string id)
         {
@@ -54,11 +53,10 @@ namespace StudyNest.Controllers
             }
             return Ok(rs);
         }
-        [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> CreateQuiz([FromBody] CreateQuizDTO model)
         {
-            var rs = new ReturnResult<SelectQuizDTO>();
+            var rs = new ReturnResult<object>();
             try
             {
                 rs = await _quizBusiness.GenerateAsync(model);
@@ -68,6 +66,20 @@ namespace StudyNest.Controllers
                 StudyNestLogger.Instance.Error(ex);
             }
             return Ok(rs);
+        }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteQuiz(string id)
+        {
+            ReturnResult<bool> result = new ReturnResult<bool>();
+            try
+            {
+                result = await _quizBusiness.DeleteById(id);
+            }
+            catch (Exception ex)
+            {
+                StudyNestLogger.Instance.Error(ex);
+            }
+            return Ok(result);
         }
     }
 }

@@ -1,5 +1,6 @@
-﻿using StudyNest.Common.Interfaces;
-using StudyNest.Common.Models.DTOs.EntityDTO.Quiz;
+﻿using StudyNest.Common.DbEntities.Entities;
+using StudyNest.Common.Interfaces;
+using StudyNest.Common.Models.DTOs.EntityDTO.Quizzes;
 using StudyNest.Common.Utils.Extensions;
 using System;
 using System.Collections.Generic;
@@ -13,22 +14,25 @@ namespace StudyNest.Common.Llm
     {
         private readonly ILlmClient _client;
         private readonly QuizGenerationPipeline _pipe;
+        private readonly IUserContext _user;
 
-        public LlmQuizGenerator(ILlmClient client, QuizGenerationPipeline pipe)
+        public LlmQuizGenerator(ILlmClient client, QuizGenerationPipeline pipe, IUserContext userContext)
         {
             _client = client;
             _pipe = pipe;
+            this._user = userContext;
         }
 
-        public async Task<SelectQuizDTO> GenerateAsync(CreateQuizDTO request)
+        public async Task<Quiz> GenerateAsync(CreateQuizDTO request)
         {
             try
             {
                 var (prompt, images) = _pipe.BuildPrompt(request);
                 var raw = await _client.GenerateAsync(prompt, images);
-                var dto = _pipe.Parse(raw);
-                _pipe.Normalize(dto, request);
-                return dto;
+
+                var quizEntity = _pipe.ParseToQuiz(raw, _user.UserId);
+                _pipe.NormalizeQuiz(quizEntity, request);
+                return quizEntity;
             }
             catch (Exception ex)
             {

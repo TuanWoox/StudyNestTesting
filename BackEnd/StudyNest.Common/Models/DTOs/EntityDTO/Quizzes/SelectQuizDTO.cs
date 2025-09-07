@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace StudyNest.Common.Models.DTOs.EntityDTO.Quiz
+namespace StudyNest.Common.Models.DTOs.EntityDTO.Quizzes
 {
     public  class SelectQuizDTO
     {

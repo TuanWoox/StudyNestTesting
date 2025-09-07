@@ -1,4 +1,4 @@
-﻿using StudyNest.Common.Models.DTOs.EntityDTO.Quiz;
+﻿using StudyNest.Common.Models.DTOs.EntityDTO.Quizzes;
 using System;
 using System.Collections.Generic;
 using System.Linq;

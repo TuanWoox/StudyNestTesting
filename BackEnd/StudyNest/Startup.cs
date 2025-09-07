@@ -64,7 +64,6 @@ namespace StudyNest
         public async void Configure(IApplicationBuilder app, IWebHostEnvironment env, IApiVersionDescriptionProvider provider)
         {
             #region Development Configuration
-            app.UseCors("CorsPolicy");
             if (env.IsDevelopment())
             {
                 app.UseSwagger();
@@ -83,6 +82,7 @@ namespace StudyNest
 
             app.UseHttpsRedirection();
             app.UseRouting();
+            app.UseCors("CorsPolicy");
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseWebSockets();

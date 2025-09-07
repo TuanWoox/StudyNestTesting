@@ -1,4 +1,5 @@
-﻿using StudyNest.Common.Models.DTOs.EntityDTO.Quiz;
+﻿using StudyNest.Common.DbEntities.Entities;
+using StudyNest.Common.Models.DTOs.EntityDTO.Quizzes;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -10,6 +11,7 @@ namespace StudyNest.Common.Llm
         private static readonly JsonSerializerOptions JsonOpts = new()
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNameCaseInsensitive = true, // chấp nhận Title/title, Questions/questions...
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
         };
 
@@ -20,7 +22,7 @@ namespace StudyNest.Common.Llm
 
             var mcqTarget = req.Count_Mcq;
             var tfTarget = req.Count_Tf;
-
+            Console.WriteLine($"mcq: {req.Count_Mcq}; tf: {req.Count_Tf}");
             var schema = @"
 {
   ""title"": ""string"",
@@ -68,12 +70,15 @@ Note (markdown, derived from the student's Editor.js content):
         }
 
         // 2) Parse raw LLM text → QuizDetailsDTO (handles code fences, T/F casing, rejection path)
-        public SelectQuizDTO Parse(string llmText)
+        public Quiz ParseToQuiz(string llmText, string createdBy)
         {
-            var json = ExtractJson(llmText);
-            json = json.Replace(": True", ": true").Replace(": False", ": false");
+            if (string.IsNullOrWhiteSpace(createdBy))
+                throw new ArgumentException("createdBy is required", nameof(createdBy));
 
-            // If model returns a rejection object { eligible:false, ... } throw
+            var json = ExtractJson(llmText);
+            json = NormalizeBooleanLiterals(json); // chỉ lower-case True/False literals, không đụng string
+
+            // Nếu model trả rejection { eligible:false, reason:... } => throw
             using (var probe = JsonDocument.Parse(json))
             {
                 if (probe.RootElement.TryGetProperty("eligible", out var elig) &&
@@ -84,47 +89,95 @@ Note (markdown, derived from the student's Editor.js content):
                 }
             }
 
-            var dto = JsonSerializer.Deserialize<SelectQuizDTO>(json, JsonOpts)
+            var dto = JsonSerializer.Deserialize<LlmQuizDto>(json, JsonOpts)
                       ?? throw new InvalidOperationException("Cannot deserialize quiz JSON.");
-            return dto;
-        }
 
-        // 3) Normalize & enforce shapes
-        public void Normalize(SelectQuizDTO dto, CreateQuizDTO req)
-        {
-            dto.Title ??= "Generated Quiz";
-            if (dto.Questions.Count > (req.Count_Tf + req.Count_Mcq))
-                dto.Questions = dto.Questions.Take(req.Count_Tf + req.Count_Mcq).ToList();
-
-            foreach (var q in dto.Questions)
+            // Map DTO -> Entity
+            var quiz = new Quiz
             {
-                q.Type = (q.Type ?? "").ToUpperInvariant() == "TF" ? "TF" : "MCQ";
-                q.Text = string.IsNullOrWhiteSpace(q.Text) ? "Untitled question" : q.Text.Trim();
+                Title = string.IsNullOrWhiteSpace(dto.Title) ? "Generated Quiz" : dto.Title.Trim(),
+                CreatedBy = createdBy,
+                Questions = new List<Question>()
+            };
 
-                if (q.Type == "MCQ")
+            int order = 0;
+            foreach (var q in dto.Questions ?? new List<LlmQuestionDto>())
+            {
+                order++;
+                var type = (q.Type ?? "").Trim().ToUpperInvariant();
+                type = (type == "TF") ? "TF" : "MCQ";
+
+                var question = new Question
                 {
-                    q.Choices ??= new();
-                    q.Choices = q.Choices.Where(c => !string.IsNullOrWhiteSpace(c))
-                                         .Select(c => c.Trim())
-                                         .Distinct()
-                                         .Take(4)
-                                         .ToList();
+                    Name = string.IsNullOrWhiteSpace(q.Text) ? "Untitled question" : q.Text.Trim(),
+                    Type = type,
+                    Explanation = (q.Explanation ?? string.Empty).Trim(),
+                    OrderNo = order,
+                    Choices = new List<Choice>()
+                };
 
-                    while (q.Choices.Count < 4) q.Choices.Add($"Option {q.Choices.Count + 1}");
+                if (type == "MCQ")
+                {
+                    // Clean + distinct + đủ 4 lựa chọn
+                    var choices = (q.Choices ?? new List<string>())
+                        .Where(c => !string.IsNullOrWhiteSpace(c))
+                        .Select(c => c.Trim())
+                        .Distinct()
+                        .Take(4)
+                        .ToList();
 
-                    if (q.CorrectIndex is null || q.CorrectIndex < 0 || q.CorrectIndex > 3)
-                        q.CorrectIndex = 0;
+                    while (choices.Count < 4)
+                        choices.Add($"Option {choices.Count + 1}");
 
-                    q.CorrectTrueFalse = null;
+                    // CorrectIndex 0..3, default 0
+                    int idx = (q.CorrectIndex is >= 0 and <= 3) ? q.CorrectIndex.Value : 0;
+                    question.CorrectIndex = idx;
+                    question.CorrectTrueFalse = null;
+
+                    // Create Choice entities
+                    for (int i = 0; i < choices.Count; i++)
+                    {
+                        question.Choices.Add(new Choice
+                        {
+                            Text = choices[i],
+                            OrderNo = i + 1
+                        });
+                    }
                 }
                 else // TF
                 {
-                    q.Choices = new() { "True", "False" };
-                    q.CorrectIndex = null;
-                    q.CorrectTrueFalse ??= true;
+                    question.CorrectIndex = null;
+                    question.CorrectTrueFalse = q.CorrectTrueFalse ?? true; // default true
+                                                                            // Giữ choices đồng nhất để FE render dễ
+                    question.Choices.Add(new Choice { Text = "True", OrderNo = 1 });
+                    question.Choices.Add(new Choice { Text = "False", OrderNo = 2 });
                 }
+
+                quiz.Questions.Add(question);
             }
+
+            return quiz;
         }
+
+
+        // 3) Normalize & enforce shapes
+        public void NormalizeQuiz(Quiz quiz, CreateQuizDTO req)
+        {
+            if (quiz == null) throw new ArgumentNullException(nameof(quiz));
+
+            var mcqTarget = req.Count_Mcq;
+            var tfTarget = req.Count_Tf;
+
+            var mcqs = quiz.Questions.Where(q => q.Type == "MCQ").Take(mcqTarget);
+            var tfs = quiz.Questions.Where(q => q.Type == "TF").Take(tfTarget);
+
+            var merged = mcqs.Concat(tfs).ToList();
+            for (int i = 0; i < merged.Count; i++)
+                merged[i].OrderNo = i + 1;
+
+            quiz.Questions = merged;
+        }
+
 
         // ---------- helpers ----------
 
@@ -240,6 +293,31 @@ Note (markdown, derived from the student's Editor.js content):
                         .Replace("&nbsp;", " ")
                         .Trim();
         }
+        private static string NormalizeBooleanLiterals(string json)
+        {
+            if (string.IsNullOrWhiteSpace(json)) return json;
+            return Regex.Replace(json,
+                @"(?<=:\s*)(True|False)(?=\s*[,}])",
+                m => m.Value.ToLowerInvariant(),
+                RegexOptions.CultureInvariant);
+        }
+
+        private sealed class LlmQuizDto
+        {
+            public string? Title { get; set; }
+            public List<LlmQuestionDto>? Questions { get; set; }
+        }
+
+        private sealed class LlmQuestionDto
+        {
+            public string? Text { get; set; }
+            public string? Type { get; set; }              // "MCQ" | "TF"
+            public List<string>? Choices { get; set; }     // MCQ
+            public int? CorrectIndex { get; set; }         // MCQ
+            public bool? CorrectTrueFalse { get; set; }    // TF
+            public string? Explanation { get; set; }
+        }
+
 
     }
 }
