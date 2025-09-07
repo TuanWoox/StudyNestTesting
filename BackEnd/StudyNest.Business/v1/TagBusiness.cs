@@ -47,32 +47,23 @@ namespace StudyNest.Business.v1
             ReturnResult<PagedData<SelectTagDTO, string>> result = new ReturnResult<PagedData<SelectTagDTO, string>>();
             try
             {
-                var query = _dbContext.Tags.Include(x => x.NoteTags)
-                                        .ThenInclude(x => x.Note)
-                                        .ThenInclude( x => x.Folder)
-                                        .Where(x => x.NoteTags.Any(nt => nt.Note.OwnerId == _userContext.UserId))
-                                        .AsNoTracking()
-                                        .AsQueryable();
+                var query = _dbContext.Tags
+                                    .Include(t => t.NoteTags)
+                                        .ThenInclude(nt => nt.Note)
+                                            .ThenInclude(n => n.Folder)   
+                                    .Where(t => t.NoteTags.Any(nt => nt.Note.OwnerId == _userContext.UserId))
+                                    .AsNoTracking()
+                                    .AsQueryable();
                 result.Result = await _repository.GetPagingAsync<Page<string>,SelectTagDTO>(query,page);
-                if(result.Result.Data.Any())
+                foreach(var tag in result.Result.Data)
                 {
-                    var tagIds = result.Result.Data.Select(t => t.Id).ToList();
-                    var noteTags = await _dbContext.NoteTags
-                        .Where(nt => nt.Note.OwnerId == _userContext.UserId && tagIds.Contains(nt.TagId))
-                        .Include(nt => nt.Tag)
-                        .ToListAsync();
-                    // Assign them to their corresponding notes
-                    var noteDict = result.Result.Data
-                        .SelectMany(t => t.NoteTags.Select(nt => nt.Note))
-                        .ToDictionary(n => n.Id, n => n);
-                    foreach (var nt in noteTags)
+                    foreach(var noteTag in tag.NoteTags)
                     {
-                        if (noteDict.TryGetValue(nt.NoteId, out var note))
-                        {
-                            note.NoteTags.Add(nt);
-                        }
+                        noteTag.Note.NoteTags = await _dbContext.NoteTags.Where(x => x.NoteId == noteTag.Note.Id)
+                                                                        .Include(x => x.Tag)
+                                                                        .AsNoTracking()
+                                                                        .ToListAsync();
                     }
-
                 }
             }
             catch(Exception ex)
