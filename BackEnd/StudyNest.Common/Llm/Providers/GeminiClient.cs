@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.VisualBasic;
 using StudyNest.Common.Interfaces;
-using StudyNest.Common.Models.DTOs.EntityDTO.Quiz;
+using StudyNest.Common.Models.DTOs.EntityDTO.Quizzes;
 using StudyNest.Common.Utils.Extensions;
 using System;
 using System.Collections.Generic;
@@ -57,7 +57,7 @@ namespace StudyNest.Common.Llm.Providers
             {
                 try
                 {
-                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
                     using var req = new HttpRequestMessage(HttpMethod.Post, endpoint)
                     {
                         Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json")
