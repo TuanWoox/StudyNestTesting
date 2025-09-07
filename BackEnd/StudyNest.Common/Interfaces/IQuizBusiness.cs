@@ -1,6 +1,6 @@
 ﻿using StudyNest.Common.DbEntities.Entities;
 using StudyNest.Common.Models.DTOs.CoreDTO;
-using StudyNest.Common.Models.DTOs.EntityDTO.Quiz;
+using StudyNest.Common.Models.DTOs.EntityDTO.Quizzes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +15,8 @@ namespace StudyNest.Common.Interfaces
     {
         Task<ReturnResult<List<QuizDTO>>> GetAllQuiz();
         Task<ReturnResult<Quiz>> GetQuizDetail(string id);
-        Task<ReturnResult<SelectQuizDTO>> GenerateAsync(CreateQuizDTO prompt);
+        Task<ReturnResult<object>> GenerateAsync(CreateQuizDTO prompt);
+        Task<ReturnResult<bool>> DeleteById(string id);
     }
 }
     
