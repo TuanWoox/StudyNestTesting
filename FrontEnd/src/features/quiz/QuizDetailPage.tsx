@@ -23,6 +23,7 @@ import {
 } from "@ant-design/icons";
 import useGetQuizDetail from "@/hooks/quizHook/useGetQuizDetail";
 import { useQueryClient } from "@tanstack/react-query";
+import { formatDMY } from "@/utils/date";
 
 const { Title, Text, Paragraph } = Typography;
 const { Panel } = Collapse;
@@ -158,10 +159,7 @@ const QuizDetailPage: React.FC = () => {
           </div>
           <div>
             <Text strong>Created:</Text>{" "}
-            <Text>
-              {quiz.dateCreated &&
-                new Date(quiz.dateCreated).toLocaleDateString()}
-            </Text>
+            <Text>{quiz.dateCreated && formatDMY(quiz.dateCreated)}</Text>
           </div>
         </Flex>
       </Card>

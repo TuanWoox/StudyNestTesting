@@ -1,16 +1,15 @@
 export interface QuizList {
-  key: string;
   id: string;
   title: string;
   totalQuestion: number;
-  dateCreated: Date;
+  dateCreated: string;
 }
 
 export interface QuizDetail {
   id: string;
   title: string;
   createdBy: string;
-  dateCreated: Date;
+  dateCreated: string;
   questions: Question[];
 }
 

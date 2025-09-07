@@ -5,7 +5,7 @@ export type NoteCard = {
   excerpt: string; // derived from Content, first lines etc.
   status: "Draft" | "Published" | "Archived";
   tags: string[];
-  updatedAt: Date | string;
+  updatedAt: string;
   content: string; // long description / full text
 };
 

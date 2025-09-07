@@ -16,35 +16,19 @@ export const useGenerateQuiz = (options?: UseGenerateQuizOptions) => {
   const queryClient = useQueryClient();
   const { onSuccess, onError, redirectOnSuccess = true } = options || {};
 
-  const mutation = useMutation({
-    mutationFn: (quizData: CreateQuizDTO) => {
-      return quizService.generateQuiz(quizData);
-    },
-    onSuccess: (data) => {
+  const mutation = useMutation<{ id: string }, unknown, CreateQuizDTO>({
+    mutationKey: ["generateQuiz"],
+    mutationFn: quizService.generateQuiz,
+    onSuccess: ({ id }) => {
       toast.success("Quiz successfully generated!");
       queryClient.invalidateQueries({
         queryKey: ["quizzes"],
         refetchType: "inactive",
       });
-      if (redirectOnSuccess) {
-        // Redirect to the quiz view page with the new quiz ID
-        navigate(`/user/quiz/${data.id}`);
-      }
-
-      if (onSuccess) {
-        onSuccess();
-      }
+      if (redirectOnSuccess) navigate(`/user/quiz/${id}`);
+      onSuccess?.();
     },
-    onError: (error: any) => {
-      const errorMessage =
-        error.response?.data?.message ||
-        "Failed to generate quiz. Please try again.";
-      message.error(errorMessage);
-
-      if (onError) {
-        onError(error);
-      }
-    },
+    onError: (error) => onError?.(error),
   });
 
   return {

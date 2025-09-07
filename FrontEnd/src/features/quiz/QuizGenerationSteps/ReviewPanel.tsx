@@ -3,6 +3,7 @@ import { Card, Typography, Tag, Space } from "antd";
 import { EyeOutlined } from "@ant-design/icons";
 import type { NoteCard } from "../NoteDummyData";
 import type { CreateQuizDTO } from "@/types/quiz/createQuizDTO";
+import { formatDMY } from "@/utils/date";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -15,7 +16,6 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
   selectedNote,
   quizOptions,
 }) => {
-  const fmt = (d: Date | string) => new Date(d).toLocaleDateString();
   const cap = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : "");
   const total = (quizOptions?.count_Mcq ?? 0) + (quizOptions?.count_Tf ?? 0);
   return (
@@ -57,7 +57,7 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <Text type="secondary">{selectedNote.status}</Text>
                 <Text type="secondary">
-                  Updated: {fmt(selectedNote.updatedAt)}
+                  Updated: {formatDMY(selectedNote.updatedAt)}
                 </Text>
               </div>
             </Card>

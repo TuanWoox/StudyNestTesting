@@ -17,6 +17,7 @@ import {
 } from "@ant-design/icons";
 import type { NoteCard } from "../NoteDummyData";
 import type { FormInstance } from "antd";
+import { formatDMY } from "@/utils/date";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -37,8 +38,6 @@ export const SourcePanel: React.FC<SourcePanelProps> = ({
   setQuery,
   setSelectedNoteId,
 }) => {
-  const fmt = (d: Date | string) => new Date(d).toLocaleDateString();
-
   // Keep hidden form field in sync with external selectedNoteId
   useEffect(() => {
     if (selectedNoteId) {
@@ -147,7 +146,7 @@ export const SourcePanel: React.FC<SourcePanelProps> = ({
                       >
                         <Text type="secondary">{note.status}</Text>
                         <Text type="secondary">
-                          Updated: {fmt(note.updatedAt)}
+                          Updated: {formatDMY(note.updatedAt)}
                         </Text>
                       </div>
                     </div>

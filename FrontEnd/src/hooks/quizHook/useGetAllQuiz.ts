@@ -1,27 +1,35 @@
+// hooks/useGetAllQuiz.ts
 import { useQuery } from "@tanstack/react-query";
 import quizService from "@/services/quizService";
-import type { AxiosError } from "axios";
 import type { QuizList } from "@/types/quiz/quiz";
 
 interface UseGetAllQuizOptions {
   enabled?: boolean;
+  sortByNewest?: boolean;
 }
 
 const useGetAllQuiz = (options?: UseGetAllQuizOptions) => {
-  const { enabled = true } = options || {};
+  const enabled = options?.enabled ?? true;
+  const sortByNewest = options?.sortByNewest ?? true;
 
-  const query = useQuery<QuizList[], AxiosError, QuizList[], [string]>({
-    queryKey: ["quizzes"],
-    queryFn: () => {
-      return quizService.getAllQuiz();
-    },
+  return useQuery<QuizList[]>({
+    queryKey: ["quizzes", { sortByNewest }],
     enabled,
-    select: (data) => data, // keep or transform if needed
-    staleTime: 5 * 60 * 1000, // 5 min
-    gcTime: 10 * 60 * 1000, // 10 min
+    queryFn: () => quizService.getAllQuiz(),
+    select: (rows) =>
+      sortByNewest
+        ? rows
+            .slice()
+            .sort(
+              (a, b) =>
+                new Date(b.dateCreated).getTime() -
+                new Date(a.dateCreated).getTime()
+            )
+        : rows,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    retry: 1,
   });
-
-  return query;
 };
 
 export default useGetAllQuiz;

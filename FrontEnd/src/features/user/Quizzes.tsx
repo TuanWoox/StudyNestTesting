@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Button,
@@ -10,17 +10,26 @@ import {
   Typography,
   Skeleton,
   Empty,
+  Popconfirm,
 } from "antd";
 import type { TableProps } from "antd";
 import { QuizList } from "@/types/quiz/quiz";
-import { PlusOutlined, WarningOutlined } from "@ant-design/icons";
+import {
+  DeleteOutlined,
+  PlusOutlined,
+  WarningOutlined,
+} from "@ant-design/icons";
 import useGetAllQuiz from "@/hooks/quizHook/useGetAllQuiz";
+import useDeleteQuiz from "@/hooks/quizHook/useDeleteQuiz";
+import { formatDMY } from "@/utils/date";
 
 const { Title, Text } = Typography;
 
 const Quizzes: React.FC = () => {
   // Use the hook to fetch all quizzes
   const { data: quizzes, isPending, isError, error } = useGetAllQuiz();
+  const { deleteQuiz, deleteQuizAsync, isLoading } = useDeleteQuiz();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const columns: TableProps<QuizList>["columns"] = [
     {
       title: "#",
@@ -50,25 +59,43 @@ const Quizzes: React.FC = () => {
       dataIndex: "dateCreated", // Updated to match API response field
       key: "dateCreated",
       align: "center",
-      render: (date: string) => new Date(date).toLocaleDateString(),
+      render: (date: string) => formatDMY(date),
     },
     {
       title: "Action",
       key: "action",
       align: "center",
-      render: (_, record) => (
+      render: (_: unknown, record: { id: string }) => (
         <Space size="middle">
-          <Button
-            type="link"
-            danger
-            style={{ fontWeight: 500 }}
-            onClick={() => {
-              // Handle delete logic here
-              console.log(`Delete quiz: ${record.id}`);
+          <Popconfirm
+            title="Delete this quiz?"
+            description="This action cannot be undone."
+            okText="Delete"
+            cancelText="Cancel"
+            okButtonProps={{
+              danger: true,
+              loading: deletingId === record.id && isLoading,
+            }}
+            onConfirm={async () => {
+              setDeletingId(record.id);
+              try {
+                await deleteQuizAsync(record.id);
+                // success toast + query invalidate handled inside the hook
+              } finally {
+                setDeletingId(null);
+              }
             }}
           >
-            Delete
-          </Button>
+            <Button
+              type="link"
+              danger
+              style={{ fontWeight: 500 }}
+              icon={<DeleteOutlined />}
+              loading={deletingId === record.id && isLoading}
+            >
+              Delete
+            </Button>
+          </Popconfirm>
         </Space>
       ),
     },
