@@ -62,7 +62,7 @@ export function useCreateEditor({
         if (!editorRef.current) {
             const editor = new EditorJS({
                 holder: holderElementId,
-                autofocus: true,
+                autofocus: false,
                 placeholder: 'Type something amazing...',
                 data: { blocks: data },
 
@@ -192,8 +192,11 @@ export function useCreateEditor({
                     );
                 },
 
-                onChange: () => {
-
+                onChange: async () => {
+                    if (onChangeOutside && editorRef.current) {
+                        const outputData = await editorRef.current.save();
+                        onChangeOutside(outputData);
+                    }
                 },
             });
         }
@@ -202,7 +205,7 @@ export function useCreateEditor({
             editorRef.current?.destroy();
             editorRef.current = null;
         };
-    }, [holderElementId, data, onChangeOutside]);
+    }, [holderElementId]); // CHỈ phụ thuộc vào holderElementId
 
     return editorRef;
 }

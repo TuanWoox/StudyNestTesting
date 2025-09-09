@@ -8,7 +8,7 @@ import Login from "./features/auth/Login";
 import Register from "./features/auth/Register";
 
 // User features
-import Notes from "./features/user/Notes";
+import NotesPage from "./features/user/notes/NotesPage";
 import Quizzes from "./features/user/Quizzes";
 import Analytics from "./features/user/Analytics";
 import Feedback from "./features/user/Feedback";
@@ -34,7 +34,7 @@ export const router = createBrowserRouter([
         element: <InnerLayout role={ERole.User} />,
         children: [
             { index: true, element: <Navigate to="/user/notes" /> },
-            { path: "notes", element: <Notes /> },
+            { path: "notes", element: <NotesPage /> },
             { path: "quiz", element: <Quizzes /> },
             { path: "analytics", element: <Analytics /> },
             { path: "feedback", element: <Feedback /> },
