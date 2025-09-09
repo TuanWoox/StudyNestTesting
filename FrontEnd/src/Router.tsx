@@ -18,36 +18,40 @@ import Dashboard from "./features/admin/Dashboard";
 import ManageUser from "./features/admin/ManageUser";
 import AdminFeedback from "./features/admin/ManageFeedback";
 import { ERole } from "./utils/enums/ERole";
+import QuizGeneration from "./features/quiz/QuizGeneration";
+import QuizDetailPage from "./features/quiz/QuizDetailPage";
 
 export const router = createBrowserRouter([
-    {
-        path: "/",
-        element: <CenterLayout />,
-        children: [
-            { index: true, element: <Navigate to="/login" /> },
-            { path: "login", element: <Login /> },
-            { path: "register", element: <Register /> },
-        ],
-    },
-    {
-        path: "/user",
-        element: <InnerLayout role={ERole.User} />,
-        children: [
-            { index: true, element: <Navigate to="/user/notes" /> },
-            { path: "notes", element: <NotesPage /> },
-            { path: "quiz", element: <Quizzes /> },
-            { path: "analytics", element: <Analytics /> },
-            { path: "feedback", element: <Feedback /> },
-        ],
-    },
-    {
-        path: "/admin",
-        element: <InnerLayout role={ERole.Admin} />,
-        children: [
-            { index: true, element: <Navigate to="/admin/dashboard" /> },
-            { path: "dashboard", element: <Dashboard /> },
-            { path: "users", element: <ManageUser /> },
-            { path: "feedback", element: <AdminFeedback /> },
-        ],
-    },
+  {
+    path: "/",
+    element: <CenterLayout />,
+    children: [
+      { index: true, element: <Navigate to="/login" /> },
+      { path: "login", element: <Login /> },
+      { path: "register", element: <Register /> },
+    ],
+  },
+  {
+    path: "/user",
+    element: <InnerLayout role={ERole.User} />,
+    children: [
+      { index: true, element: <Navigate to="/user/notes" /> },
+      { path: "notes", element: <NotesPage /> },
+      { path: "quiz", element: <Quizzes /> },
+      { path: "quiz/generate", element: <QuizGeneration /> },
+      { path: "quiz/:id", element: <QuizDetailPage /> },
+      { path: "analytics", element: <Analytics /> },
+      { path: "feedback", element: <Feedback /> },
+    ],
+  },
+  {
+    path: "/admin",
+    element: <InnerLayout role={ERole.Admin} />,
+    children: [
+      { index: true, element: <Navigate to="/admin/dashboard" /> },
+      { path: "dashboard", element: <Dashboard /> },
+      { path: "users", element: <ManageUser /> },
+      { path: "feedback", element: <AdminFeedback /> },
+    ],
+  },
 ]);

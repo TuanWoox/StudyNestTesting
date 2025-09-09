@@ -38,6 +38,7 @@
     @apply text-base font-medium mb-2;
 }
 
+
 /* Nội dung block full width */
 .editor-output .ce-block__content {
     max-width: 100% !important;
@@ -65,4 +66,56 @@
 .editor-output .ce-toolbar__plus,
 .editor-output .ce-toolbar__settings-btn {
     margin-left: 0 !important;
+}
+
+/* outer border */
+.quiz-table :where(.ant-table-wrapper) :where(.ant-table) {
+  border-color: #e5c558;
+}
+
+/* header + body cell borders */
+.quiz-table :where(.ant-table-thead > tr > th),
+.quiz-table :where(.ant-table-tbody > tr > td) {
+  border-color: #e5c558;
+}
+
+/* the vertical splits between header cells (when bordered) */
+.quiz-table :where(.ant-table-thead > tr > th:not(:last-child)) {
+  border-right-color: #e5c558;
+}
+
+/* the vertical splits between body cells */
+.quiz-table :where(.ant-table-tbody > tr > td:not(:last-child)) {
+  border-right-color: #e5c558;
+}
+/* Make the area around the Table stretch */
+.table-fill {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;               /* IMPORTANT: allow children to shrink */
+}
+
+/* Force all antd wrappers to take full height and stack vertically */
+.table-fill .ant-table-wrapper,
+.table-fill .ant-spin-nested-loading,
+.table-fill .ant-spin-container,
+.table-fill .ant-table,
+.table-fill .ant-table-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header stays natural height */
+.table-fill .ant-table-header {
+  flex: 0 0 auto;
+}
+
+/* Body takes the rest, scrolls, and keeps a stable gutter to avoid width jump */
+.table-fill .ant-table-body,
+.table-fill .ant-table-content {
+  flex: 1 1 auto !important;
+  overflow: auto !important;
+  scrollbar-gutter: stable;     /* avoids “zoom” when rows change (supported in modern browsers) */
 }

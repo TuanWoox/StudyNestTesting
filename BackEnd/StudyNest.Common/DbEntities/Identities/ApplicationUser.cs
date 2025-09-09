@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Identity;
+using StudyNest.Common.DbEntities.BaseEntity;
+using StudyNest.Common.DbEntities.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using StudyNest.Common.DbEntities.BaseEntity;
-using Microsoft.AspNetCore.Identity;
 
 namespace StudyNest.Common.DbEntities.Identities
 {
@@ -26,8 +27,8 @@ namespace StudyNest.Common.DbEntities.Identities
 
         public bool Deleted { get; set; } = false;
         public DateTimeOffset? DateDeleted { get; set; } = null;
-
-      
+        public ICollection<Note> Notes { get; set; } = new List<Note>();
+        public ICollection<Folder> Folders { get; set; } = new List<Folder>();
 
     }
 }

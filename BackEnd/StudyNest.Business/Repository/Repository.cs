@@ -6,6 +6,8 @@ using StudyNest.Data;
 using StudyNest.Common.Utils.Extensions;
 using StudyNest.Common.Utils.Helper;
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Microsoft.AspNetCore.Routing.Template;
 namespace StudyNest.Business.Repository
 {
     public class Repository<TEntity, TKey> : IRepository<TEntity, TKey> where TEntity : class, IBaseKey<TKey>
@@ -47,6 +49,7 @@ namespace StudyNest.Business.Repository
             catch (Exception ex)
             {
                 StudyNestLogger.Instance.Error(ex);
+                result.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
             }
             return result;
         }
@@ -66,18 +69,22 @@ namespace StudyNest.Business.Repository
                         result.Result = true;
                     }
                 }
-
+                else
+                {
+                    result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, typeof(TEntity).Name.ToLower(), id);
+                }
             }
             catch (Exception ex)
             {
                 StudyNestLogger.Instance.Error(ex);
+                result.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
             }
             return result;
         }
 
         public async Task<ReturnResult<int>> DeleteByIdsAsync(List<TKey> ids)
         {
-            var rs = new ReturnResult<int>();
+            var result = new ReturnResult<int>();
             try
             {
                 var dbSet = _dbContext.Set<TEntity>();
@@ -87,15 +94,20 @@ namespace StudyNest.Business.Repository
                     dbSet.RemoveRange(deletedLst);
                     if (await _dbContext.SaveChangesAsync() > 0)
                     {
-                        rs.Result = deletedLst.Count;
+                        result.Result = deletedLst.Count;
                     }
+                }
+                else
+                {
+                    result.Message = ResponseMessage.MESSAGE_ALL_ITEM_NOT_FOUND;
                 }
             }
             catch (Exception ex)
             {
                 StudyNestLogger.Instance.Error(ex);
+                result.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
             }
-            return rs;
+            return result;
 
         }
 
@@ -109,10 +121,15 @@ namespace StudyNest.Business.Repository
                 {
                     result.Result = instance;
                 }
+                else
+                {
+                    result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, typeof(TEntity).Name.ToLower(), id);
+                }
             }
             catch (Exception ex)
             {
                 StudyNestLogger.Instance.Error(ex);
+                result.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
             }
             return result;
         }
@@ -145,11 +162,12 @@ namespace StudyNest.Business.Repository
                         generalQuery = generalQuery.Where(x => page.Selected.Contains(x.Id)).AsQueryable();
                     }
                 }
-                var tempResult = await generalQuery.ToListAsync();
+                var tempQuery = generalQuery.ProjectTo<TResponse>(_mapper.ConfigurationProvider);
+                var tempResult = await tempQuery.ToListAsync();
 
                 if (tempResult != null && tempResult.Count > 0)
                 {
-                    result.Data = _mapper.Map<List<TResponse>>(tempResult);
+                    result.Data = tempResult;
                     result.Page.TotalElements = await query.CountAsync();
                 }
                 else
@@ -168,7 +186,7 @@ namespace StudyNest.Business.Repository
         public async Task<ReturnResult<TEntity>> UpdateAsync<TUpdateDto>(TUpdateDto entity)
         where TUpdateDto : class, IBaseKey<TKey>
         {
-            ReturnResult<TEntity> returnResult = new ReturnResult<TEntity>();
+            ReturnResult<TEntity> result = new ReturnResult<TEntity>();
             try
             {
                 var dbSet = _dbContext.Set<TEntity>();
@@ -179,15 +197,22 @@ namespace StudyNest.Business.Repository
                     var updatedEntity = dbSet.Update(updatingEntity);
                     if (await _dbContext.SaveChangesAsync() > 0)
                     {
-                        returnResult.Result = _mapper.Map<TEntity>(updatedEntity.Entity);
+                        result.Result = _mapper.Map<TEntity>(updatedEntity.Entity);
+                    } else
+                    {
+                        result.Message = string.Format(ResponseMessage.MESSAGE_UPDATE_ERROR, typeof(TEntity).Name.ToLower(), entity.Id);
                     }
+                } else
+                {
+                    result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, typeof(TEntity).Name.ToLower(), entity.Id);
                 }
             }
             catch (Exception ex)
             {
                 StudyNestLogger.Instance.Error(ex);
+                result.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
             }
-            return returnResult;
+            return result;
         }
     }
 }

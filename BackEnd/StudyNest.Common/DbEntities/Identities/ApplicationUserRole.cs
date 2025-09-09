@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using StudyNest.Common.DbEntities.BaseEntity;
+using StudyNest.Common.DbEntities.Entities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
