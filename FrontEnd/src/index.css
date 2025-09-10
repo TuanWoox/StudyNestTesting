@@ -38,6 +38,36 @@
     @apply text-base font-medium mb-2;
 }
 
+
+/* Nội dung block full width */
+.editor-output .ce-block__content {
+    max-width: 100% !important;
+    width: 100%;
+    margin: 0 !important;
+    padding: 0 1rem 0 4rem;
+    /* Thêm khoảng trống bên trái cho toolbar */
+    box-sizing: border-box;
+}
+
+
+/* Toolbar bám sát nội dung, không bị lệch về bên trái */
+.editor-output .ce-toolbar__content {
+    width: auto !important;
+    margin-left: 3.5rem !important;
+    /* Xóa margin mặc định */
+    padding: 0;
+    box-sizing: border-box;
+    position: relative;
+    left: 0;
+    /* Đặt sát block */
+}
+
+/* Hoặc nếu muốn giữ chúng nhưng sát nội dung, giảm khoảng cách */
+.editor-output .ce-toolbar__plus,
+.editor-output .ce-toolbar__settings-btn {
+    margin-left: 0 !important;
+}
+
 /* outer border */
 .quiz-table :where(.ant-table-wrapper) :where(.ant-table) {
   border-color: #e5c558;

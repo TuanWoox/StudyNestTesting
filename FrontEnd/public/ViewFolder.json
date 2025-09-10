@@ -1,0 +1,91 @@
+{
+  "result": {
+    "data": [
+      {
+        "folderName": "hihihihihahahah",
+        "ownerId": "adc6ff01-c83d-4ae0-9d35-0033fe35d8cb",
+        "notes": [
+          {
+            "title": "My First Editor.js Note",
+            "content": "{\"time\": 1693939200000, \"blocks\": [{\"id\": \"block1\", \"data\": {\"text\": \"Welcome to My Note\", \"level\": 2}, \"type\": \"header\"}, {\"id\": \"block2\", \"data\": {\"text\": \"This is a sample paragraph written in Editor.js format. You can write <b>bold</b>, <i>italic</i>, or even add <a href='https://example.com'>links</a>.\"}, \"type\": \"paragraph\"}, {\"id\": \"block3\", \"data\": {\"items\": [\"First item\", \"Second item\", \"Third item\"], \"style\": \"unordered\"}, \"type\": \"list\"}, {\"id\": \"block4\", \"data\": {\"text\": \"Knowledge is power, but enthusiasm pulls the switch.\", \"caption\": \"Steve Droke\", \"alignment\": \"left\"}, \"type\": \"quote\"}], \"version\": \"2.29.1\"}",
+            "status": "active",
+            "ownerId": "adc6ff01-c83d-4ae0-9d35-0033fe35d8cb",
+            "folderId": "18a10826-068d-41f3-87c9-2e49d697e47c",
+            "folder": {
+              "folderName": "hihihihihahahah",
+              "ownerId": "adc6ff01-c83d-4ae0-9d35-0033fe35d8cb",
+              "notes": [],
+              "id": "18a10826-068d-41f3-87c9-2e49d697e47c",
+              "dateCreated": "2025-09-07T10:44:03.734011+00:00",
+              "dateModified": "2025-09-07T10:44:03.734035+00:00",
+              "deleted": false
+            },
+            "noteTags": [
+              {
+                "noteId": "010e9bf8-db90-4096-bef4-b68c8d71f233",
+                "tagId": "01d27059-92c6-42b2-93f7-800939914b9c",
+                "tag": {
+                  "name": "editorjs",
+                  "noteTags": [],
+                  "id": "01d27059-92c6-42b2-93f7-800939914b9c",
+                  "dateCreated": "2025-09-07T07:47:34.221299+00:00",
+                  "dateModified": "2025-09-07T07:47:34.221302+00:00",
+                  "deleted": false
+                },
+                "dateCreated": "2025-09-07T07:47:34.509692+00:00",
+                "dateModified": "2025-09-07T07:47:34.509699+00:00",
+                "deleted": false
+              },
+              {
+                "noteId": "010e9bf8-db90-4096-bef4-b68c8d71f233",
+                "tagId": "bdab4ef2-3fb8-478e-a17d-ea7ac8823f5a",
+                "tag": {
+                  "name": "demo",
+                  "noteTags": [],
+                  "id": "bdab4ef2-3fb8-478e-a17d-ea7ac8823f5a",
+                  "dateCreated": "2025-09-07T07:47:34.329393+00:00",
+                  "dateModified": "2025-09-07T07:47:34.329396+00:00",
+                  "deleted": false
+                },
+                "dateCreated": "2025-09-07T07:47:34.509709+00:00",
+                "dateModified": "2025-09-07T07:47:34.509709+00:00",
+                "deleted": false
+              },
+              {
+                "noteId": "010e9bf8-db90-4096-bef4-b68c8d71f233",
+                "tagId": "bf3b2782-a23c-4813-b09d-096cb66db9ee",
+                "tag": {
+                  "name": "notes",
+                  "noteTags": [],
+                  "id": "bf3b2782-a23c-4813-b09d-096cb66db9ee",
+                  "dateCreated": "2025-09-07T07:47:34.130714+00:00",
+                  "dateModified": "2025-09-07T07:47:34.130724+00:00",
+                  "deleted": false
+                },
+                "dateCreated": "2025-09-07T07:47:34.509456+00:00",
+                "dateModified": "2025-09-07T07:47:34.509603+00:00",
+                "deleted": false
+              }
+            ],
+            "id": "010e9bf8-db90-4096-bef4-b68c8d71f233",
+            "dateCreated": "2025-09-07T07:47:33.670773+00:00",
+            "dateModified": "2025-09-07T07:47:33.670801+00:00",
+            "deleted": false
+          }
+        ],
+        "id": "18a10826-068d-41f3-87c9-2e49d697e47c",
+        "dateCreated": "2025-09-07T10:44:03.734011+00:00",
+        "dateModified": "2025-09-07T10:44:03.734035+00:00",
+        "deleted": false
+      }
+    ],
+    "page": {
+      "size": -1,
+      "pageNumber": 0,
+      "totalElements": 1,
+      "orders": [],
+      "filter": [],
+      "selected": []
+    }
+  }
+}

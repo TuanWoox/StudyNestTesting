@@ -1,0 +1,138 @@
+{
+  "result": {
+    "data": [
+      {
+        "title": "My First Editor.js Note",
+        "content": "{\"time\": 1693939200000, \"blocks\": [{\"id\": \"block1\", \"data\": {\"text\": \"Welcome to My Note\", \"level\": 2}, \"type\": \"header\"}, {\"id\": \"block2\", \"data\": {\"text\": \"This is a sample paragraph written in Editor.js format. You can write <b>bold</b>, <i>italic</i>, or even add <a href='https://example.com'>links</a>.\"}, \"type\": \"paragraph\"}, {\"id\": \"block3\", \"data\": {\"items\": [\"First item\", \"Second item\", \"Third item\"], \"style\": \"unordered\"}, \"type\": \"list\"}, {\"id\": \"block4\", \"data\": {\"text\": \"Knowledge is power, but enthusiasm pulls the switch.\", \"caption\": \"Steve Droke\", \"alignment\": \"left\"}, \"type\": \"quote\"}], \"version\": \"2.29.1\"}",
+        "status": "active",
+        "ownerId": "adc6ff01-c83d-4ae0-9d35-0033fe35d8cb",
+        "folderId": "18a10826-068d-41f3-87c9-2e49d697e47c",
+        "folder": {
+          "folderName": "hihihihihahahah",
+          "ownerId": "adc6ff01-c83d-4ae0-9d35-0033fe35d8cb",
+          "notes": [],
+          "id": "18a10826-068d-41f3-87c9-2e49d697e47c",
+          "dateCreated": "2025-09-07T10:44:03.734011+00:00",
+          "dateModified": "2025-09-07T10:44:03.734035+00:00",
+          "deleted": false
+        },
+        "noteTags": [
+          {
+            "noteId": "010e9bf8-db90-4096-bef4-b68c8d71f233",
+            "tagId": "01d27059-92c6-42b2-93f7-800939914b9c",
+            "tag": {
+              "name": "editorjs",
+              "noteTags": [],
+              "id": "01d27059-92c6-42b2-93f7-800939914b9c",
+              "dateCreated": "2025-09-07T07:47:34.221299+00:00",
+              "dateModified": "2025-09-07T07:47:34.221302+00:00",
+              "deleted": false
+            },
+            "dateCreated": "2025-09-07T07:47:34.509692+00:00",
+            "dateModified": "2025-09-07T07:47:34.509699+00:00",
+            "deleted": false
+          },
+          {
+            "noteId": "010e9bf8-db90-4096-bef4-b68c8d71f233",
+            "tagId": "bdab4ef2-3fb8-478e-a17d-ea7ac8823f5a",
+            "tag": {
+              "name": "demo",
+              "noteTags": [],
+              "id": "bdab4ef2-3fb8-478e-a17d-ea7ac8823f5a",
+              "dateCreated": "2025-09-07T07:47:34.329393+00:00",
+              "dateModified": "2025-09-07T07:47:34.329396+00:00",
+              "deleted": false
+            },
+            "dateCreated": "2025-09-07T07:47:34.509709+00:00",
+            "dateModified": "2025-09-07T07:47:34.509709+00:00",
+            "deleted": false
+          },
+          {
+            "noteId": "010e9bf8-db90-4096-bef4-b68c8d71f233",
+            "tagId": "bf3b2782-a23c-4813-b09d-096cb66db9ee",
+            "tag": {
+              "name": "notes",
+              "noteTags": [],
+              "id": "bf3b2782-a23c-4813-b09d-096cb66db9ee",
+              "dateCreated": "2025-09-07T07:47:34.130714+00:00",
+              "dateModified": "2025-09-07T07:47:34.130724+00:00",
+              "deleted": false
+            },
+            "dateCreated": "2025-09-07T07:47:34.509456+00:00",
+            "dateModified": "2025-09-07T07:47:34.509603+00:00",
+            "deleted": false
+          }
+        ],
+        "id": "010e9bf8-db90-4096-bef4-b68c8d71f233",
+        "dateCreated": "2025-09-07T07:47:33.670773+00:00",
+        "dateModified": "2025-09-07T07:47:33.670801+00:00",
+        "deleted": false
+      },
+      {
+        "title": "Learning C# with Editor.js",
+        "content": "{\"time\": 1694025600000, \"blocks\": [{\"id\": \"block1\", \"data\": {\"text\": \"C# Basics\", \"level\": 2}, \"type\": \"header\"}, {\"id\": \"block2\", \"data\": {\"text\": \"C# is a modern, object-oriented programming language developed by Microsoft.\"}, \"type\": \"paragraph\"}, {\"id\": \"block3\", \"data\": {\"code\": \"using System;\\n\\nclass Program\\n{\\n    static void Main()\\n    {\\n        Console.WriteLine(\\\"Hello, World!\\\");\\n    }\\n}\"}, \"type\": \"code\"}, {\"id\": \"block4\", \"data\": {\"items\": [{\"text\": \"Install .NET SDK\", \"checked\": true}, {\"text\": \"Set up Visual Studio Code\", \"checked\": false}, {\"text\": \"Write your first program\", \"checked\": false}]}, \"type\": \"checklist\"}, {\"id\": \"block5\", \"data\": {\"file\": {\"url\": \"https://placekitten.com/600/300\"}, \"caption\": \"Cute kitten while learning C#\", \"stretched\": false, \"withBorder\": true, \"withBackground\": false}, \"type\": \"image\"}], \"version\": \"2.29.1\"}",
+        "status": "active",
+        "ownerId": "adc6ff01-c83d-4ae0-9d35-0033fe35d8cb",
+        "noteTags": [
+          {
+            "noteId": "3eeeabce-e10b-40bc-9833-32663db419db",
+            "tagId": "01d27059-92c6-42b2-93f7-800939914b9c",
+            "tag": {
+              "name": "editorjs",
+              "noteTags": [],
+              "id": "01d27059-92c6-42b2-93f7-800939914b9c",
+              "dateCreated": "2025-09-07T07:47:34.221299+00:00",
+              "dateModified": "2025-09-07T07:47:34.221302+00:00",
+              "deleted": false
+            },
+            "dateCreated": "2025-09-07T07:59:19.766046+00:00",
+            "dateModified": "2025-09-07T07:59:19.766384+00:00",
+            "deleted": false
+          },
+          {
+            "noteId": "3eeeabce-e10b-40bc-9833-32663db419db",
+            "tagId": "9e358b8e-688a-4baf-97b2-820d6a68e05d",
+            "tag": {
+              "name": "csharp",
+              "noteTags": [],
+              "id": "9e358b8e-688a-4baf-97b2-820d6a68e05d",
+              "dateCreated": "2025-09-07T07:59:19.077121+00:00",
+              "dateModified": "2025-09-07T07:59:19.077136+00:00",
+              "deleted": false
+            },
+            "dateCreated": "2025-09-07T07:59:19.766696+00:00",
+            "dateModified": "2025-09-07T07:59:19.766712+00:00",
+            "deleted": false
+          },
+          {
+            "noteId": "3eeeabce-e10b-40bc-9833-32663db419db",
+            "tagId": "db7602f0-7a1d-4470-a5bf-eaa1f853ce8f",
+            "tag": {
+              "name": "programming",
+              "noteTags": [],
+              "id": "db7602f0-7a1d-4470-a5bf-eaa1f853ce8f",
+              "dateCreated": "2025-09-07T07:59:19.368816+00:00",
+              "dateModified": "2025-09-07T07:59:19.368819+00:00",
+              "deleted": false
+            },
+            "dateCreated": "2025-09-07T07:59:19.766736+00:00",
+            "dateModified": "2025-09-07T07:59:19.766736+00:00",
+            "deleted": false
+          }
+        ],
+        "id": "3eeeabce-e10b-40bc-9833-32663db419db",
+        "dateCreated": "2025-09-07T07:59:17.268789+00:00",
+        "dateModified": "2025-09-07T07:59:17.2688+00:00",
+        "deleted": false
+      }
+    ],
+    "page": {
+      "size": -1,
+      "pageNumber": 0,
+      "totalElements": 2,
+      "orders": [],
+      "filter": [],
+      "selected": []
+    }
+  }
+}
