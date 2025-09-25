@@ -56,6 +56,23 @@ const Quizzes: React.FC = () => {
     setPage(newPage);
     setPageSize(newPageSize);
   };
+  // Handle quiz deletion
+  const handleDelete = async (quizId: string) => {
+    setDeletingId(quizId);
+    try {
+      await deleteQuizAsync(quizId);
+      // Check if we're deleting the last item on the current page
+      const currentPageItemCount = quizzes.length;
+      const isLastItemOnPage = currentPageItemCount === 1;
+      const isNotFirstPage = page > 1;
+
+      if (isLastItemOnPage && isNotFirstPage) {
+        setPage(page - 1);
+      }
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const columns: TableProps<QuizList>["columns"] = [
     {
@@ -124,14 +141,7 @@ const Quizzes: React.FC = () => {
               danger: true,
               loading: deletingId === record.id && isLoading,
             }}
-            onConfirm={async () => {
-              setDeletingId(record.id);
-              try {
-                await deleteQuizAsync(record.id);
-              } finally {
-                setDeletingId(null);
-              }
-            }}
+            onConfirm={() => handleDelete(record.id)}
           >
             <Button
               type="link"
