@@ -19,7 +19,7 @@ namespace StudyNest.Common.Llm
         public (string Prompt, IReadOnlyList<string> Images) BuildPrompt(CreateQuizDTO req)
         {
             var (md, images) = FlattenEditorJsNote(req.Note);
-
+            var language = req.Language;
             var mcqTarget = req.Count_Mcq;
             var tfTarget = req.Count_Tf;
             Console.WriteLine($"mcq: {req.Count_Mcq}; tf: {req.Count_Tf}");
@@ -38,9 +38,7 @@ namespace StudyNest.Common.Llm
   ]
 }";
             var rules = $@"
-- Language:
-  - Detect the dominant language of the Note; write ALL output in that language only.
-  - If the Note mixes languages, choose the language with the most tokens.
+- Language: {language}
 - Output size & types:
   - Generate EXACTLY {mcqTarget + tfTarget} questions:
     - EXACTLY {mcqTarget} of type ""MCQ""
@@ -96,7 +94,8 @@ Note (markdown, derived from the student's Editor.js content):
             var quiz = new Quiz
             {
                 Title = string.IsNullOrWhiteSpace(dto.Title) ? "Generated Quiz" : dto.Title.Trim(),
-                CreatedBy = createdBy,
+                OwnerId = createdBy,
+                NoteId = "010e9bf8-db90-4096-bef4-b68c8d71f233",
                 Questions = new List<Question>()
             };
 

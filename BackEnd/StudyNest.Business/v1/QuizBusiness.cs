@@ -2,10 +2,12 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.VisualBasic;
+using StudyNest.Business.Repository;
 using StudyNest.Common.DbEntities.Entities;
 using StudyNest.Common.Interfaces;
 using StudyNest.Common.Models.DTOs.CoreDTO;
 using StudyNest.Common.Models.DTOs.EntityDTO.Quizzes;
+using StudyNest.Common.Models.Paging;
 using StudyNest.Common.Utils.Extensions;
 using StudyNest.Common.Utils.Helper;
 using StudyNest.Data;
@@ -27,12 +29,14 @@ namespace StudyNest.Business.v1
         private readonly ILlmQuizGenerator _llm;
         private readonly ApplicationDbContext _context;
         private readonly IUserContext _userContext;
+        private readonly IRepository<Quiz, string> _reponsitory;
         private readonly int MaxQuestions = 20;
-        public QuizBusiness(ILlmQuizGenerator llm, ApplicationDbContext context, IUserContext userContext)
+        public QuizBusiness(ILlmQuizGenerator llm, ApplicationDbContext context, IUserContext userContext, IRepository<Quiz,string> repository)
         {
             this._llm = llm;
             this._context = context;
             this._userContext = userContext;
+            this._reponsitory = repository;
         }
 
         public async Task<ReturnResult<object>> GenerateAsync(CreateQuizDTO prompt)
@@ -81,24 +85,21 @@ namespace StudyNest.Business.v1
             return result;
         }
 
-        public async Task<ReturnResult<List<QuizDTO>>> GetAllQuiz()
+        public async Task<ReturnResult<PagedData<QuizListDTO, string>>> GetAllQuizByUserId(Page<string> page, bool isExported = false)
         {
-            var rs = new ReturnResult<List<QuizDTO>>();
+            var rs = new ReturnResult<PagedData<QuizListDTO, string>>();
             try
             {
-                rs.Result = await _context.Quizzes
+                var query = _context.Quizzes
+                    .Where(n => n.OwnerId == _userContext.UserId)
                     .AsNoTracking()
-                    .OrderByDescending(q => q.DateCreated ?? DateTimeOffset.MinValue) 
-                    .Select(q => new QuizDTO
-                    {
-                        Id = q.Id,
-                        Title = q.Title,
-                        TotalQuestion = q.Questions.Count,
-                        DateCreated = (q.DateCreated ?? DateTimeOffset.MinValue).DateTime
-                    })
-                    .ToListAsync();
-                if (rs.Result.Count == 0)
-                    rs.Message = ResponseMessage.MESSAGE_COMMON_ITEM_NOT_FOUND;
+                    .OrderByDescending(q => q.DateCreated ?? DateTimeOffset.MinValue)
+                    .AsQueryable();
+                rs.Result = await _reponsitory.GetPagingAsync<Page<string>, QuizListDTO>(query, page, isExported);
+                if (rs.Result.Page.TotalElements == 0)
+                {
+                    rs.Message = ResponseMessage.MESSAGE_ALL_ITEM_NOT_FOUND;
+                }
             }
             catch (Exception ex)
             {

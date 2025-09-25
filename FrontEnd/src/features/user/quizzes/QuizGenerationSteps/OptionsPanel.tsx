@@ -9,14 +9,24 @@ import {
   Radio,
   Slider,
   Divider,
+  Select,
 } from "antd";
 import type { CreateQuizDTO } from "@/types/quiz/createQuizDTO";
-import { SettingOutlined } from "@ant-design/icons";
+import { SettingOutlined, GlobalOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
+const { Option } = Select;
 
 const MAX_QUESTIONS = 20; // Maximum allowed questions
 const DEFAULT_TOTAL = 10; // Default total questions
+
+const LANGUAGES = [
+  { value: "English", label: "English" },
+  { value: "Vietnamese", label: "Vietnamese" },
+  { value: "Chinese", label: "Chinese" },
+  { value: "Russian", label: "Russian" }, // Fixed "Russia" to "Russian" for better naming
+  { value: "Japanese", label: "Japanese" },
+];
 
 export function OptionsPanel({
   initial,
@@ -79,6 +89,14 @@ export function OptionsPanel({
       ...prev,
       difficulty: e.target.value as CreateQuizDTO["difficulty"],
     }));
+
+  // Handle language change
+  const onLanguageChange = (value: string) => {
+    setCreateQuiz((prev) => ({
+      ...prev,
+      language: value,
+    }));
+  };
 
   return (
     <Card
@@ -181,6 +199,33 @@ export function OptionsPanel({
               </Space>
             </Col>
           </Row>
+        </div>
+
+        <div>
+          <Title level={5} style={{ marginBottom: 12 }}>
+            Language
+          </Title>
+          <Row align="middle">
+            <Col flex="none" style={{ marginRight: 8 }}>
+              <GlobalOutlined />
+            </Col>
+            <Col flex="auto">
+              <Select
+                style={{ width: "100%" }}
+                value={initial.language}
+                onChange={onLanguageChange}
+              >
+                {LANGUAGES.map((lang) => (
+                  <Option key={lang.value} value={lang.value}>
+                    {lang.label}
+                  </Option>
+                ))}
+              </Select>
+            </Col>
+          </Row>
+          <Text type="secondary" style={{ marginTop: 8, display: "block" }}>
+            Select the language for your quiz questions and answers
+          </Text>
         </div>
 
         <div>

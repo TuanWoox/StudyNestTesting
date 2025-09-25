@@ -1,4 +1,6 @@
 import instance from "@/config/axiosConfig";
+import { Page } from "@/types/common/page";
+import { PagedData } from "@/types/common/paged-data";
 import { ReturnResult } from "@/types/common/return-result";
 import { CreateQuizDTO } from "@/types/quiz/createQuizDTO";
 import { QuizDetail, QuizList } from "@/types/quiz/quiz";
@@ -21,9 +23,13 @@ const quizService = {
     );
     return data.result; // dateCreated is string here
   },
-  getAllQuiz: async (): Promise<QuizList[]> => {
-    const { data } = await instance.get<ReturnResult<QuizList[]>>("/Quiz");
-    return data.result; // no 'key' added
+  getAllQuiz: async (
+    payload: Page<string>
+  ): Promise<PagedData<QuizList, string>> => {
+    const { data } = await instance.post<
+      ReturnResult<PagedData<QuizList, string>>
+    >("/Quiz/GetPaging", payload);
+    return data.result;
   },
   deleteQuiz: async (id: string): Promise<boolean> => {
     // If backend sends { message }, interceptor will have rejected already.

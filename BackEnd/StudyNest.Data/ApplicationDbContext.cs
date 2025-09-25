@@ -93,7 +93,28 @@ namespace StudyNest.Data
                         .HasForeignKey(ur => ur.RoleId)
                         .IsRequired();
             });
+            // Cascade delete: deleting a quiz will also delete its questions
+            builder.Entity<Question>(e =>
+            {
+                e.HasIndex(x => x.QuizId);
+
+                e.HasOne(x => x.Quiz)
+                 .WithMany(z => z.Questions)
+                 .HasForeignKey(x => x.QuizId)
+                 .OnDelete(DeleteBehavior.Cascade);
+            });
+            builder.Entity<Choice>(e =>
+            {
+                e.HasIndex(c => c.QuestionId);
+
+                e.HasOne(c => c.Question)
+                 .WithMany(q => q.Choices)
+                 .HasForeignKey(c => c.QuestionId)
+                 .OnDelete(DeleteBehavior.Cascade);
+            });
             #endregion
+
+
         }
         public async Task<int> SaveChangesAsync(bool populatedICreated = true, bool populatedIModified = true, CancellationToken cancellationToken = default)
         {

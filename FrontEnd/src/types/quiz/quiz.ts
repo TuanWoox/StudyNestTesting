@@ -17,8 +17,8 @@ export interface Question {
   id: string;
   name: string;
   type: "MCQ" | "TF";
-  correctIndex?: number;
-  correctTrueFalse?: boolean;
+  correctIndex: number;
+  correctTrueFalse: boolean;
   explanation: string;
   orderNo: number;
   choices: Choice[];

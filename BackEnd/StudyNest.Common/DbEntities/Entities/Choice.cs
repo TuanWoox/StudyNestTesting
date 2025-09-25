@@ -1,6 +1,7 @@
 ﻿using StudyNest.Common.DbEntities.BaseEntity;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
@@ -11,7 +12,8 @@ namespace StudyNest.Common.DbEntities.Entities
     [Table("Choices")]
     public class Choice : BaseEntity<string>
     {
-        public string? QuestionId { get; set; }  // FK → Question
+        [Required]
+        public string QuestionId { get; set; } = string.Empty;
         public string Text { get; set; } = string.Empty;
         public int OrderNo { get; set; }
 

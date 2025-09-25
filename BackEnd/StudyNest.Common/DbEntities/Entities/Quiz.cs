@@ -1,4 +1,5 @@
 ﻿using StudyNest.Common.DbEntities.BaseEntity;
+using StudyNest.Common.DbEntities.Identities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -14,8 +15,10 @@ namespace StudyNest.Common.DbEntities.Entities
     {
         [Required]
         public string Title { get; set; } = string.Empty;
-        [Required]
-        public string CreatedBy { get; set; } = string.Empty;
+        public string OwnerId { get; set; }
+        public ApplicationUser Owner { get; set; }
+        public string NoteId { get; set; }
+        public Note Note { get; set; }
         public ICollection<Question> Questions { get; set; } = new List<Question>();
 
     }

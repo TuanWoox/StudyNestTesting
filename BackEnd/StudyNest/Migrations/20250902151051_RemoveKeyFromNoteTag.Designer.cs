@@ -353,7 +353,7 @@ namespace StudyNest.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("text");
 
-                    b.Property<string>("CreatedBy")
+                    b.Property<string>("OwnerId")
                         .IsRequired()
                         .HasColumnType("text");
 
