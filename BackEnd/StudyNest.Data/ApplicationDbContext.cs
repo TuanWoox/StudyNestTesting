@@ -116,41 +116,118 @@ namespace StudyNest.Data
 
 
         }
-        public async Task<int> SaveChangesAsync(bool populatedICreated = true, bool populatedIModified = true, CancellationToken cancellationToken = default)
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    => await SaveChangesInternalAsync(populatedICreated: true, populatedIModified: true, cancellationToken);
+
+        public async Task<int> SaveChangesAsync(
+            bool populatedICreated = true,
+            bool populatedIModified = true,
+            CancellationToken cancellationToken = default)
+            => await SaveChangesInternalAsync(populatedICreated, populatedIModified, cancellationToken);
+
+        private async Task<int> SaveChangesInternalAsync(
+            bool populatedICreated,
+            bool populatedIModified,
+            CancellationToken cancellationToken)
         {
-            var auditEntries = ChangeTracker.Entries().Where(x => x.State != EntityState.Unchanged).ToList();
-            foreach (var change in auditEntries)
+            var now = DateTimeOffset.UtcNow;
+
+            // 1) Ghi nhận các entity sắp bị xóa (TRƯỚC khi đổi state)
+            var deletedQuizIds = new List<string>();      // hoặc Guid tùy kiểu khóa
+            var deletedQuestionIds = new List<string>();
+
+            var tracked = ChangeTracker.Entries().Where(e => e.State != EntityState.Unchanged).ToList();
+            foreach (var e in tracked)
+            {
+                if (e.State == EntityState.Deleted)
+                {
+                    switch (e.Entity)
+                    {
+                        case Quiz qz:
+                            deletedQuizIds.Add(qz.Id);
+                            break;
+                        case Question qu:
+                            deletedQuestionIds.Add(qu.Id);
+                            break;
+                    }
+                }
+            }
+
+            // 2) Áp audit + chuyển Delete => soft-delete
+            foreach (var change in tracked)
             {
                 switch (change.State)
                 {
                     case EntityState.Added:
-                        if (change.Entity is ICreated createdEntry && populatedICreated)
+                        if (change.Entity is ICreated c && populatedICreated)
                         {
-                            createdEntry.DateCreated = DateTimeOffset.UtcNow;
-                            createdEntry.DateModified = DateTimeOffset.UtcNow;
+                            c.DateCreated = now;
+                            c.DateModified = now;
                         }
                         break;
 
                     case EntityState.Modified:
-                        if (change.Entity is IModified modified && populatedIModified)
+                        if (change.Entity is IModified m && populatedIModified)
                         {
-                            modified.DateModified = DateTimeOffset.UtcNow;
+                            m.DateModified = now;
                         }
                         break;
+
                     case EntityState.Deleted:
-                        if (change.Entity is IDeleted deleted)
+                        if (change.Entity is IDeleted d)
                         {
                             change.State = EntityState.Modified;
-                            deleted.Deleted = true;
-                            deleted.DateDeleted = DateTimeOffset.UtcNow;
+                            d.Deleted = true;
+                            d.DateDeleted = now;
                         }
                         break;
                 }
-
             }
-            var result = await base.SaveChangesAsync(cancellationToken);
-            ChangeTracker.Clear();
-            return result;
+
+            // 3) Bao toàn bộ trong execution strategy + transaction
+            var strategy = Database.CreateExecutionStrategy();
+            return await strategy.ExecuteAsync(async () =>
+            {
+                await using var tx = await Database.BeginTransactionAsync(cancellationToken);
+
+                // 3a) Bulk UPDATE cascade soft-delete cho các con cháu
+                // Lưu ý: Sửa tên bảng/cột theo schema của bạn (snake_case vs PascalCase).
+                foreach (var quizId in deletedQuizIds)
+                {
+                    // Questions thuộc Quiz
+                    await Database.ExecuteSqlRawAsync(@"
+                        UPDATE ""Questions""
+                        SET ""Deleted"" = TRUE, ""DateDeleted"" = {0}
+                        WHERE ""QuizId"" = {1} AND ""Deleted"" = FALSE;",
+                        new object[] { now, quizId }, cancellationToken);
+
+                    // Choices thuộc mọi Question của Quiz
+                    await Database.ExecuteSqlRawAsync(@"
+                        UPDATE ""Choices""
+                        SET ""Deleted"" = TRUE, ""DateDeleted"" = {0}
+                        WHERE ""QuestionId"" IN (SELECT ""Id"" FROM ""Questions"" WHERE ""QuizId"" = {1})
+                          AND ""Deleted"" = FALSE;",
+                        new object[] { now, quizId }, cancellationToken);
+                }
+
+                foreach (var questionId in deletedQuestionIds)
+                {
+                    // Choices thuộc Question
+                    await Database.ExecuteSqlRawAsync(@"
+                        UPDATE ""Choices""
+                        SET ""Deleted"" = TRUE, ""DateDeleted"" = {0}
+                        WHERE ""QuestionId"" = {1} AND ""Deleted"" = FALSE;",
+                        new object[] { now, questionId }, cancellationToken);
+                }
+
+                // 3b) Lưu thay đổi của chính entity gốc (đã set Deleted=true)
+                var result = await base.SaveChangesAsync(cancellationToken);
+
+                await tx.CommitAsync(cancellationToken);
+                ChangeTracker.Clear();
+                return result;
+            });
         }
+
     }
 }
