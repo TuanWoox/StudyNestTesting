@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Button,
@@ -27,12 +27,53 @@ import { formatDMY } from "@/utils/date";
 const { Title, Text } = Typography;
 
 const Quizzes: React.FC = () => {
-  // Use the hook to fetch all quizzes
-  const { data: quizzes, isPending, isError, error } = useGetAllQuiz();
-  const { deleteQuiz, deleteQuizAsync, isLoading } = useDeleteQuiz();
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [page, setPage] = useState(1);
+  // Pagination state
+  const [page, setPage] = useState(1); // UI uses 1-based indexing
   const [pageSize, setPageSize] = useState(8);
+
+  // Pass pagination parameters to the hook
+  const {
+    data: quizData,
+    isPending,
+    isError,
+    error,
+    refetch,
+  } = useGetAllQuiz({
+    pageNumber: page - 1, // Convert to 0-based for API
+    pageSize,
+    sortByNewest: true,
+  });
+
+  const { deleteQuizAsync, isLoading } = useDeleteQuiz();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // Extract quizzes from the paged data structure
+  const quizzes = quizData?.data || [];
+  const totalElements = quizData?.page.totalElements || 0;
+
+  // Handle pagination change
+  const handleTableChange = (newPage: number, newPageSize: number) => {
+    setPage(newPage);
+    setPageSize(newPageSize);
+  };
+  // Handle quiz deletion
+  const handleDelete = async (quizId: string) => {
+    setDeletingId(quizId);
+    try {
+      await deleteQuizAsync(quizId);
+      // Check if we're deleting the last item on the current page
+      const currentPageItemCount = quizzes.length;
+      const isLastItemOnPage = currentPageItemCount === 1;
+      const isNotFirstPage = page > 1;
+
+      if (isLastItemOnPage && isNotFirstPage) {
+        setPage(page - 1);
+      }
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   const columns: TableProps<QuizList>["columns"] = [
     {
       title: "#",
@@ -45,9 +86,9 @@ const Quizzes: React.FC = () => {
       title: "Title",
       dataIndex: "title",
       key: "title",
-      width: 300, // Fixed width for title column
+      width: 300,
       ellipsis: {
-        showTitle: false, // Prevent default tooltip
+        showTitle: false,
       },
       render: (text, record: QuizList) => (
         <Tooltip placement="topLeft" title={text}>
@@ -100,15 +141,7 @@ const Quizzes: React.FC = () => {
               danger: true,
               loading: deletingId === record.id && isLoading,
             }}
-            onConfirm={async () => {
-              setDeletingId(record.id);
-              try {
-                await deleteQuizAsync(record.id);
-                // success toast + query invalidate handled inside the hook
-              } finally {
-                setDeletingId(null);
-              }
-            }}
+            onConfirm={() => handleDelete(record.id)}
           >
             <Button
               type="link"
@@ -131,12 +164,12 @@ const Quizzes: React.FC = () => {
       <Card
         style={{
           width: "100%",
-          height: "100%", // Fill available space
+          height: "100%",
           boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
         }}
         bodyStyle={{
           padding: 32,
-          height: "100%", // Fill card height
+          height: "100%",
           display: "flex",
           flexDirection: "column",
         }}
@@ -155,17 +188,17 @@ const Quizzes: React.FC = () => {
   }
 
   // Render error state
-  if (isError || !quizzes) {
+  if (isError || !quizData) {
     return (
       <Card
         style={{
           width: "100%",
-          height: "100%", // Fill available space
+          height: "100%",
           boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
         }}
         bodyStyle={{
           padding: 32,
-          height: "100%", // Fill card height
+          height: "100%",
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
@@ -180,7 +213,7 @@ const Quizzes: React.FC = () => {
             </Text>
           }
         >
-          <Button type="primary" onClick={() => window.location.reload()}>
+          <Button type="primary" onClick={() => refetch()}>
             Try Again
           </Button>
         </Empty>
@@ -192,117 +225,103 @@ const Quizzes: React.FC = () => {
   const hasQuizzes = quizzes && quizzes.length > 0;
 
   return (
-    <main
-      style={{ minHeight: "100dvh", display: "flex", flexDirection: "column" }}
+    <Card
+      style={{
+        width: "100%",
+        height: "100%",
+        boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
+      }}
+      bodyStyle={{
+        padding: 32,
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+      }}
     >
-      <Card
+      <Flex justify="space-between" align="center" style={{ marginBottom: 32 }}>
+        <div>
+          <Title level={2} style={{ margin: 0 }}>
+            AI Quiz Generator
+          </Title>
+          <Text type="secondary">Take and manage your quizzes with ease.</Text>
+        </div>
+        <Link to="/user/quiz/generate">
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            size="large"
+            style={{ borderRadius: 6 }}
+          >
+            Generate
+          </Button>
+        </Link>
+      </Flex>
+
+      <div
         style={{
-          width: "100%",
-          height: "100%", // Fill available space
-          boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
-        }}
-        bodyStyle={{
-          padding: 32,
-          height: "100%", // Fill card height
           display: "flex",
           flexDirection: "column",
+          flex: 1,
+          minHeight: 0,
         }}
       >
-        <Flex
-          justify="space-between"
-          align="center"
-          style={{ marginBottom: 32 }}
-        >
-          <div>
-            <Title level={2} style={{ margin: 0 }}>
-              AI Quiz Generator
-            </Title>
-            <Text type="secondary">
-              Take and manage your quizzes with ease.
-            </Text>
-          </div>
-          <Link to="/user/quiz/generate">
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              size="large"
-              style={{ borderRadius: 6 }}
-            >
-              Generate
-            </Button>
-          </Link>
-        </Flex>
-
-        {/* This div creates a flex container that will expand to fill remaining space */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            flex: 1,
-            minHeight: 0,
-          }}
-        >
-          {hasQuizzes ? (
-            <div className="table-fill">
-              <ConfigProvider
-                theme={{
-                  components: {
-                    Table: {
-                      borderColor: "#e4e4e4",
-                      headerBg: "#fafafa",
-                      headerColor: "#222",
-                      rowHoverBg: "#f0f5ff",
-                    },
-                  },
-                }}
-              >
-                <Table<QuizList>
-                  rowKey="id"
-                  columns={columns}
-                  dataSource={quizzes}
-                  pagination={{
-                    current: page,
-                    pageSize,
-                    onChange: (p, ps) => {
-                      setPage(p);
-                      setPageSize(ps);
-                    },
-                    showTotal: (total, range) =>
-                      `${range[0]}-${range[1]} of ${total} items`,
-                    position: ["bottomRight"],
-                  }}
-                  tableLayout="fixed" // fixed column widths
-                  sticky
-                  size="middle"
-                  style={{
-                    height: "93%",
-                    borderRadius: 8,
-                    overflow: "hidden",
-                  }}
-                />
-              </ConfigProvider>
-            </div>
-          ) : (
-            <Empty
+        {hasQuizzes ? (
+          <ConfigProvider
+            theme={{
+              components: {
+                Table: {
+                  borderColor: "#e4e4e4",
+                  headerBg: "#fafafa",
+                  headerColor: "#222",
+                  rowHoverBg: "#f0f5ff",
+                },
+              },
+            }}
+          >
+            <Table<QuizList>
+              rowKey="id"
+              columns={columns}
+              dataSource={quizzes}
+              pagination={{
+                current: page,
+                pageSize: pageSize,
+                total: totalElements,
+                onChange: handleTableChange,
+                showTotal: (total, range) =>
+                  `${range[0]}-${range[1]} of ${total} items`,
+                position: ["bottomRight"],
+              }}
+              tableLayout="fixed"
+              sticky
+              size="middle"
               style={{
                 flex: 1,
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
+                borderRadius: 8,
+                overflow: "hidden",
               }}
-              description="No quizzes found. Generate your first quiz!"
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-            >
-              <Link to="/user/quiz/generate">
-                <Button type="primary" icon={<PlusOutlined />}>
-                  Generate Quiz
-                </Button>
-              </Link>
-            </Empty>
-          )}
-        </div>
-      </Card>
-    </main>
+              loading={isPending}
+            />
+          </ConfigProvider>
+        ) : (
+          <Empty
+            style={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+            }}
+            description="No quizzes found. Generate your first quiz!"
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+          >
+            <Link to="/user/quiz/generate">
+              <Button type="primary" icon={<PlusOutlined />}>
+                Generate Quiz
+              </Button>
+            </Link>
+          </Empty>
+        )}
+      </div>
+    </Card>
   );
 };
 

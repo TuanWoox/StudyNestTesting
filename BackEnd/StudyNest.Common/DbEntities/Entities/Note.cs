@@ -27,5 +27,6 @@ namespace StudyNest.Common.DbEntities.Entities
         public Folder Folder { get; set; }
         //Mapping to Tags
         public ICollection<NoteTag> NoteTags { get; set; } = new List<NoteTag>();
+        public ICollection<Quiz> Quizzes { get; set; } = new List<Quiz>();
     }
 } 

@@ -78,6 +78,12 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
                   <Text>{cap(quizOptions.difficulty)}</Text>
                 </div>
                 <div>
+                  <Text strong>Language:</Text>{" "}
+                  <Space>
+                    <Text>{quizOptions.language}</Text>
+                  </Space>
+                </div>
+                <div>
                   <Text strong>Total Questions:</Text> <Text>{total}</Text>
                 </div>
                 <div>

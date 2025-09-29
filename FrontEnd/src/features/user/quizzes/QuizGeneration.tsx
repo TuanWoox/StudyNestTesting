@@ -13,9 +13,9 @@ import { SourcePanel } from "./QuizGenerationSteps/SourcePanel";
 import { OptionsPanel } from "./QuizGenerationSteps/OptionsPanel";
 import { ReviewPanel } from "./QuizGenerationSteps/ReviewPanel";
 
-import { notes } from "./NoteDummyData";
 import type { CreateQuizDTO } from "@/types/quiz/createQuizDTO";
 import useGenerateQuiz from "@/hooks/quizHook/useGenerateQuiz";
+import { notes } from "./NoteDummyData";
 
 const { Title } = Typography;
 
@@ -23,17 +23,13 @@ const QuizGeneration: React.FC = () => {
   const [current, setCurrent] = useState(0);
   const [form] = Form.useForm();
 
-  const { generateQuiz, isLoading } = useGenerateQuiz({
-    onSuccess: () => {
-      // Additional success handling if needed
-      console.log("Quiz generated successfully!");
-    },
-  });
+  const { generateQuiz, isLoading } = useGenerateQuiz();
   // Quiz options state
   const [createQuiz, setCreateQuiz] = useState<CreateQuizDTO>({
     note: "",
     count_Mcq: 10,
     count_Tf: 10,
+    language: "English",
     difficulty: "easy",
   });
 
@@ -77,7 +73,6 @@ const QuizGeneration: React.FC = () => {
 
   const handleGenerateQuiz = () => {
     generateQuiz(createQuiz);
-    console.log(createQuiz);
   };
 
   const steps = [
@@ -115,7 +110,6 @@ const QuizGeneration: React.FC = () => {
     <Card
       style={{
         width: "100%",
-        height: "85vh",
         overflow: "auto",
         margin: "0 auto",
         boxShadow: "0 4px 24px rgba(0,0,0,0.08)",

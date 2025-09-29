@@ -18,8 +18,8 @@ import Dashboard from "./features/admin/Dashboard";
 import ManageUser from "./features/admin/ManageUser";
 import AdminFeedback from "./features/admin/ManageFeedback";
 import { ERole } from "./utils/enums/ERole";
-import QuizGeneration from "./features/quiz/QuizGeneration";
-import QuizDetailPage from "./features/quiz/QuizDetailPage";
+import QuizGeneration from "./features/user/quizzes/QuizGeneration";
+import QuizDetailPage from "./features/user/quizzes/QuizDetailPage";
 
 export const router = createBrowserRouter([
   {

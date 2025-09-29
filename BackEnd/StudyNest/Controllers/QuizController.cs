@@ -8,6 +8,7 @@ using StudyNest.Common.DbEntities.Entities;
 using StudyNest.Common.Interfaces;
 using StudyNest.Common.Models.DTOs.CoreDTO;
 using StudyNest.Common.Models.DTOs.EntityDTO.Quizzes;
+using StudyNest.Common.Models.Paging;
 using StudyNest.Common.Utils.Extensions;
 
 namespace StudyNest.Controllers
@@ -24,13 +25,13 @@ namespace StudyNest.Controllers
             this._quizBusiness = quizBusiness;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAllQuiz()
+        [HttpPost("GetPaging")]
+        public async Task<IActionResult> GetAllQuizByUserId(Page<string> page, bool isExported = false)
         {
-            var rs = new ReturnResult<List<QuizDTO>>();
+            var rs = new ReturnResult<PagedData<QuizListDTO, string>> ();
             try
             {
-                rs = await _quizBusiness.GetAllQuiz();
+                rs = await _quizBusiness.GetAllQuizByUserId(page, isExported);
             }
             catch (Exception ex)
             {

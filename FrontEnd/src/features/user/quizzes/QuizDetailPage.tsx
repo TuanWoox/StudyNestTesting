@@ -34,11 +34,12 @@ const QuizDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const {
     data: quiz,
-    isLoading,
+    isPending,
     isError,
     error,
   } = useGetQuizDetail(id, { enabled: !!id });
-  const questions = quiz?.questions ?? []; // default to []
+
+  const questions = quiz?.questions ?? [];
   const { mcq, tf } = questions.reduce(
     (acc, q) => {
       if (q.type === "MCQ") acc.mcq++;
@@ -57,7 +58,7 @@ const QuizDetailPage: React.FC = () => {
   };
 
   // Handle loading state
-  if (isLoading) {
+  if (isPending) {
     return (
       <Card
         style={{
@@ -152,7 +153,7 @@ const QuizDetailPage: React.FC = () => {
           <div>
             <Text strong>
               Total Questions: {(quiz?.questions ?? []).length}
-            </Text>{" "}
+            </Text>
           </div>
           <div>
             <Text strong>Created:</Text>{" "}
@@ -173,95 +174,111 @@ const QuizDetailPage: React.FC = () => {
           )}
           style={{ background: "#fff" }}
         >
-          {questions.map((question, index) => (
-            <Panel
-              key={question.id ?? String(index)}
-              header={
-                <Flex justify="space-between" align="center">
-                  <Space>
-                    <Badge
-                      count={index + 1}
-                      style={{
-                        backgroundColor:
-                          question.type === "MCQ" ? "#1890ff" : "#52c41a",
-                        marginRight: 8,
-                      }}
-                    />
-                    <Text strong>{question.name}</Text>
-                  </Space>
-                  <Tag color={question.type === "MCQ" ? "blue" : "green"}>
-                    {question.type === "MCQ" ? "Multiple Choice" : "True/False"}
-                  </Tag>
-                </Flex>
-              }
-            >
-              {question.type === "MCQ" ? (
-                <List
-                  size="small"
-                  bordered
-                  dataSource={question.choices ?? []} // 👈 safe default
-                  renderItem={(choice, choiceIndex) => (
-                    <List.Item
-                      style={{
-                        backgroundColor:
-                          choiceIndex === question.correctIndex
-                            ? "#f6ffed"
-                            : undefined,
-                        borderLeft:
-                          choiceIndex === question.correctIndex
-                            ? "3px solid #52c41a"
-                            : undefined,
-                      }}
-                    >
-                      <Space>
-                        {choiceIndex === question.correctIndex && (
-                          <CheckCircleOutlined style={{ color: "#52c41a" }} />
-                        )}
-                        <Text>{choice.text}</Text>
-                      </Space>
-                    </List.Item>
-                  )}
-                />
-              ) : (
-                <Card
-                  size="small"
-                  style={{
-                    backgroundColor: "#f6ffed",
-                    borderLeft: "3px solid #52c41a",
-                  }}
-                >
-                  <Text>
-                    Correct Answer:{" "}
-                    <Text strong>
-                      {question.correctTrueFalse ? "True" : "False"}
-                    </Text>
-                  </Text>
-                </Card>
-              )}
+          {questions.map((question, index) => {
+            // Sort choices by orderNo to display them in correct order
+            const sortedChoices = question.choices
+              ? [...question.choices].sort((a, b) => a.orderNo - b.orderNo)
+              : [];
 
-              {question.explanation && (
-                <Card
-                  size="small"
-                  style={{
-                    marginTop: 16,
-                    backgroundColor: "#f0f5ff",
-                    borderLeft: "3px solid #1890ff",
-                  }}
-                  title={
+            // Find the correct choice based on correctIndex (which corresponds to orderNo)
+            const correctChoice =
+              question.type === "MCQ" && Number.isInteger(question.correctIndex)
+                ? sortedChoices[question.correctIndex]
+                : undefined;
+
+            return (
+              <Panel
+                key={question.id ?? String(index)}
+                header={
+                  <Flex justify="space-between" align="center">
                     <Space>
-                      <QuestionCircleOutlined />
-                      <Text>Explanation</Text>
+                      <Badge
+                        count={index + 1}
+                        style={{
+                          backgroundColor:
+                            question.type === "MCQ" ? "#1890ff" : "#52c41a",
+                          marginRight: 8,
+                        }}
+                      />
+                      <Text strong>{question.name}</Text>
                     </Space>
-                  }
-                  bordered={false}
-                >
-                  <Paragraph style={{ margin: 0 }}>
-                    {question.explanation}
-                  </Paragraph>
-                </Card>
-              )}
-            </Panel>
-          ))}
+                    <Tag color={question.type === "MCQ" ? "blue" : "green"}>
+                      {question.type === "MCQ"
+                        ? "Multiple Choice"
+                        : "True/False"}
+                    </Tag>
+                  </Flex>
+                }
+              >
+                {question.type === "MCQ" ? (
+                  <List
+                    size="small"
+                    bordered
+                    dataSource={sortedChoices}
+                    renderItem={(choice) => {
+                      const isCorrect = choice.id === correctChoice?.id;
+                      return (
+                        <List.Item
+                          style={{
+                            backgroundColor: isCorrect ? "#f6ffed" : undefined,
+                            borderLeft: isCorrect
+                              ? "3px solid #52c41a"
+                              : undefined,
+                          }}
+                        >
+                          <Space>
+                            {isCorrect && (
+                              <CheckCircleOutlined
+                                style={{ color: "#52c41a" }}
+                              />
+                            )}
+                            <Text>{choice.text}</Text>
+                          </Space>
+                        </List.Item>
+                      );
+                    }}
+                  />
+                ) : (
+                  <Card
+                    size="small"
+                    style={{
+                      backgroundColor: "#f6ffed",
+                      borderLeft: "3px solid #52c41a",
+                    }}
+                  >
+                    <Text>
+                      Correct Answer:{" "}
+                      <Text strong>
+                        {question.correctTrueFalse ? "True" : "False"}
+                      </Text>
+                    </Text>
+                  </Card>
+                )}
+
+                {question.explanation && (
+                  <Card
+                    size="small"
+                    style={{
+                      marginTop: 16,
+                      backgroundColor: "#f0f5ff",
+                      borderLeft: "3px solid #1890ff",
+                    }}
+                    title={
+                      <Space>
+                        <QuestionCircleOutlined />
+                        <Text>Explanation</Text>
+                      </Space>
+                    }
+                    bordered={false}
+                  >
+                    <Paragraph style={{ margin: 0 }}>
+                      {question.explanation}
+                    </Paragraph>
+                  </Card>
+                )}
+              </Panel>
+            );
+          })}
         </Collapse>
       </Flex>
     </Card>
