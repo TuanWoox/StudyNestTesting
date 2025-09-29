@@ -126,7 +126,6 @@ namespace StudyNest.Business.v1
 
             return result;
         }
-
         public async Task<ReturnResult<Note>> UpdateNote(UpdateNoteDTO newEntity)
         {
             ReturnResult<Note> result = new ReturnResult<Note>();

@@ -32,6 +32,7 @@ namespace StudyNest.Business.Repository
             services.AddHttpClient<ILlmClient, GeminiClient>();
             services.AddScoped<IUserContext,HttpUserContext>();
             services.AddScoped<IImageService, ImageService>();
+            services.AddScoped<ISettingBusiness, SettingBusiness>();
             return services;
         }
     }
