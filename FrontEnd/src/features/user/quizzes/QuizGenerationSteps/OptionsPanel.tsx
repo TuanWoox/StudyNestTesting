@@ -24,7 +24,7 @@ const LANGUAGES = [
   { value: "English", label: "English" },
   { value: "Vietnamese", label: "Vietnamese" },
   { value: "Chinese", label: "Chinese" },
-  { value: "Russian", label: "Russian" }, // Fixed "Russia" to "Russian" for better naming
+  { value: "Russian", label: "Russian" },
   { value: "Japanese", label: "Japanese" },
 ];
 

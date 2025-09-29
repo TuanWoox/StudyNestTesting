@@ -29,14 +29,14 @@ namespace StudyNest.Business.v1
         private readonly ILlmQuizGenerator _llm;
         private readonly ApplicationDbContext _context;
         private readonly IUserContext _userContext;
-        private readonly IRepository<Quiz, string> _reponsitory;
+        private readonly IRepository<Quiz, string> _repository;
         private readonly int MaxQuestions = 20;
         public QuizBusiness(ILlmQuizGenerator llm, ApplicationDbContext context, IUserContext userContext, IRepository<Quiz,string> repository)
         {
             this._llm = llm;
             this._context = context;
             this._userContext = userContext;
-            this._reponsitory = repository;
+            this._repository = repository;
         }
 
         public async Task<ReturnResult<object>> GenerateAsync(CreateQuizDTO prompt)
@@ -95,7 +95,7 @@ namespace StudyNest.Business.v1
                     .AsNoTracking()
                     .OrderByDescending(q => q.DateCreated ?? DateTimeOffset.MinValue)
                     .AsQueryable();
-                rs.Result = await _reponsitory.GetPagingAsync<Page<string>, QuizListDTO>(query, page, isExported);
+                rs.Result = await _repository.GetPagingAsync<Page<string>, QuizListDTO>(query, page, isExported);
                 if (rs.Result.Page.TotalElements == 0)
                 {
                     rs.Message = ResponseMessage.MESSAGE_ALL_ITEM_NOT_FOUND;

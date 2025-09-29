@@ -73,7 +73,6 @@ const QuizGeneration: React.FC = () => {
 
   const handleGenerateQuiz = () => {
     generateQuiz(createQuiz);
-    console.log("Data Request: " + JSON.stringify(createQuiz, null, 2));
   };
 
   const steps = [
