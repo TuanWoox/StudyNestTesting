@@ -138,7 +138,8 @@ namespace StudyNest.Business.v1
                             if (await _dbContext.SaveChangesAsync() > 0)
                             {
                                 result.Result = currentExisting;
-                            }
+                            } 
+                            else result.Message = "Update failed due to technical issue.";
                         }
                         else
                         {
@@ -160,6 +161,7 @@ namespace StudyNest.Business.v1
                                 {
                                     result.Result = movingExisting;
                                 }
+                                else result.Message = "Update failed due to technical issue.";
                             }
                         }
                     } 
@@ -176,6 +178,7 @@ namespace StudyNest.Business.v1
                         {
                             result.Result = currentExisting;
                         }
+                        else result.Message = "Update failed due to technical issue.";
                     }
                 }
                 else

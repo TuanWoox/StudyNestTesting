@@ -81,7 +81,6 @@ namespace StudyNest.Controllers
         }
         [RoleAuthorize(UserRoleEnum.admin)]
         [HttpDelete]
-       
         public async Task<IActionResult> DeleteSetting(string id)
         {
             ReturnResult<bool> result = new ReturnResult<bool>();
