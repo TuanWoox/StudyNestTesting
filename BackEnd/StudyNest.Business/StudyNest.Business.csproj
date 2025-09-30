@@ -7,6 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Services\**" />
+    <EmbeddedResource Remove="Services\**" />
+    <None Remove="Services\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AutoMapper" Version="15.0.1" />
     <PackageReference Include="CloudinaryDotNet" Version="1.27.7" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.8" />
@@ -17,10 +23,6 @@
   <ItemGroup>
     <ProjectReference Include="..\StudyNest.Common\StudyNest.Common.csproj" />
     <ProjectReference Include="..\StudyNest.Data\StudyNest.Data.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Services\" />
   </ItemGroup>
 
 </Project>

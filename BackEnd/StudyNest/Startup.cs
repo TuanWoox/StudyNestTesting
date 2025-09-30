@@ -58,9 +58,9 @@ namespace StudyNest
             ConfigureAuthService(services);
             ConfigureDatabase(services);
             ConfigurePolicy(services);
-            ConfigureScopedServices(services);
             AddSwaggerService(services);
             ConfigureCloudinary(services);
+            ConfigureScopedServices(services);
         }
 
         public async void Configure(IApplicationBuilder app, IWebHostEnvironment env, IApiVersionDescriptionProvider provider)

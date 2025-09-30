@@ -14,7 +14,7 @@ namespace StudyNest.Common.Interfaces
     public interface ISettingBusiness
     {
         public Task<ReturnResult<PagedData<SelectSettingDTO, string>>> GetPaging(Page<string> page);
-        public Task<ReturnResult<Setting>> GetOneByKeyAndGroup(string key, string group);
+        public Task<ReturnResult<Setting>> GetOneByKeyAndGroup(string key, string group, bool fromSystem = false);
         public Task<ReturnResult<Setting>> CreateSetting(CreateSettingDTO newEntity);
         public Task<ReturnResult<Setting>> UpdateSetting(UpdateSettingDTO newEntity);
         public Task<ReturnResult<bool>> DeleteSetting(string id);
