@@ -40,7 +40,7 @@ namespace StudyNest.Business.v1
             }
             return result;
         }
-        public async Task<ReturnResult<Setting>> GetOneByKeyAndGroup(string key, string group)
+        public async Task<ReturnResult<Setting>> GetOneByKeyAndGroup(string key, string group, bool fromSystem = false)
         {
             ReturnResult<Setting> result = new ReturnResult<Setting>();
             try
@@ -48,11 +48,15 @@ namespace StudyNest.Business.v1
                 var existing = await _dbContext.Settings.Where(x => x.Key == key && x.Group == group).AsNoTracking().FirstOrDefaultAsync();
                 if(existing != null)
                 {
-                    if(existing.SettingLevel == 1)
+                    if (fromSystem || existing.SettingLevel != 1)
+                    {
+                        result.Result = existing;
+                    }
+                    else
                     {
                         result.Message = "This cannot be displayed on the interface, please use database to retrieve and update";
-                    } else result.Result = existing;
-                } 
+                    }
+                }
                 else
                 {
                     result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_EXIST, $"The setting with key '{key.Trim()}' and group '{group.Trim()}'");
