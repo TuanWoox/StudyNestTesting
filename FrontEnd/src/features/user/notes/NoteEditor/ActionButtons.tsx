@@ -1,14 +1,24 @@
-import React from 'react';
-import { Button } from 'antd';
-import { SaveOutlined, DeleteOutlined } from '@ant-design/icons';
+import React from "react";
+import { Button, Popconfirm } from "antd";
+import { SaveOutlined, DeleteOutlined } from "@ant-design/icons";
 
 interface ActionButtonsProps {
     onSave: () => void;
     onDelete: () => void;
     darkMode: boolean;
+    isCreating?: boolean
+    isDeleting?: boolean;
+    isUpdating?: boolean;
 }
 
-const ActionButtons: React.FC<ActionButtonsProps> = ({ onSave, onDelete, darkMode }) => {
+const ActionButtons: React.FC<ActionButtonsProps> = ({
+    onSave,
+    onDelete,
+    darkMode,
+    isCreating = false,
+    isDeleting = false,
+    isUpdating = false
+}) => {
     const commonStyle = {
         display: "flex",
         alignItems: "center",
@@ -42,32 +52,43 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ onSave, onDelete, darkMod
                     e.currentTarget.style.color = darkMode ? "#10B981" : "#059669";
                 }}
                 icon={<SaveOutlined />}
+                loading={isCreating || isUpdating}
             >
                 Save
             </Button>
 
-            <Button
-                type="text"
-                onClick={onDelete}
-                className={`danger ${darkMode ? "dark" : "light"}`}
-                style={{
-                    ...commonStyle,
-                    border: `1px solid ${darkMode ? "#3F3F46" : "#E5E7EB"}`,
-                    background: darkMode ? "#27272A" : "#FFFFFF",
-                    color: "#EF4444",
-                }}
-                onMouseEnter={(e) => {
-                    e.currentTarget.style.background = darkMode ? "#1F2937" : "#FEF2F2";
-                    e.currentTarget.style.color = "#DC2626";
-                }}
-                onMouseLeave={(e) => {
-                    e.currentTarget.style.background = darkMode ? "#27272A" : "#FFFFFF";
-                    e.currentTarget.style.color = "#EF4444";
-                }}
-                icon={<DeleteOutlined />}
+            <Popconfirm
+                title="Delete this note?"
+                description="This action cannot be undone."
+                okText="Delete"
+                cancelText="Cancel"
+                placement="bottomRight"
+                okButtonProps={{ danger: true, loading: isDeleting }}
+                onConfirm={onDelete}
             >
-                Delete
-            </Button>
+                <Button
+                    type="text"
+                    className={`danger ${darkMode ? "dark" : "light"}`}
+                    style={{
+                        ...commonStyle,
+                        border: `1px solid ${darkMode ? "#3F3F46" : "#E5E7EB"}`,
+                        background: darkMode ? "#27272A" : "#FFFFFF",
+                        color: "#EF4444",
+                    }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.background = darkMode ? "#1F2937" : "#FEF2F2";
+                        e.currentTarget.style.color = "#DC2626";
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.background = darkMode ? "#27272A" : "#FFFFFF";
+                        e.currentTarget.style.color = "#EF4444";
+                    }}
+                    icon={<DeleteOutlined />}
+                    loading={isDeleting}
+                >
+                    Delete
+                </Button>
+            </Popconfirm>
         </div>
     );
 };

@@ -1,51 +1,79 @@
-import React, { useState } from 'react';
-import { useOutletContext } from 'react-router-dom';
-import { useNotes } from '@/hooks/useNotes';
-import { useFolders } from '@/hooks/useFolders';
-import { useTags } from '@/hooks/useTags';
-import NoteSidebar from './NoteSidebar/NoteSidebar';
-import NoteEditor from './NoteEditor/NoteEditor';
-import EmptyState from './EmptyState';
-import ModalCreateFolder from './ModalCreateFolder';
-import { Note, Folder, Tag } from '@/types/notes';
-import { EStatus } from '@/utils/enums/EStatus';
+import React, { useState, useEffect } from "react";
+import { useOutletContext } from "react-router-dom";
+import { Note, Folder, Tag } from "@/types/note/notes";
+import { EStatus } from "@/utils/enums/EStatus";
+import useGetAllFolder from "@/hooks/folderHook/useGetAllFolder";
+import useGetAllTag from "@/hooks/tagHook/useGetAllTag";
+import useGetAllNote from "@/hooks/noteHook/useGetAllNote";
+import NoteSidebar from "./NoteSidebar/NoteSidebar";
+import NoteEditor from "./NoteEditor/NoteEditor";
+import ModalCreateFolder from "./ModalCreateFolder";
+import ModalUpdateFolder from "./ModalUpdateFolder";
+import ModalDeleteFolder from "./ModalDeleteFolder";
 
 const NotesPage: React.FC = () => {
     const darkMode = useOutletContext<boolean>();
-    const { data: notes = [], isLoading: loadingNotes } = useNotes();
-    const { data: folders = [], isLoading: loadingFolders } = useFolders();
-    const { data: tags = [], isLoading: loadingTags } = useTags();
+
+    const {
+        data: noteData,
+        isLoading: loadingNotes,
+        isError: errorNotes,
+    } = useGetAllNote({ pageSize: -1, pageNumber: 0 });
+
+    const {
+        data: tagData,
+        isLoading: loadingTags,
+        isError: errorTags,
+    } = useGetAllTag({ pageSize: -1, pageNumber: 0 });
+
+    // Gọi API lấy folders có phân trang
+    const {
+        data: folderData,
+        isLoading: loadingFolders,
+        isError: errorFolders,
+    } = useGetAllFolder({ pageSize: -1, pageNumber: 0 });
+
+    const folders = folderData?.data || []; // `data` là mảng thư mục trong PagedData
+    const tags = tagData?.data || [];
+    const notes = noteData?.data || [];
 
     const [notesState, setNotesState] = useState<Note[]>(notes);
-    const [foldersState, setFoldersState] = useState<Folder[]>(folders);
-    const [tagsState, setTagsState] = useState<Tag[]>(tags);
+    // const [tagsState, setTagsState] = useState<Tag[]>(tags);
 
     const [selectedNote, setSelectedNote] = useState<Note | null>(null);
-    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [selectedFolder, setSelectedFolder] = useState<Folder | null>(null);
 
-    if (loadingNotes || loadingFolders || loadingTags) return <div className="p-4">Loading...</div>;
+    const [isModalCreateVisible, setIsModalCreateVisible] = useState(false);
+    const [isModalUpdateVisible, setIsModalUpdateVisible] = useState(false);
+    const [isModalDeleteVisible, setIsModalDeleteVisible] = useState(false);
+    const [isEditorVisible, setIsEditorVisible] = useState(false);
 
-    // Tạo note mới
+
+    if (loadingNotes || loadingFolders || loadingTags)
+        return <div className="p-4">Loading...</div>;
+    if (errorNotes || errorFolders || errorTags) return <div className="p-4 text-red-500">Failed to load folders.</div>;
+
     const handleCreateNote = () => {
         const newNote: Note = {
             id: `note-${Date.now()}`,
-            title: 'Untitled Note',
-            content: '',
+            title: "Untitled Note",
+            content: "",
             status: EStatus.InProgress,
-            ownerId: '1',
+            ownerId: "1",
             noteTags: [],
-            folder: undefined
+            folder: undefined,
         };
         setSelectedNote(newNote);
+        setIsEditorVisible(true);
     };
 
-    // Giả lập update hoặc thêm note
     const handleUpdateNote = (updatedNote: Note) => {
-        // TODO: Replace with API call
-        setNotesState(prev => {
-            const exists = prev.some(note => note.id === updatedNote.id);
+        setNotesState((prev) => {
+            const exists = prev.some((note) => note.id === updatedNote.id);
             if (exists) {
-                return prev.map(note => note.id === updatedNote.id ? updatedNote : note);
+                return prev.map((note) =>
+                    note.id === updatedNote.id ? updatedNote : note
+                );
             } else {
                 return [updatedNote, ...prev];
             }
@@ -53,73 +81,84 @@ const NotesPage: React.FC = () => {
         setSelectedNote(updatedNote);
     };
 
-    // Giả lập xóa note
     const handleDeleteNote = (id: string) => {
-        // TODO: Replace with API call
-        setNotesState(prev => prev.filter(note => note.id !== id));
+        setNotesState((prev) => prev.filter((note) => note.id !== id));
         if (selectedNote?.id === id) setSelectedNote(null);
     };
 
-    // Giả lập thêm folder
-    const handleAddFolder = (folderName: string) => {
-        // TODO: Replace with API call
-        const newFolder: Folder = {
-            id: `folder-${Date.now()}`,
-            folderName,
-            ownerId: '1',
-            notes: [],
-        };
-        setFoldersState(prev => [...prev, newFolder]);
-        return newFolder;
+    const handleOpenEditor = (note: Note) => {
+        setSelectedNote(note);
+        setIsEditorVisible(true);
     };
 
-    // Giả lập thêm tag
-    const handleAddTag = (tagName: string) => {
-        // TODO: Replace with API call
-        const newTag: Tag = {
-            id: `tag-${Date.now()}`,
-            name: tagName,
-            noteTags: [],
-        };
-        setTagsState(prev => [...prev, newTag]);
-        return newTag;
+    const handleCloseEditor = () => {
+        setIsEditorVisible(false);
+        setSelectedNote(null);
     };
-    // TODO: Thêm mutation update note, create folder, create tag nếu cần
 
     return (
-        <div className={`flex flex-1 min-h-0 overflow-hidden transition-colors duration-300 ${darkMode ? 'bg-[#0f0f0f] text-gray-100' : 'bg-gray-50 text-gray-900'}`}>
+        <div
+            className={`flex flex-1 min-h-0 overflow-hidden transition-colors duration-300 ${darkMode ? "bg-[#0f0f0f] text-gray-100" : "bg-gray-50 text-gray-900"
+                }`}
+        >
             <NoteSidebar
                 darkMode={darkMode}
                 notes={notes}
-                folders={folders}
+                folders={folders} // ✅ dùng dữ liệu từ API
                 tags={tags}
                 selectedNote={selectedNote}
-                setSelectedNote={setSelectedNote}
+                handleOpenEditor={handleOpenEditor}
                 handleCreateNote={handleCreateNote}
-                setIsModalVisible={setIsModalVisible}
+                setIsModalCreateVisible={setIsModalCreateVisible}
+                setIsModalUpdateVisible={setIsModalUpdateVisible}  // ✅ truyền thêm
+                setIsModalDeleteVisible={setIsModalDeleteVisible}  // ✅ truyền thêm
+                setSelectedFolder={setSelectedFolder}              // ✅ truyền thêm
             />
-            <div className="flex-1 min-h-0">
+            {/* <div className="flex-1 min-h-0">
                 {selectedNote ? (
                     <NoteEditor
                         darkMode={darkMode}
                         note={selectedNote}
-                        folders={foldersState}
-                        tags={tagsState}
-                        // TODO: Thêm handleUpdateNote, handleDeleteNote, handleAddFolder, handleAddTag nếu cần
+                        folders={folders} // ✅ truyền dữ liệu mới từ API
+                        tags={tags}
                         handleUpdateNote={handleUpdateNote}
                         handleDeleteNote={handleDeleteNote}
-                        handleAddFolder={handleAddFolder}
-                        handleAddTag={handleAddTag}
+                        handleAddFolder={() => { }} // TODO: implement API create folder
                     />
                 ) : (
-                    <EmptyState darkMode={darkMode} handleCreateNote={handleCreateNote} />
+                    <EmptyState
+                        darkMode={darkMode}
+                        handleCreateNote={handleCreateNote}
+                    />
                 )}
-            </div>
+            </div> */}
             <ModalCreateFolder
-                visible={isModalVisible}
-                onCreate={handleAddFolder}
-                onCancel={() => setIsModalVisible(false)}
+                visible={isModalCreateVisible}
+                onCancel={() => setIsModalCreateVisible(false)}
                 darkMode={darkMode}
+            />
+            <ModalUpdateFolder
+                visible={isModalUpdateVisible}
+                onCancel={() => setIsModalUpdateVisible(false)}
+                darkMode={darkMode}
+                folder={selectedFolder}
+                setSelectedFolder={setSelectedFolder}
+            />
+            <ModalDeleteFolder
+                visible={isModalDeleteVisible}
+                onCancel={() => setIsModalDeleteVisible(false)}
+                darkMode={darkMode}
+                folder={selectedFolder}
+            />
+            <NoteEditor
+                visible={isEditorVisible}
+                onClose={handleCloseEditor}
+                darkMode={darkMode}
+                note={selectedNote}
+                folders={folders}
+                tags={tags}
+                handleUpdateNote={handleUpdateNote}
+                handleDeleteNote={handleDeleteNote}
             />
         </div>
     );

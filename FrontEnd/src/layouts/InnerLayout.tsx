@@ -62,9 +62,8 @@ const InnerLayout = ({ role }: InnerLayoutProps) => {
       }}
     >
       <div
-        className={`transition-colors duration-500 ${
-          darkMode ? "bg-[#0f0f0f] text-white" : "bg-gray-50 text-black"
-        }`}
+        className={`transition-colors duration-500 ${darkMode ? "bg-[#0f0f0f] text-white" : "bg-gray-50 text-black"
+          }`}
       >
         <ProLayout
           title={layoutTitle}
@@ -98,14 +97,12 @@ const InnerLayout = ({ role }: InnerLayoutProps) => {
               {/* Toggle Dark Mode */}
               <button
                 onClick={() => setDarkMode(!darkMode)}
-                className={`relative flex items-center w-14 h-7 rounded-full transition-all duration-300 ${
-                  darkMode ? "bg-indigo-500" : "bg-amber-400"
-                }`}
+                className={`relative flex items-center w-14 h-7 rounded-full transition-all duration-300 ${darkMode ? "bg-indigo-500" : "bg-amber-400"
+                  }`}
               >
                 <span
-                  className={`absolute left-1 top-1 w-5 h-5 rounded-full bg-white shadow-md transform transition-all duration-300 ${
-                    darkMode ? "translate-x-7" : "translate-x-0"
-                  }`}
+                  className={`absolute left-1 top-1 w-5 h-5 rounded-full bg-white shadow-md transform transition-all duration-300 ${darkMode ? "translate-x-7" : "translate-x-0"
+                    }`}
                 ></span>
                 <span className="absolute left-1.5 text-yellow-400">
                   <SunIcon className="w-4 h-4" />

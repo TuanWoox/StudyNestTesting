@@ -1,0 +1,52 @@
+import { PagedData } from "@/types/common/paged-data";
+import { useQuery } from "@tanstack/react-query";
+import { AxiosError } from "axios";
+import { Tag } from "@/types/note/notes";
+import { Page } from "@/types/common/page";
+import { SortOrderType } from "@/constants/sortOrderType";
+import tagService from "@/services/tagService";
+
+interface UseGetAllTagOptions {
+    enabled?: boolean;
+    sortByNewest?: boolean;
+    pageSize?: number;
+    pageNumber?: number;
+}
+
+const useGetAllTag = (options?: UseGetAllTagOptions) => {
+    const enabled = options?.enabled ?? true;
+    const sortByNewest = options?.sortByNewest ?? true;
+    const pageSize = options?.pageSize ?? -1; // để lấy tất cả tag
+    const pageNumber = options?.pageNumber ?? 0;
+
+    return useQuery<PagedData<Tag, string>, AxiosError>({
+        queryKey: ["tags", { pageNumber, pageSize, sortByNewest }],
+        enabled,
+        queryFn: async () => {
+            const payload: Page<string> = {
+                size: pageSize,
+                pageNumber: pageNumber,
+                totalElements: 0,
+                orders: sortByNewest
+                    ? [
+                        {
+                            sort: "dateCreated",
+                            sortDir: SortOrderType.DESC,
+                            dynamicProperty: "",
+                            delimiter: "",
+                            dataType: "",
+                        },
+                    ] : [],
+                filter: [],
+                selected: [],
+            };
+
+            return await tagService.getAllTag(payload);
+        },
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
+        retry: 1,
+    });
+};
+
+export default useGetAllTag;

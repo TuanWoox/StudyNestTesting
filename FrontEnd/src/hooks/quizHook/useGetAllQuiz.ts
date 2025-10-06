@@ -2,7 +2,8 @@
 import { useQuery } from "@tanstack/react-query";
 import quizService from "@/services/quizService";
 import type { QuizList } from "@/types/quiz/quiz";
-import { Page, SortOrderType } from "@/types/common/page";
+import { Page } from "@/types/common/page";
+import { SortOrderType } from "@/constants/sortOrderType";
 import { PagedData } from "@/types/common/paged-data";
 import type { AxiosError } from "axios";
 
@@ -33,14 +34,14 @@ const useGetAllQuiz = (options?: UseGetAllQuizOptions) => {
         totalElements: 0, // Server will set the actual value
         orders: sortByNewest
           ? [
-              {
-                sort: "dateCreated",
-                sortDir: SortOrderType.DESC,
-                dynamicProperty: "",
-                delimiter: "",
-                dataType: "",
-              },
-            ]
+            {
+              sort: "dateCreated",
+              sortDir: SortOrderType.DESC,
+              dynamicProperty: "",
+              delimiter: "",
+              dataType: "",
+            },
+          ]
           : [],
         filter: [],
         selected: [],
