@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using StudyNest.Business.Repository;
 using StudyNest.Common.DbEntities.Entities;
 using StudyNest.Common.Interfaces;
@@ -25,13 +26,15 @@ namespace StudyNest.Business.v1
         IUserContext _userContext;
         INoteTagBusiness _noteTagBusiness;
         IRepository<Note, string> _repository;
+        IMapper _mapper;
         public NoteBusiness(ApplicationDbContext dbContext, IUserContext userContext, INoteTagBusiness noteTagBusiness, 
-            IRepository<Note,string> repository)
+            IRepository<Note,string> repository, IMapper mapper)
         {
             this._dbContext = dbContext;
             this._userContext = userContext;
             this._noteTagBusiness = noteTagBusiness;
             this._repository = repository;
+            this._mapper = mapper;
         }
         public async Task<ReturnResult<PagedData<SelectNoteDTO,string>>> GetPaging(Page<string> page, bool isExported = false)
         {
@@ -128,44 +131,60 @@ namespace StudyNest.Business.v1
         }
         public async Task<ReturnResult<Note>> UpdateNote(UpdateNoteDTO newEntity)
         {
-            ReturnResult<Note> result = new ReturnResult<Note>();
+            var result = new ReturnResult<Note>();
+
             try
             {
-                if(!string.IsNullOrEmpty(newEntity.FolderId))
+                if (!string.IsNullOrEmpty(newEntity.FolderId))
                 {
-                    var existingFolder = await _dbContext.Folders.Where(x => x.Id == newEntity.FolderId && x.OwnerId == _userContext.UserId).AsNoTracking().FirstOrDefaultAsync();
+                    var existingFolder = await _dbContext.Folders
+                        .Where(x => x.Id == newEntity.FolderId && x.OwnerId == _userContext.UserId)
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync();
+
                     if (existingFolder == null)
                     {
-                        result.Message = String.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "folder", newEntity.FolderId);
+                        result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "folder", newEntity.FolderId);
                         return result;
                     }
                 }
-                var existingNote = await _dbContext.Notes.Where(x => x.Id == newEntity.Id && x.OwnerId == _userContext.UserId).FirstOrDefaultAsync();
-                if(existingNote == null)
+
+                var existingNote = await _dbContext.Notes
+                    .FirstOrDefaultAsync(x => x.Id == newEntity.Id && x.OwnerId == _userContext.UserId);
+
+                if (existingNote == null)
                 {
                     result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "note", newEntity.Id);
-                } else
+                    return result;
+                }
+
+                _mapper.Map(newEntity, existingNote);
+
+                if (string.IsNullOrEmpty(newEntity.FolderId))
                 {
-                    if (string.IsNullOrEmpty(newEntity.FolderId)) newEntity.FolderId = null;
-                    result = await _repository.UpdateAsync(newEntity);
-                    if(result.Message == null)
-                    {
-                        if (newEntity.TagsNames != null && newEntity.TagsNames.Any())
-                        {
-                            var saveTagResult = await _noteTagBusiness.SaveTagsToNote(result.Result.Id, newEntity.TagsNames);
-                            var saveNoteTags = await _noteTagBusiness.GetNoteTagsByIdAndListOfTagNames(result.Result.Id, newEntity.TagsNames);
-                            if (saveNoteTags.Message == null)
-                            {
-                                result.Result.NoteTags = saveNoteTags.Result;
-                            }
-                        }
-                    }
+                    existingNote.FolderId = null;
+                    existingNote.Folder = null;
+                }
+
+                await _dbContext.SaveChangesAsync();
+
+                result.Result = existingNote;
+
+                if (newEntity.TagsNames != null && newEntity.TagsNames.Any())
+                {
+                    var saveTagResult = await _noteTagBusiness.SaveTagsToNote(existingNote.Id, newEntity.TagsNames);
+                    var saveNoteTags = await _noteTagBusiness.GetNoteTagsByIdAndListOfTagNames(existingNote.Id, newEntity.TagsNames);
+
+                    if (saveNoteTags.Message == null)
+                        result.Result.NoteTags = saveNoteTags.Result;
                 }
             }
             catch (Exception ex)
             {
                 StudyNestLogger.Instance.Error(ex);
+                result.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
             }
+
             return result;
         }
         public async Task<ReturnResult<bool>> DeleteNote(string id)
