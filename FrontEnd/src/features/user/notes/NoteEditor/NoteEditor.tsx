@@ -61,7 +61,6 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
         };
 
         const tagsNames = selectedTags.map(tag => tag.name);
-        console.log("folderId", folderId);
 
         // Nếu note chưa có id thật (id tạm), gọi API tạo note
         if (note.id.startsWith("note-")) {
@@ -88,6 +87,7 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
                 content,
                 status: note.status,
                 folderId: selectedFolder ? selectedFolder.id : "",
+                tagsNames,
                 ownerId: note.ownerId,
             };
             updateNote(payload, {
