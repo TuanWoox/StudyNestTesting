@@ -176,7 +176,14 @@ namespace StudyNest.Business.v1
                     var saveNoteTags = await _noteTagBusiness.GetNoteTagsByIdAndListOfTagNames(existingNote.Id, newEntity.TagsNames);
 
                     if (saveNoteTags.Message == null)
+                    {
                         result.Result.NoteTags = saveNoteTags.Result;
+                    }
+                } 
+                else
+                {
+                    await _noteTagBusiness.DeleteTagsByNoteId(existingNote.Id);
+                    result.Result.NoteTags = new List<NoteTag>();
                 }
             }
             catch (Exception ex)
