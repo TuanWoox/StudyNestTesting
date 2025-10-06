@@ -5,10 +5,6 @@ import { ReturnResult } from '@/types/common/return-result';
 import { Page } from '@/types/common/page';
 
 const noteService = {
-    // async getNotes(): Promise<Note[]> {
-    //     const { data } = await instance.get<ReturnResult<PagedData<Note, string>>>('/ViewNote.json');
-    //     return data.result.data;
-    // }
     getAllNote: async (
         payload: Page<string>
     ): Promise<PagedData<Note, string>> => {

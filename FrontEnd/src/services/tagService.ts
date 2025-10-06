@@ -5,10 +5,6 @@ import { PagedData } from '@/types/common/paged-data';
 import { Page } from '@/types/common/page';
 
 const tagService = {
-    // async getTags(): Promise<Tag[]> {
-    //     const { data } = await instance.get<ReturnResult<PagedData<Tag, string>>>('/ViewTag.json');
-    //     return data.result.data;
-    // }
     getAllTag: async (
         payload: Page<string>
     ): Promise<PagedData<Tag, string>> => {

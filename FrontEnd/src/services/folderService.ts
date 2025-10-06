@@ -5,10 +5,6 @@ import { Page } from '@/types/common/page';
 import { ReturnResult } from '@/types/common/return-result';
 
 const folderService = {
-    // async getFolders(): Promise<Folder[]> {
-    //     const { data } = await instance.get<ReturnResult<PagedData<Folder, string>>>('/ViewFolder.json');
-    //     return data.result.data;
-    // },
     getAllFolder: async (
         payload: Page<string>
     ): Promise<PagedData<Folder, string>> => {

@@ -104,34 +104,16 @@ const NotesPage: React.FC = () => {
             <NoteSidebar
                 darkMode={darkMode}
                 notes={notes}
-                folders={folders} // ✅ dùng dữ liệu từ API
+                folders={folders} // dùng dữ liệu từ API
                 tags={tags}
                 selectedNote={selectedNote}
                 handleOpenEditor={handleOpenEditor}
                 handleCreateNote={handleCreateNote}
                 setIsModalCreateVisible={setIsModalCreateVisible}
-                setIsModalUpdateVisible={setIsModalUpdateVisible}  // ✅ truyền thêm
-                setIsModalDeleteVisible={setIsModalDeleteVisible}  // ✅ truyền thêm
-                setSelectedFolder={setSelectedFolder}              // ✅ truyền thêm
+                setIsModalUpdateVisible={setIsModalUpdateVisible}  // truyền thêm
+                setIsModalDeleteVisible={setIsModalDeleteVisible}  // truyền thêm
+                setSelectedFolder={setSelectedFolder}              // truyền thêm
             />
-            {/* <div className="flex-1 min-h-0">
-                {selectedNote ? (
-                    <NoteEditor
-                        darkMode={darkMode}
-                        note={selectedNote}
-                        folders={folders} // ✅ truyền dữ liệu mới từ API
-                        tags={tags}
-                        handleUpdateNote={handleUpdateNote}
-                        handleDeleteNote={handleDeleteNote}
-                        handleAddFolder={() => { }} // TODO: implement API create folder
-                    />
-                ) : (
-                    <EmptyState
-                        darkMode={darkMode}
-                        handleCreateNote={handleCreateNote}
-                    />
-                )}
-            </div> */}
             <ModalCreateFolder
                 visible={isModalCreateVisible}
                 onCancel={() => setIsModalCreateVisible(false)}
