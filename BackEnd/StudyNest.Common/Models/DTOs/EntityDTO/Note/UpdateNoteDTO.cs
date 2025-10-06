@@ -24,6 +24,5 @@ namespace StudyNest.Common.Models.DTOs.EntityDTO.Note
         [TrimList]
         [KebabCase]
         public List<string> TagsNames { get; set; } = new List<string>();
-        public string OwnerId { get; set; }
     }
 }

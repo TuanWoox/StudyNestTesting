@@ -1,4 +1,6 @@
-﻿using StudyNest.Common.DbEntities.BaseEntity;
+﻿using AutoMapper;
+using StudyNest.Common.Attributes;
+using StudyNest.Common.DbEntities.BaseEntity;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -6,15 +8,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace StudyNest.Common.DbEntities.Entities
+namespace StudyNest.Common.Models.DTOs.EntityDTO.Setting
 {
-    public class Setting: BaseEntity<string>
+    [AutoMap(typeof(DbEntities.Entities.Setting), ReverseMap = true, PreserveReferences = true)]
+    public class CreateSettingDTO: BaseKey
     {
-        [Required]
+        [TrimmedRequired]
         public string Key { get; set; }
-        [Required]
+        [TrimmedRequired]
         public string Group { get; set; }
-        [Required]
+        [TrimmedRequired]
         public string Value { get; set; }
         public string Description { get; set; }
         public int SettingLevel { get; set; }
