@@ -31,8 +31,4 @@
     <ProjectReference Include="..\StudyNest.Data\StudyNest.Data.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Migrations\" />
-  </ItemGroup>
-
 </Project>

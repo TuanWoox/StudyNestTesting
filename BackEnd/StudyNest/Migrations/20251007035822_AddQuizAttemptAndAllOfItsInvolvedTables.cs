@@ -5,14 +5,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace StudyNest.Migrations
 {
-    /// <inheritdoc />
-    public partial class AddQuizAttempAndAllOfItsInvolvedTable : Migration
+    public partial class AddQuizAttemptAndAllOfItsInvolvedTables : Migration
     {
-        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "QuizAttemptSnapshot",
+                name: "QuizAttemptSnapshots",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
@@ -25,9 +23,9 @@ namespace StudyNest.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_QuizAttemptSnapshot", x => x.Id);
+                    table.PrimaryKey("PK_QuizAttemptSnapshots", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_QuizAttemptSnapshot_Quizzes_QuizId",
+                        name: "FK_QuizAttemptSnapshots_Quizzes_QuizId",
                         column: x => x.QuizId,
                         principalTable: "Quizzes",
                         principalColumn: "Id",
@@ -35,7 +33,7 @@ namespace StudyNest.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "QuizAttempt",
+                name: "QuizAttempts",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
@@ -52,21 +50,21 @@ namespace StudyNest.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_QuizAttempt", x => x.Id);
+                    table.PrimaryKey("PK_QuizAttempts", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_QuizAttempt_AspNetUsers_UserId",
+                        name: "FK_QuizAttempts_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_QuizAttempt_QuizAttemptSnapshot_QuizAttemptSnapshotId",
+                        name: "FK_QuizAttempts_QuizAttemptSnapshots_QuizAttemptSnapshotId",
                         column: x => x.QuizAttemptSnapshotId,
-                        principalTable: "QuizAttemptSnapshot",
+                        principalTable: "QuizAttemptSnapshots",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_QuizAttempt_Quizzes_QuizId",
+                        name: "FK_QuizAttempts_Quizzes_QuizId",
                         column: x => x.QuizId,
                         principalTable: "Quizzes",
                         principalColumn: "Id",
@@ -74,7 +72,7 @@ namespace StudyNest.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "QuizAttemptAnswer",
+                name: "QuizAttemptAnswers",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
@@ -88,17 +86,17 @@ namespace StudyNest.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_QuizAttemptAnswer", x => x.Id);
+                    table.PrimaryKey("PK_QuizAttemptAnswers", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_QuizAttemptAnswer_QuizAttempt_QuizAttemptId",
+                        name: "FK_QuizAttemptAnswers_QuizAttempts_QuizAttemptId",
                         column: x => x.QuizAttemptId,
-                        principalTable: "QuizAttempt",
+                        principalTable: "QuizAttempts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "QuizAttempAnswerChoice",
+                name: "QuizAttemptAnswerChoices",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
@@ -111,80 +109,73 @@ namespace StudyNest.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_QuizAttempAnswerChoice", x => x.Id);
+                    table.PrimaryKey("PK_QuizAttemptAnswerChoices", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_QuizAttempAnswerChoice_QuizAttemptAnswer_QuizAttemptAnswerId",
+                        name: "FK_QuizAttemptAnswerChoices_QuizAttemptAnswers_QuizAttemptAnswerId",
                         column: x => x.QuizAttemptAnswerId,
-                        principalTable: "QuizAttemptAnswer",
+                        principalTable: "QuizAttemptAnswers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            // Indexes
             migrationBuilder.CreateIndex(
-                name: "IX_QuizAttempAnswerChoice_Deleted",
-                table: "QuizAttempAnswerChoice",
+                name: "IX_QuizAttemptAnswerChoices_Deleted",
+                table: "QuizAttemptAnswerChoices",
                 column: "Deleted");
 
             migrationBuilder.CreateIndex(
-                name: "IX_QuizAttempAnswerChoice_QuizAttemptAnswerId",
-                table: "QuizAttempAnswerChoice",
+                name: "IX_QuizAttemptAnswerChoices_QuizAttemptAnswerId",
+                table: "QuizAttemptAnswerChoices",
                 column: "QuizAttemptAnswerId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_QuizAttempt_Deleted",
-                table: "QuizAttempt",
+                name: "IX_QuizAttempts_Deleted",
+                table: "QuizAttempts",
                 column: "Deleted");
 
             migrationBuilder.CreateIndex(
-                name: "IX_QuizAttempt_QuizAttemptSnapshotId",
-                table: "QuizAttempt",
+                name: "IX_QuizAttempts_QuizAttemptSnapshotId",
+                table: "QuizAttempts",
                 column: "QuizAttemptSnapshotId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_QuizAttempt_QuizId",
-                table: "QuizAttempt",
+                name: "IX_QuizAttempts_QuizId",
+                table: "QuizAttempts",
                 column: "QuizId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_QuizAttempt_UserId",
-                table: "QuizAttempt",
+                name: "IX_QuizAttempts_UserId",
+                table: "QuizAttempts",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_QuizAttemptAnswer_Deleted",
-                table: "QuizAttemptAnswer",
+                name: "IX_QuizAttemptAnswers_Deleted",
+                table: "QuizAttemptAnswers",
                 column: "Deleted");
 
             migrationBuilder.CreateIndex(
-                name: "IX_QuizAttemptAnswer_QuizAttemptId",
-                table: "QuizAttemptAnswer",
+                name: "IX_QuizAttemptAnswers_QuizAttemptId",
+                table: "QuizAttemptAnswers",
                 column: "QuizAttemptId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_QuizAttemptSnapshot_Deleted",
-                table: "QuizAttemptSnapshot",
+                name: "IX_QuizAttemptSnapshots_Deleted",
+                table: "QuizAttemptSnapshots",
                 column: "Deleted");
 
             migrationBuilder.CreateIndex(
-                name: "IX_QuizAttemptSnapshot_QuizId",
-                table: "QuizAttemptSnapshot",
+                name: "IX_QuizAttemptSnapshots_QuizId",
+                table: "QuizAttemptSnapshots",
                 column: "QuizId");
         }
 
-        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "QuizAttempAnswerChoice");
-
-            migrationBuilder.DropTable(
-                name: "QuizAttemptAnswer");
-
-            migrationBuilder.DropTable(
-                name: "QuizAttempt");
-
-            migrationBuilder.DropTable(
-                name: "QuizAttemptSnapshot");
+            migrationBuilder.DropTable(name: "QuizAttemptAnswerChoices");
+            migrationBuilder.DropTable(name: "QuizAttemptAnswers");
+            migrationBuilder.DropTable(name: "QuizAttempts");
+            migrationBuilder.DropTable(name: "QuizAttemptSnapshots");
         }
     }
 }

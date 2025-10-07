@@ -12,8 +12,8 @@ using StudyNest.Data;
 namespace StudyNest.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251007035822_AddQuizAttempAndAllOfItsInvolvedTable")]
-    partial class AddQuizAttempAndAllOfItsInvolvedTable
+    [Migration("20251007035822_AddQuizAttemptAndAllOfItsInvolvedTables")]
+    partial class AddQuizAttemptAndAllOfItsInvolvedTables
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
