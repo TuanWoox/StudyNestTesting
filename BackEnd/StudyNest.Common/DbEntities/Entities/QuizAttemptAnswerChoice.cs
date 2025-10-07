@@ -7,8 +7,9 @@ using System.Threading.Tasks;
 
 namespace StudyNest.Common.DbEntities.Entities
 {
-    public class QuizAttempAnswerChoice: BaseEntity<string>
+    public class QuizAttemptAnswerChoice: BaseEntity<string>
     {
+        public string QuizAttemptAnswerId { get; set; }
         public QuizAttemptAnswer QuizAttemptAnswer { get; set; }
         public string ChoiceId { get; set; }
     }
