@@ -15,12 +15,8 @@ namespace StudyNest.Common.DbEntities.Entities
         [Required]
         public string QuizId { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
-        public string Type { get; set; } = string.Empty;  
-        public int? CorrectIndex { get; set; }
-        public bool? CorrectTrueFalse { get; set; }
+        public string Type { get; set; } = string.Empty;  // mcq/msq/tf
         public string Explanation { get; set; } = string.Empty;
-        public int OrderNo { get; set; }
-
         public Quiz? Quiz { get; set; }
         public ICollection<Choice> Choices { get; set; } = new List<Choice>();
     }
