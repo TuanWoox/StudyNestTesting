@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using StudyNest.Data;
@@ -11,9 +12,11 @@ using StudyNest.Data;
 namespace StudyNest.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251007035822_AddQuizAttempAndAllOfItsInvolvedTable")]
+    partial class AddQuizAttempAndAllOfItsInvolvedTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -131,8 +134,8 @@ namespace StudyNest.Migrations
                     b.Property<bool>("Deleted")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("IsCorrect")
-                        .HasColumnType("boolean");
+                    b.Property<int>("OrderNo")
+                        .HasColumnType("integer");
 
                     b.Property<string>("QuestionId")
                         .IsRequired()
@@ -298,6 +301,12 @@ namespace StudyNest.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("text");
 
+                    b.Property<int?>("CorrectIndex")
+                        .HasColumnType("integer");
+
+                    b.Property<bool?>("CorrectTrueFalse")
+                        .HasColumnType("boolean");
+
                     b.Property<DateTimeOffset?>("DateCreated")
                         .HasColumnType("timestamp with time zone");
 
@@ -317,6 +326,9 @@ namespace StudyNest.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int>("OrderNo")
+                        .HasColumnType("integer");
 
                     b.Property<string>("QuizId")
                         .IsRequired()

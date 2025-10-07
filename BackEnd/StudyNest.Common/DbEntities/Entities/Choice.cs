@@ -15,8 +15,7 @@ namespace StudyNest.Common.DbEntities.Entities
         [Required]
         public string QuestionId { get; set; } = string.Empty;
         public string Text { get; set; } = string.Empty;
-        public int OrderNo { get; set; }
-
+        public bool IsCorrect { get; set; }
         // Navigation
         public Question? Question { get; set; }
     }

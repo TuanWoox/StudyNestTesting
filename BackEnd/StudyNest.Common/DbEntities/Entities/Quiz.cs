@@ -20,6 +20,7 @@ namespace StudyNest.Common.DbEntities.Entities
         public string NoteId { get; set; }
         public Note Note { get; set; }
         public ICollection<Question> Questions { get; set; } = new List<Question>();
+        public ICollection<QuizAttempt> QuizAttempts { get; set; } = new List<QuizAttempt>();
 
     }
 }

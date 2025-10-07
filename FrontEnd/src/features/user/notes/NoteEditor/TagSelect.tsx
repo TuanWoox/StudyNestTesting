@@ -1,6 +1,6 @@
 import React from 'react';
 import CreatableSelect from 'react-select/creatable';
-import { Tag } from '@/types/notes';
+import { Tag } from '@/types/note/notes';
 import { components } from 'react-select';
 
 const CustomValueContainer = (props: any) => (
@@ -21,11 +21,10 @@ interface TagSelectProps {
     selectedTags: Tag[];
     tags: Tag[];
     onChange: (tags: Tag[]) => void;
-    onAddTag: (name: string) => Tag;
     darkMode: boolean;
 }
 
-const TagSelect: React.FC<TagSelectProps> = ({ selectedTags, tags, onChange, onAddTag, darkMode }) => {
+const TagSelect: React.FC<TagSelectProps> = ({ selectedTags, tags, onChange, darkMode }) => {
     return (
         <div className="flex-1">
             <label className={`block text-sm font-medium mb-2 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
@@ -34,26 +33,46 @@ const TagSelect: React.FC<TagSelectProps> = ({ selectedTags, tags, onChange, onA
             <CreatableSelect
                 isMulti
                 components={{ ValueContainer: CustomValueContainer }}
-                placeholder="Add tags to organize..."
+                placeholder=""
                 value={selectedTags.map((tag) => ({ label: tag.name, value: tag.id }))}
                 options={tags.map((tag) => ({ label: tag.name, value: tag.id }))}
                 onChange={(selectedOptions) => {
-                    const newTags = selectedOptions.map((opt) =>
-                        tags.find((t) => t.id === opt.value || t.name === opt.label) || onAddTag(opt.label)
-                    );
+                    const newTags = selectedOptions.map((opt) => {
+                        // tìm trong tags cũ
+                        const existing = tags.find((t) => t.id === opt.value || t.name === opt.label);
+                        // nếu không có → tạo object tạm để hiển thị thôi (id tạm thời cũng được)
+                        return existing || { id: `temp-${opt.label}`, name: opt.label };
+                    });
                     onChange(newTags);
                 }}
                 styles={{
                     menu: (base) => ({
                         ...base,
-                        maxHeight: "200px",
-                        overflowY: "auto",
                         zIndex: 9999,
+                        background: darkMode ? "#1F2937" : "#FFFFFF",
                     }),
                     menuList: (base) => ({
                         ...base,
                         maxHeight: "200px",
                         overflowY: "auto",
+                        scrollbarWidth: "thin",
+                    }),
+                    option: (base, state) => ({
+                        ...base,
+                        backgroundColor: state.isFocused
+                            ? darkMode
+                                ? "#374151" // nhẹ hơn nền để vẫn nhìn thấy hover
+                                : "#E5E7EB"
+                            : "transparent",
+                        color: darkMode
+                            ? state.isFocused
+                                ? "#FFFFFF" // giữ chữ trắng rõ khi hover
+                                : "#D1D5DB"
+                            : state.isFocused
+                                ? "#111827"
+                                : "#374151",
+                        cursor: "pointer",
+                        transition: "background-color 0.2s ease",
                     }),
                     control: (base, state) => ({
                         ...base,

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, Tag as AntTag } from 'antd';
-import { Note } from '@/types/notes';
+import { Note } from '@/types/note/notes';
 
 interface NoteCardProps {
     note: Note;
@@ -67,6 +67,8 @@ const NoteCard: React.FC<NoteCardProps> = ({
                         ? "0 4px 15px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1)"
                         : "0 4px 15px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04)",
                 transform: isSelected ? "translateY(-2px)" : "translateY(0)",
+                width: "100%",              // ✅ chiếm 100% ô grid
+                margin: "0 auto",           // ✅ căn giữa khi lẻ cột
             }}
             className={`hover:scale-[1.01] hover:-translate-y-1 ${darkMode ? "hover:bg-gray-600 hover:shadow-xl" : "hover:bg-white hover:shadow-xl"
                 }`}

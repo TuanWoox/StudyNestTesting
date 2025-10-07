@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using StudyNest.Common.DbEntities.Identities;
 using StudyNest.Common.Interfaces;
 using StudyNest.Common.Models.DTOs.CoreDTO;
@@ -66,47 +67,81 @@ namespace StudyNest.Business.v1
             try
             {
                 StudyNestLogger.Instance.Debug($"InitUserData for role: {role}");
+                Console.WriteLine(_context.ChangeTracker.DebugView.LongView);
+
                 // Check if role exists
-                var existingRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == role.ToString());
+                var existingRole = await _context.Roles
+                    .FirstOrDefaultAsync(r => r.Name == role.ToString());
+
                 if (existingRole == null)
                 {
-                    throw new InvalidOperationException($"Role '{role}' does not exist. Please initialize roles first.");
+                    throw new InvalidOperationException(
+                        $"Role '{role}' does not exist. Please initialize roles first."
+                    );
                 }
+
                 // Check if user already exists
                 var existingUser = await _userManager.FindByNameAsync(username);
                 if (existingUser != null)
                 {
-                    StudyNestLogger.Instance.Debug($"User '{username}' already exists. Skipping creation.");
+                    StudyNestLogger.Instance.Debug(
+                        $"User '{username}' already exists. Skipping creation."
+                    );
                     return;
                 }
+
                 // Create new user
                 var newUser = new ApplicationUser
                 {
                     UserName = username,
                     FullName = username,
-                    Email = username + "@primas.net",
+                    Email = $"{username}@primas.net",
                     EmailConfirmed = true,
                     DateOfBirth = DateTimeOffset.UtcNow,
                     Deleted = false,
                     DateCreated = DateTimeOffset.UtcNow
                 };
-                string password = char.ToUpper(username[0]) + username.Substring(1) + "@123";
+
+                string password = $"{char.ToUpper(username[0])}{username.Substring(1)}@123";
+
                 var result = await _userManager.CreateAsync(newUser, password);
                 if (!result.Succeeded)
                 {
                     var errors = string.Join(", ", result.Errors.Select(e => e.Description));
                     throw new InvalidOperationException($"Failed to create user: {errors}");
                 }
+
+                // Re-fetch user by username to ensure tracking consistency
+                var createdUser = await _userManager.FindByNameAsync(username);
+                if (createdUser == null)
+                {
+                    throw new InvalidOperationException($"User '{username}' could not be retrieved after creation.");
+                }
+
                 // Assign role
-                await _userManager.AddToRoleAsync(newUser, role.ToString());
+                await _userManager.AddToRoleAsync(createdUser, role.ToString());
+
+                // Re-fetch by email to ensure latest tracking state
+                createdUser = await _userManager.FindByEmailAsync($"{username}@primas.net");
+                if (createdUser == null)
+                {
+                    throw new InvalidOperationException($"User '{username}' could not be retrieved by email after role assignment.");
+                }
+
                 // Confirm email
-                var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
-                await _userManager.ConfirmEmailAsync(newUser, token);
-                StudyNestLogger.Instance.Debug($"User '{username}' created and assigned role '{role}'.");
+                var token = await _userManager.GenerateEmailConfirmationTokenAsync(createdUser);
+                await _userManager.ConfirmEmailAsync(createdUser, token);
+
+                StudyNestLogger.Instance.Debug(
+                    $"User '{username}' created, assigned role '{role}', and email confirmed successfully."
+                );
             }
             catch (Exception ex)
             {
-                StudyNestLogger.Instance.Error($"An error occurred while initializing user '{username}': {ex.Message}", ex);
+                StudyNestLogger.Instance.Error(
+                    $"An error occurred while initializing user '{username}': {ex.Message}",
+                    ex
+                );
                 throw;
             }
         }
