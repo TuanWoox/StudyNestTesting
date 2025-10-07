@@ -67,8 +67,7 @@ namespace StudyNest.Business.v1
             try
             {
                 StudyNestLogger.Instance.Debug($"InitUserData for role: {role}");
-                Console.WriteLine(_context.ChangeTracker.DebugView.LongView);
-
+            
                 // Check if role exists
                 var existingRole = await _context.Roles
                     .FirstOrDefaultAsync(r => r.Name == role.ToString());
