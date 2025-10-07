@@ -24,6 +24,11 @@ namespace StudyNest.Data
         public DbSet<Choice> Choices { get; set; }
         public DbSet<Setting> Settings { get; set; }
         public DbSet<ImageToDelete> ImageToDeletes { get; set; }
+        public DbSet<QuizAttempt> QuizAttempts { get; set; }
+        public DbSet<QuizAttemptSnapshot> QuizAttemptSnapshots { get; set; }
+        public DbSet<QuizAttemptAnswer> QuizAttemptAnswers { get; set; }
+        public DbSet<QuizAttempAnswerChoice> QuizAttempAnswerChoices { get; set; }
+
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
