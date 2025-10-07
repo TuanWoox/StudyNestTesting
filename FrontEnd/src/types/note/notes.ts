@@ -40,3 +40,35 @@ export interface Note {
     dateModified?: string;
     deleted?: boolean;
 }
+
+export interface CreateNoteDTO {
+    id?: string; // BaseKey có id? nếu cần
+    title: string;
+    content: string;
+    status: string;
+    folderId?: string | null;
+    tagsNames?: string[]; // backend nhận List<string> TagsNames
+    ownerId?: string;
+}
+
+export interface UpdateNoteDTO extends CreateNoteDTO {
+    id: string;
+}
+
+export interface CreateFolderDTO {
+    id?: string;
+    folderName: string;
+    ownerId?: string;
+}
+
+export interface UpdateFolderDTO extends CreateFolderDTO {
+    id: string;
+}
+
+export interface CreateTagDTO {
+    name: string;
+}
+
+export interface UpdateTagDTO extends CreateTagDTO {
+    id: string;
+}

@@ -1,24 +1,36 @@
-import React, { useState } from "react";
-import useCreateFolder from "@/hooks/folderHook/useCreateFolder";
+import React, { useState, useEffect } from "react";
+import { Folder } from "@/types/note/notes";
+import useUpdateFolder from "@/hooks/folderHook/useUpdateFolder";
 
-interface ModalCreateFolderProps {
+interface ModalUpdateFolderProps {
     visible: boolean;
     onCancel: () => void;
     darkMode: boolean;
+    folder: Folder | null; // folder cần update
+    setSelectedFolder: React.Dispatch<React.SetStateAction<Folder | null>>;
 }
 
-const ModalCreateFolder: React.FC<ModalCreateFolderProps> = ({
+const ModalUpdateFolder: React.FC<ModalUpdateFolderProps> = ({
     visible,
     onCancel,
     darkMode,
+    folder,
+    setSelectedFolder
 }) => {
     const [folderName, setFolderName] = useState("");
-    const { createFolder, isLoading } = useCreateFolder();
+    const { updateFolder, isLoading } = useUpdateFolder();
+
+    // Khi modal mở, set sẵn tên cũ vào input
+    useEffect(() => {
+        if (folder) {
+            setFolderName(folder.folderName || "");
+        }
+    }, [folder]);
 
     const handleOk = () => {
-        if (folderName.trim() !== "") {
-            createFolder(
-                { id: "string", folderName: folderName.trim(), ownerId: "string" },
+        if (folder && folderName.trim() !== "") {
+            updateFolder(
+                { id: folder.id, folderName: folderName.trim() },
                 {
                     onSuccess: () => {
                         setFolderName("");
@@ -29,7 +41,13 @@ const ModalCreateFolder: React.FC<ModalCreateFolderProps> = ({
         }
     };
 
-    if (!visible) return null;
+    const handleClose = () => {
+        setFolderName("");
+        setSelectedFolder(null);
+        onCancel();
+    }
+
+    if (!visible || !folder) return null;
 
     return (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50">
@@ -37,12 +55,8 @@ const ModalCreateFolder: React.FC<ModalCreateFolderProps> = ({
                 className={`w-[400px] rounded-xl shadow-lg p-6 transition-all ${darkMode ? "bg-gray-900 text-gray-100" : "bg-white text-gray-800"
                     }`}
             >
-                {/* Title */}
-                <h2 className="text-xl font-semibold mb-4">
-                    Create New Folder
-                </h2>
+                <h2 className="text-xl font-semibold mb-4">Update Folder</h2>
 
-                {/* Input */}
                 <input
                     type="text"
                     placeholder="Folder name"
@@ -54,13 +68,9 @@ const ModalCreateFolder: React.FC<ModalCreateFolderProps> = ({
                         }`}
                 />
 
-                {/* Buttons */}
                 <div className="flex justify-end gap-3 mt-6">
                     <button
-                        onClick={() => {
-                            setFolderName("");
-                            onCancel();
-                        }}
+                        onClick={handleClose}
                         className={`px-4 py-2 rounded-lg font-medium transition ${darkMode
                             ? "text-gray-300 hover:bg-gray-700"
                             : "text-gray-700 hover:bg-gray-200"
@@ -71,12 +81,10 @@ const ModalCreateFolder: React.FC<ModalCreateFolderProps> = ({
                     <button
                         disabled={isLoading}
                         onClick={handleOk}
-                        className={`px-5 py-2 rounded-lg font-medium text-white transition ${darkMode
-                            ? "bg-sky-500 hover:bg-sky-600"
-                            : "bg-blue-600 hover:bg-blue-700"
+                        className={`px-5 py-2 rounded-lg font-medium text-white transition ${darkMode ? "bg-sky-500 hover:bg-sky-600" : "bg-blue-600 hover:bg-blue-700"
                             }`}
                     >
-                        {isLoading ? "Creating..." : "Create"}
+                        {isLoading ? "Updating..." : "Update"}
                     </button>
                 </div>
             </div>
@@ -84,4 +92,4 @@ const ModalCreateFolder: React.FC<ModalCreateFolderProps> = ({
     );
 };
 
-export default ModalCreateFolder;
+export default ModalUpdateFolder;

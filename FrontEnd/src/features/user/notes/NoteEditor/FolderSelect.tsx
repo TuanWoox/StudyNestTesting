@@ -1,17 +1,16 @@
 import React from 'react';
 import CreatableSelect from 'react-select/creatable';
-import { Folder } from '@/types/notes';
+import { Folder } from '@/types/note/notes';
 
 interface FolderSelectProps {
     selectedFolder?: Folder;
     folders: Folder[];
     onChange: (folder?: Folder) => void;
-    onAddFolder: (name: string) => Folder;
     darkMode: boolean;
 }
 
 const FolderSelect: React.FC<FolderSelectProps> = ({
-    selectedFolder, folders, onChange, onAddFolder, darkMode
+    selectedFolder, folders, onChange, darkMode
 }) => {
     return (
         <div className="flex-1">
@@ -28,12 +27,30 @@ const FolderSelect: React.FC<FolderSelectProps> = ({
                         onChange(undefined);
                     } else {
                         const exists = folders.find((f) => f.id === option.value || f.folderName === option.label);
-                        const folder = exists || onAddFolder(option.label);
+                        const folder = exists || {
+                            id: `temp-${Date.now()}`, // đánh dấu là folder mới chưa có trên server
+                            folderName: option.label,
+                            ownerId: "1"
+                        };
                         onChange(folder);
                     }
                 }}
                 styles={{
-                    menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                    menuPortal: (base) => ({
+                        ...base,
+                        zIndex: 9999,
+                        position: "absolute", // cần có
+                    }),
+                    menu: (base) => ({
+                        ...base,
+                        background: darkMode ? "#1F2937" : "#FFFFFF",
+                    }),
+                    menuList: (base) => ({
+                        ...base,
+                        maxHeight: "200px", // quan trọng để scroll
+                        overflowY: "auto",  // phần cuộn nằm ở đây
+                        scrollbarWidth: "thin",
+                    }),
                     control: (base, state) => ({
                         ...base,
                         borderRadius: "8px",
@@ -50,6 +67,23 @@ const FolderSelect: React.FC<FolderSelectProps> = ({
                         "&:hover": {
                             borderColor: darkMode ? "#4B5563" : "#D1D5DB",
                         },
+                    }),
+                    option: (base, state) => ({
+                        ...base,
+                        backgroundColor: state.isFocused
+                            ? darkMode
+                                ? "#374151" // nhẹ hơn nền để vẫn nhìn thấy hover
+                                : "#E5E7EB"
+                            : "transparent",
+                        color: darkMode
+                            ? state.isFocused
+                                ? "#FFFFFF" // giữ chữ trắng rõ khi hover
+                                : "#D1D5DB"
+                            : state.isFocused
+                                ? "#111827"
+                                : "#374151",
+                        cursor: "pointer",
+                        transition: "background-color 0.2s ease",
                     }),
                     placeholder: (base) => ({
                         ...base,

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Input, Button, Space, Tooltip, Collapse } from 'antd';
-import { SearchOutlined, PlusOutlined, FileTextOutlined, FolderOutlined, TagsOutlined } from '@ant-design/icons';
+import { Input, Button, Space, Tooltip, Collapse, Dropdown, Menu } from 'antd';
+import { SearchOutlined, PlusOutlined, FileTextOutlined, FolderOutlined, TagsOutlined, EditOutlined, DeleteOutlined, MoreOutlined } from '@ant-design/icons';
 import NoteCard from './NoteCard';
-import { Note, Folder, Tag, NoteTag } from '@/types/notes';
+import { Note, Folder, Tag, NoteTag } from '@/types/note/notes';
 
 interface NoteSidebarProps {
     darkMode: boolean;
@@ -10,9 +10,12 @@ interface NoteSidebarProps {
     folders: Folder[];
     tags: Tag[];
     selectedNote: Note | null;
-    setSelectedNote: (note: Note) => void;
+    handleOpenEditor: (note: Note) => void;
     handleCreateNote: () => void;
-    setIsModalVisible: React.Dispatch<React.SetStateAction<boolean>>;
+    setIsModalCreateVisible: React.Dispatch<React.SetStateAction<boolean>>;
+    setIsModalUpdateVisible: React.Dispatch<React.SetStateAction<boolean>>;
+    setIsModalDeleteVisible: React.Dispatch<React.SetStateAction<boolean>>;
+    setSelectedFolder: React.Dispatch<React.SetStateAction<Folder | null>>;
 }
 
 type ViewMode = 'all' | 'folder' | 'tag';
@@ -23,9 +26,12 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
     folders,
     tags,
     selectedNote,
-    setSelectedNote,
+    handleOpenEditor,
     handleCreateNote,
-    setIsModalVisible
+    setIsModalCreateVisible,
+    setIsModalUpdateVisible,
+    setIsModalDeleteVisible,
+    setSelectedFolder
 }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [viewMode, setViewMode] = useState<ViewMode>('all');
@@ -44,39 +50,91 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
     );
 
     // Folder view: lấy notes từ folder.notes
-    const folderItems = filteredFolders.map((folder) => ({
-        key: folder.id,
-        label: (<div className="flex justify-between items-center w-full">
-            <span style={{ fontWeight: 600, fontSize: 16 }}><FolderOutlined /> {folder.folderName}</span>
-            <span style={{ fontSize: 12, color: '#999' }}>{folder.notes?.length || 0} notes</span>
-        </div>),
-        children: (folder.notes && folder.notes.length > 0) ? (
-            <div className="flex flex-col gap-2">
-                {folder.notes.map((note) => (
-                    <NoteCard
-                        key={note.id}
-                        note={note}
-                        darkMode={darkMode}
-                        isSelected={selectedNote?.id === note.id}
-                        onSelect={() => setSelectedNote(note)}
-                    />
-                ))}
-            </div>
-        ) : (
-            <div className="text-center py-3 text-gray-500 italic text-sm select-none">
-                No notes in this folder
-            </div>
-        ),
-        style: {
-            background: darkMode ? "linear-gradient(135deg, #1E293B, #334155)" : "linear-gradient(135deg, #F3F4F6, #E5E7EB)",
-            borderRadius: 8,
-            marginBottom: 8,
-            boxShadow: darkMode
-                ? '0 1px 3px rgba(0,0,0,0.6)'
-                : '0 1px 3px rgba(0,0,0,0.1)',
-            transition: 'all 0.3s ease'
-        }
-    }));
+    const folderItems = filteredFolders.map((folder) => {
+        const menu = (
+            <Menu
+                onClick={(e) => e.domEvent.stopPropagation()} // thêm dòng này để ngăn mở collapse khi click edit hay delete folder
+
+                items={[
+                    {
+                        key: 'edit',
+                        icon: <EditOutlined />,
+                        label: 'Edit Folder',
+                        onClick: () => {
+                            setSelectedFolder(folder);             // chọn folder hiện tại
+                            setIsModalUpdateVisible(true);        // mở modal update
+                        },
+                    },
+                    {
+                        key: 'delete',
+                        icon: <DeleteOutlined />,
+                        danger: true,
+                        label: 'Delete Folder',
+                        onClick: () => {
+                            setSelectedFolder(folder);
+                            setIsModalDeleteVisible(true);
+                        },
+                    },
+                ]}
+            />
+        );
+
+        return {
+            key: folder.id,
+            label: (
+                <div className="flex justify-between items-center w-full">
+                    <div style={{ fontWeight: 600, fontSize: 16 }}>
+                        <FolderOutlined /> {folder.folderName}
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span style={{ fontSize: 12, color: '#999' }}>
+                            {folder.notes?.length || 0} notes
+                        </span>
+                        <Dropdown overlay={menu} trigger={['click']}>
+                            <Button
+                                size="small"
+                                icon={<MoreOutlined />}
+                                style={{
+                                    border: 'none',
+                                    background: 'transparent',
+                                    color: darkMode ? '#E2E8F0' : '#111827',
+                                }}
+                                onClick={(e) => e.stopPropagation()} // tránh click vào collapse
+                            />
+                        </Dropdown>
+                    </div>
+                </div>
+            ),
+            children: (folder.notes && folder.notes.length > 0) ? (
+                <div className="flex flex-col gap-2">
+                    {folder.notes.map((note) => (
+                        <NoteCard
+                            key={note.id}
+                            note={note}
+                            darkMode={darkMode}
+                            isSelected={selectedNote?.id === note.id}
+                            onSelect={() => handleOpenEditor(note)}
+                        />
+                    ))}
+                </div>
+            ) : (
+                <div className="text-center py-3 text-gray-500 italic text-sm select-none">
+                    No notes in this folder
+                </div>
+            ),
+            style: {
+                background: darkMode
+                    ? "linear-gradient(135deg, #1E293B, #334155)"
+                    : "linear-gradient(135deg, #F3F4F6, #E5E7EB)",
+                borderRadius: 8,
+                marginBottom: 8,
+                boxShadow: darkMode
+                    ? '0 1px 3px rgba(0,0,0,0.6)'
+                    : '0 1px 3px rgba(0,0,0,0.1)',
+                transition: 'all 0.3s ease'
+            }
+        };
+    });
 
     // Tag view: lấy notes từ tag.noteTags[].note
     const tagItems = filteredTags.map((tag) => ({
@@ -94,7 +152,7 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
                             note={noteTag.note}
                             darkMode={darkMode}
                             isSelected={selectedNote?.id === noteTag.note.id}
-                            onSelect={() => setSelectedNote(noteTag.note!)}
+                            onSelect={() => handleOpenEditor(noteTag.note!)}
                         />
                     ) : null
                 ))}
@@ -116,10 +174,11 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
     }));
 
     return (
-        <div className="w-1/4 shrink-0 h-full overflow-y-auto p-4 border-r"
+        <div className="w-full shrink-0 h-full overflow-y-auto  p-4 border-r"
             style={{
                 backgroundColor: darkMode ? "#0f0f0f" : "#FFFFFF",
                 borderColor: darkMode ? "#212121" : "#E5E7EB",
+                scrollbarWidth: "thin",
             }}>
             {/* Actions */}
             <div className="flex justify-between items-center mb-4">
@@ -158,14 +217,18 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
             {/* Notes / Folders / Tags */}
             <div>
                 {viewMode === "all" && (
-                    <div className="flex flex-col gap-3">
+                    <div className="grid gap-4
+                    sm:grid-cols-1
+                    md:grid-cols-2
+                    lg:grid-cols-3
+                    xl:grid-cols-4">
                         {filteredNotes.map((note) => (
                             <NoteCard
                                 key={note.id}
                                 note={note}
                                 darkMode={darkMode}
                                 isSelected={selectedNote?.id === note.id}
-                                onSelect={() => setSelectedNote(note)}
+                                onSelect={() => handleOpenEditor(note)}
                             />
                         ))}
                     </div>
@@ -179,7 +242,7 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
                                 type="default"
                                 size="small"
                                 icon={<PlusOutlined />}
-                                onClick={() => setIsModalVisible(true)}
+                                onClick={() => setIsModalCreateVisible(true)}
                                 style={{
                                     background: darkMode ? "linear-gradient(135deg, #1E293B, #334155)" : "linear-gradient(135deg, #F3F4F6, #E5E7EB)",
                                     border: "none",

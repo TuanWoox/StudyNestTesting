@@ -1,8 +1,5 @@
-
-export enum SortOrderType {
-    ASC = 'ASC',
-    DESC = 'DESC'
-}
+import { SortOrderType } from "@/constants/sortOrderType";
+import { StudyNestFilterType } from "@/constants/filterType";
 
 export interface OrderMapping {
     sort: string;
@@ -10,18 +7,6 @@ export interface OrderMapping {
     dynamicProperty: string;
     delimiter: string;
     dataType: string;
-}
-
-export enum StudyNestFilterType {
-    Text = 'Text',
-    Number = 'Number',
-    DateTime = 'DateTime',
-    DropDown = 'DropDown',
-    Boolean = 'Boolean',
-    Date = 'Date',
-    DropDownList = 'DropDownList',
-    DynamicContent = 'DynamicContent',
-    EmailActions = 'EmailActions'
 }
 
 export interface FilterMapping {
