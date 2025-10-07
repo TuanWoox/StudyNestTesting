@@ -17,12 +17,12 @@ namespace StudyNest.Migrations
                 nullable: false,
                 defaultValue: "");
 
-            migrationBuilder.AddColumn<string>(
-                name: "OwnerId",
-                table: "Quizzes",
-                type: "text",
-                nullable: false,
-                defaultValue: "");
+            //migrationBuilder.AddColumn<string>(
+            //    name: "OwnerId",
+            //    table: "Quizzes",
+            //    type: "text",
+            //    nullable: false,
+            //    defaultValue: "");
 
             migrationBuilder.Sql(@"ALTER TABLE ""Quizzes"" DROP COLUMN IF EXISTS ""CreatedBy"";");
 
@@ -73,9 +73,9 @@ namespace StudyNest.Migrations
                 name: "IX_Quizzes_NoteId",
                 table: "Quizzes");
 
-            migrationBuilder.DropColumn(
-                name: "OwnerId",
-                table: "Quizzes");
+            //migrationBuilder.DropColumn(
+            //    name: "OwnerId",
+            //    table: "Quizzes");
 
             migrationBuilder.DropColumn(
                 name: "NoteId",
