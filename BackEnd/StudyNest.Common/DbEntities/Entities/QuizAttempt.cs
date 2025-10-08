@@ -21,12 +21,7 @@ namespace StudyNest.Common.DbEntities.Entities
         [Required]
         public string QuizAttemptSnapshotId { get; set; }
         public QuizAttemptSnapshot  QuizAttemptSnapshot { get; set; }
-        public DateTimeOffset EndTime { get; set; }
         public int Score { get; set; }
-        public bool IsCompleted { get; set; }
-        //Store draft answers as json in case the user wants to resume later and it supports for us to implement background job to auto save and calculate score
-        [Column(TypeName = "jsonb")]
-        public string DraftAnswers { get; set; }
         public ICollection<QuizAttemptAnswer> QuizAttemptAnswers { get; set; } = new List<QuizAttemptAnswer>();
     }
 }
