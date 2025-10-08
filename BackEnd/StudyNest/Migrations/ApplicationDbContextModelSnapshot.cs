@@ -402,7 +402,6 @@ namespace StudyNest.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("QuizAttemptAnswerId")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -411,7 +410,7 @@ namespace StudyNest.Migrations
 
                     b.HasIndex("QuizAttemptAnswerId");
 
-                    b.ToTable("QuizAttempAnswerChoice");
+                    b.ToTable("QuizAttempAnswerChoices");
                 });
 
             modelBuilder.Entity("StudyNest.Common.DbEntities.Entities.QuizAttempt", b =>
@@ -431,6 +430,10 @@ namespace StudyNest.Migrations
 
                     b.Property<bool>("Deleted")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("DraftAnswers")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
 
                     b.Property<DateTimeOffset>("EndTime")
                         .HasColumnType("timestamp with time zone");
@@ -463,7 +466,7 @@ namespace StudyNest.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("QuizAttempt");
+                    b.ToTable("QuizAttempts");
                 });
 
             modelBuilder.Entity("StudyNest.Common.DbEntities.Entities.QuizAttemptAnswer", b =>
@@ -501,7 +504,7 @@ namespace StudyNest.Migrations
 
                     b.HasIndex("QuizAttemptId");
 
-                    b.ToTable("QuizAttemptAnswer");
+                    b.ToTable("QuizAttemptAnswers");
                 });
 
             modelBuilder.Entity("StudyNest.Common.DbEntities.Entities.QuizAttemptSnapshot", b =>
@@ -536,7 +539,7 @@ namespace StudyNest.Migrations
 
                     b.HasIndex("QuizId");
 
-                    b.ToTable("QuizAttemptSnapshot");
+                    b.ToTable("QuizAttemptSnapshots");
                 });
 
             modelBuilder.Entity("StudyNest.Common.DbEntities.Entities.Setting", b =>
@@ -993,9 +996,7 @@ namespace StudyNest.Migrations
                 {
                     b.HasOne("StudyNest.Common.DbEntities.Entities.QuizAttemptAnswer", "QuizAttemptAnswer")
                         .WithMany("QuizAttemptAnswerChoices")
-                        .HasForeignKey("QuizAttemptAnswerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("QuizAttemptAnswerId");
 
                     b.Navigation("QuizAttemptAnswer");
                 });
