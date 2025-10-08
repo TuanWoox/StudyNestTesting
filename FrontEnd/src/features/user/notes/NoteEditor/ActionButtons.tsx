@@ -1,23 +1,23 @@
 import React from "react";
 import { Button, Popconfirm } from "antd";
-import { SaveOutlined, DeleteOutlined } from "@ant-design/icons";
+import { SaveOutlined, CloseOutlined } from "@ant-design/icons";
 
 interface ActionButtonsProps {
     onSave: () => void;
-    onDelete: () => void;
+    onClose: () => void;
     darkMode: boolean;
-    isCreating?: boolean
-    isDeleting?: boolean;
+    isCreating?: boolean;
     isUpdating?: boolean;
+    confirmBeforeClose?: boolean;
 }
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({
     onSave,
-    onDelete,
+    onClose,
     darkMode,
     isCreating = false,
-    isDeleting = false,
-    isUpdating = false
+    isUpdating = false,
+    confirmBeforeClose
 }) => {
     const commonStyle = {
         display: "flex",
@@ -32,7 +32,45 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
     } as React.CSSProperties;
 
     return (
-        <div className="flex gap-3 m-auto">
+        <div className="flex gap-3">
+            {confirmBeforeClose ? (
+                <Popconfirm
+                    title="Unsaved changes"
+                    description="You have unsaved changes. Are you sure you want to close without saving?"
+                    okText="Close without saving"
+                    cancelText="Cancel"
+                    placement="topRight"
+                    onConfirm={onClose}
+                >
+                    <Button
+                        type="text"
+                        style={{
+                            ...commonStyle,
+                            border: `1px solid ${darkMode ? "#3F3F46" : "#E5E7EB"}`,
+                            background: darkMode ? "#27272A" : "#FFFFFF",
+                            color: darkMode ? "#F97316" : "#EA580C",
+                        }}
+                        icon={<CloseOutlined />}
+                    >
+                        Close
+                    </Button>
+                </Popconfirm>
+            ) : (
+                <Button
+                    type="text"
+                    onClick={onClose}
+                    style={{
+                        ...commonStyle,
+                        border: `1px solid ${darkMode ? "#3F3F46" : "#E5E7EB"}`,
+                        background: darkMode ? "#27272A" : "#FFFFFF",
+                        color: darkMode ? "#F97316" : "#EA580C",
+                    }}
+                    icon={<CloseOutlined />}
+                >
+                    Close
+                </Button>
+            )}
+
             <Button
                 type="text"
                 onClick={onSave}
@@ -56,39 +94,6 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
             >
                 Save
             </Button>
-
-            <Popconfirm
-                title="Delete this note?"
-                description="This action cannot be undone."
-                okText="Delete"
-                cancelText="Cancel"
-                placement="bottomRight"
-                okButtonProps={{ danger: true, loading: isDeleting }}
-                onConfirm={onDelete}
-            >
-                <Button
-                    type="text"
-                    className={`danger ${darkMode ? "dark" : "light"}`}
-                    style={{
-                        ...commonStyle,
-                        border: `1px solid ${darkMode ? "#3F3F46" : "#E5E7EB"}`,
-                        background: darkMode ? "#27272A" : "#FFFFFF",
-                        color: "#EF4444",
-                    }}
-                    onMouseEnter={(e) => {
-                        e.currentTarget.style.background = darkMode ? "#1F2937" : "#FEF2F2";
-                        e.currentTarget.style.color = "#DC2626";
-                    }}
-                    onMouseLeave={(e) => {
-                        e.currentTarget.style.background = darkMode ? "#27272A" : "#FFFFFF";
-                        e.currentTarget.style.color = "#EF4444";
-                    }}
-                    icon={<DeleteOutlined />}
-                    loading={isDeleting}
-                >
-                    Delete
-                </Button>
-            </Popconfirm>
         </div>
     );
 };

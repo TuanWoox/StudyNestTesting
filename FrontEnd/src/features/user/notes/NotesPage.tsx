@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { Note, Folder, Tag } from "@/types/note/notes";
 import { EStatus } from "@/utils/enums/EStatus";
@@ -10,6 +10,7 @@ import NoteEditor from "./NoteEditor/NoteEditor";
 import ModalCreateFolder from "./ModalCreateFolder";
 import ModalUpdateFolder from "./ModalUpdateFolder";
 import ModalDeleteFolder from "./ModalDeleteFolder";
+import useDeleteNote from "@/hooks/noteHook/useDeleteNote";
 
 const NotesPage: React.FC = () => {
     const darkMode = useOutletContext<boolean>();
@@ -33,12 +34,11 @@ const NotesPage: React.FC = () => {
         isError: errorFolders,
     } = useGetAllFolder({ pageSize: -1, pageNumber: 0 });
 
+    const { deleteNote } = useDeleteNote();
+
     const folders = folderData?.data || []; // `data` là mảng thư mục trong PagedData
     const tags = tagData?.data || [];
     const notes = noteData?.data || [];
-
-    const [notesState, setNotesState] = useState<Note[]>(notes);
-    // const [tagsState, setTagsState] = useState<Tag[]>(tags);
 
     const [selectedNote, setSelectedNote] = useState<Note | null>(null);
     const [selectedFolder, setSelectedFolder] = useState<Folder | null>(null);
@@ -67,23 +67,12 @@ const NotesPage: React.FC = () => {
         setIsEditorVisible(true);
     };
 
-    const handleUpdateNote = (updatedNote: Note) => {
-        setNotesState((prev) => {
-            const exists = prev.some((note) => note.id === updatedNote.id);
-            if (exists) {
-                return prev.map((note) =>
-                    note.id === updatedNote.id ? updatedNote : note
-                );
-            } else {
-                return [updatedNote, ...prev];
-            }
-        });
-        setSelectedNote(updatedNote);
-    };
-
     const handleDeleteNote = (id: string) => {
-        setNotesState((prev) => prev.filter((note) => note.id !== id));
-        if (selectedNote?.id === id) setSelectedNote(null);
+        try {
+            deleteNote(id);
+        } catch (error) {
+            console.error("Delete note failed:", error);
+        }
     };
 
     const handleOpenEditor = (note: Note) => {
@@ -113,6 +102,7 @@ const NotesPage: React.FC = () => {
                 setIsModalUpdateVisible={setIsModalUpdateVisible}  // truyền thêm
                 setIsModalDeleteVisible={setIsModalDeleteVisible}  // truyền thêm
                 setSelectedFolder={setSelectedFolder}              // truyền thêm
+                handleDeleteNote={handleDeleteNote}
             />
             <ModalCreateFolder
                 visible={isModalCreateVisible}
@@ -139,8 +129,6 @@ const NotesPage: React.FC = () => {
                 note={selectedNote}
                 folders={folders}
                 tags={tags}
-                handleUpdateNote={handleUpdateNote}
-                handleDeleteNote={handleDeleteNote}
             />
         </div>
     );

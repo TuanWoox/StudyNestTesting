@@ -16,6 +16,8 @@ const useDeleteFolder = () => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["folders"] });
+            queryClient.invalidateQueries({ queryKey: ["notes"] });
+            queryClient.invalidateQueries({ queryKey: ["tags"] });
             toast.success("Folder deleted successfully");
         },
         onError: (err) => {

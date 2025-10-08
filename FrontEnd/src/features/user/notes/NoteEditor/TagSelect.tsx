@@ -11,6 +11,7 @@ const CustomValueContainer = (props: any) => (
             overflowY: "auto",
             maxHeight: "40px",
             paddingRight: "4px",
+            scrollbarWidth: "none"
         }}>
             {props.children}
         </div>

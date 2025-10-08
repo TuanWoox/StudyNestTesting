@@ -1,47 +1,23 @@
 import React from 'react';
-import { Card, Tag as AntTag } from 'antd';
+import { Card, Tag as AntTag, Popconfirm, Tooltip, Button } from 'antd';
+import { DeleteOutlined } from '@ant-design/icons';
 import { Note } from '@/types/note/notes';
+import { getPlainTextFromEditorJs } from '@/utils/getPlainTextFromEditorJs';
 
 interface NoteCardProps {
     note: Note;
     darkMode: boolean;
     isSelected: boolean;
     onSelect: () => void;
+    onDelete: (id: string) => void;
 }
-
-const getPlainTextFromEditorJs = (content: string): string => {
-    try {
-        const parsed = JSON.parse(content);
-        if (!parsed.blocks || !Array.isArray(parsed.blocks)) return "";
-
-        // Lấy text từ mỗi block
-        const texts = parsed.blocks.map((block: any) => {
-            switch (block.type) {
-                case "header":
-                case "paragraph":
-                case "quote":
-                    return block.data.text;
-                case "list":
-                    return block.data.items.join(", ");
-                case "checklist":
-                    return block.data.items.map((i: any) => i.text).join(", ");
-                default:
-                    return "";
-            }
-        });
-
-        return texts.filter(Boolean).join(" ").slice(0, 150); // Giới hạn 150 ký tự
-    } catch (error) {
-        return "";
-    }
-};
-
 
 const NoteCard: React.FC<NoteCardProps> = ({
     note,
     darkMode,
     isSelected,
-    onSelect
+    onSelect,
+    onDelete,
 }) => {
     // Lấy tags từ note.noteTags[].tag
     const tags = note.noteTags?.map(nt => nt.tag) || [];
@@ -67,8 +43,9 @@ const NoteCard: React.FC<NoteCardProps> = ({
                         ? "0 4px 15px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1)"
                         : "0 4px 15px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04)",
                 transform: isSelected ? "translateY(-2px)" : "translateY(0)",
-                width: "100%",              // ✅ chiếm 100% ô grid
-                margin: "0 auto",           // ✅ căn giữa khi lẻ cột
+                width: "100%",              // chiếm 100% ô grid
+                margin: "0 auto",           // căn giữa khi lẻ cột
+                position: "relative"
             }}
             className={`hover:scale-[1.01] hover:-translate-y-1 ${darkMode ? "hover:bg-gray-600 hover:shadow-xl" : "hover:bg-white hover:shadow-xl"
                 }`}
@@ -78,6 +55,27 @@ const NoteCard: React.FC<NoteCardProps> = ({
                 },
             }}
         >
+            {/* 🗑️ Nút xóa ở góc trên phải */}
+            <div className="absolute top-2 right-2 z-10" onClick={(e) => e.stopPropagation()}>
+                <Popconfirm
+                    title="Delete this note?"
+                    description="Are you sure you want to delete this note permanently?"
+                    onConfirm={() => onDelete(note.id)}
+                    okText="Delete"
+                    cancelText="Cancel"
+                    okButtonProps={{ danger: true }}
+                >
+                    <Tooltip title="Delete note">
+                        <Button
+                            type="text"
+                            size="small"
+                            icon={<DeleteOutlined />}
+                            danger
+                        />
+                    </Tooltip>
+                </Popconfirm>
+            </div>
+
             <h3 className="font-bold text-lg mb-3 truncate">{note.title}</h3>
             <p className="text-sm mb-4 line-clamp-2">
                 {getPlainTextFromEditorJs(note.content) || "No content"}
