@@ -66,12 +66,26 @@ namespace StudyNest.Controllers
             return Ok(result);
         }
         [HttpPut("SubmitQuizAttempt/{id}")]
-        public async Task<IActionResult> SubmitQuizAttempt(string id)
+        public async Task<IActionResult> SubmitQuizAttempt(string id, List<CreateQuizAttemptAnswerDTO> submittedAnswers)
         {
             ReturnResult<QuizAttemptDTO> result = new ReturnResult<QuizAttemptDTO>();
             try
             {
-                result = await _quizAttemptBusiness.SubmitQuizAttempt(id);
+                result = await _quizAttemptBusiness.SubmitQuizAttempt(id,"",submittedAnswers);
+            }
+            catch (Exception ex)
+            {
+                StudyNestLogger.Instance.Error(ex);
+            }
+            return Ok(result);
+        }
+        [HttpPut("AutoSaveDraft/{id}")]
+        public async Task<IActionResult> AutoSaveDraft(string id, List<CreateQuizAttemptAnswerDTO> draftAnswers)
+        {
+            ReturnResult<bool> result = new ReturnResult<bool>();
+            try
+            {
+                result = await _quizAttemptBusiness.AutoSaveDraft(id, draftAnswers);
             }
             catch (Exception ex)
             {

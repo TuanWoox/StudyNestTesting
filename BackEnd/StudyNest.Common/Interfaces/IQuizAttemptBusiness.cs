@@ -1,6 +1,7 @@
 ﻿using StudyNest.Common.DbEntities.Entities;
 using StudyNest.Common.Models.DTOs.CoreDTO;
 using StudyNest.Common.Models.DTOs.EntityDTO.QuizAttempt;
+using StudyNest.Common.Models.DTOs.EntityDTO.QuizAttemptAnswer;
 using StudyNest.Common.Models.DTOs.EntityDTO.Quizzes;
 using StudyNest.Common.Models.Paging;
 using System;
@@ -16,6 +17,7 @@ namespace StudyNest.Common.Interfaces
         public Task<ReturnResult<PagedData<SelectQuizAttemptDTO, string>>> GetPaging(Page<string> page, bool isExported = false);
         public Task<ReturnResult<QuizAttemptDTO>> GetOneById(string id);
         public Task<ReturnResult<QuizAttemptDTO>> CreateQuizAttempt(CreateQuizAttemptDTO newEntity);
-        public Task<ReturnResult<QuizAttemptDTO>> SubmitQuizAttempt(string quizAttemptId, string userId = "");
+        public Task<ReturnResult<QuizAttemptDTO>> SubmitQuizAttempt(string quizAttemptId,string userId = "", List<CreateQuizAttemptAnswerDTO> submittedAnswers = null);
+        public Task<ReturnResult<bool>> AutoSaveDraft(string id, List<CreateQuizAttemptAnswerDTO> draftAnswers);
     }
 }

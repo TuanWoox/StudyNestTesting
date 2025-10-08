@@ -7,6 +7,7 @@ using StudyNest.Common.Interfaces;
 using StudyNest.Common.Models.DTOs.CoreDTO;
 using StudyNest.Common.Models.DTOs.EntityDTO.Question;
 using StudyNest.Common.Models.DTOs.EntityDTO.QuizAttempt;
+using StudyNest.Common.Models.DTOs.EntityDTO.QuizAttemptAnswer;
 using StudyNest.Common.Models.Paging;
 using StudyNest.Common.Utils.Extensions;
 using StudyNest.Common.Utils.Helper;
@@ -22,13 +23,15 @@ namespace StudyNest.Business.v1
         IUserContext _userContext;
         IQuizAttemptSnapshotBusiness _quizAttemptSnapshotBusiness;
         IMapper _mapper;
+        IQuizAttemptAnswerBusiness _quizAttemptAnswerBusiness;
         public QuizAttemptBusiness(ApplicationDbContext dbContext, IRepository<QuizAttempt, string> repository, IUserContext userContext,
-            IQuizAttemptSnapshotBusiness quizAttemptSnapshotBusiness, IMapper mapper)
+            IQuizAttemptSnapshotBusiness quizAttemptSnapshotBusiness, IMapper mapper, IQuizAttemptAnswerBusiness quizAttemptAnswerBusiness)
         {
             this._dbContext = dbContext;
             this._repository = repository;
             this._userContext = userContext;
             this._quizAttemptSnapshotBusiness = quizAttemptSnapshotBusiness;
+            this._quizAttemptAnswerBusiness = quizAttemptAnswerBusiness;
             this._mapper = mapper;  
         }
         public async Task<ReturnResult<PagedData<SelectQuizAttemptDTO, string>>> GetPaging(Page<string> page, bool isExported = false)
@@ -143,7 +146,7 @@ namespace StudyNest.Business.v1
                                     {
                                         result.Result = _mapper.Map<QuizAttemptDTO>(savedResult.Result);
                                         // Schedule a background job to submit the quiz attempt when the time is up
-                                        BackgroundJob.Schedule(() => SubmitQuizAttempt(result.Result.Id, _userContext.UserId), quizAttempt.EndTime.UtcDateTime);
+                                        BackgroundJob.Schedule(() => SubmitQuizAttempt(result.Result.Id, _userContext.UserId, null), quizAttempt.EndTime.UtcDateTime);
                                     }
                                 }
                             }
@@ -170,20 +173,44 @@ namespace StudyNest.Business.v1
             }
             return result;
         }
-        public async Task<ReturnResult<QuizAttemptDTO>> SubmitQuizAttempt(string quizAttemptId, string userId = "")
+        public async Task<ReturnResult<QuizAttemptDTO>> SubmitQuizAttempt(string quizAttemptId,string userId = "", List<CreateQuizAttemptAnswerDTO> submittedAnswers = null)
         {
             ReturnResult<QuizAttemptDTO> result = new ReturnResult<QuizAttemptDTO>();
-            try 
+            try
             {
-                if(string.IsNullOrEmpty(userId)) 
+                if (string.IsNullOrEmpty(userId))
                 {
                     userId = _userContext.UserId;
                 }
-                var existingAttempt = await _dbContext.QuizAttempts.Where(x => x.Id == quizAttemptId && x.UserId == userId && x.IsCompleted == false)                                  
-                                                                .Include(x => x.QuizAttemptSnapshot)
-                                                                .Include(x => x.QuizAttemptAnswers)
-                                                                .FirstOrDefaultAsync();
-                
+
+                // If submittedAnswers is null, try to get the draft answers from the existing attempt record ( This will triggered by background job )
+                if (submittedAnswers == null)
+                {
+                    var attemptWithDraft = await _dbContext.QuizAttempts
+                        .Where(x => x.Id == quizAttemptId && x.UserId == userId && x.IsCompleted == false)
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync();
+
+                    var draftAnswersJson = attemptWithDraft?.DraftAnswers;
+                    if (draftAnswersJson != null)
+                    {
+                        submittedAnswers = JsonSerializer.Deserialize<List<CreateQuizAttemptAnswerDTO>>(draftAnswersJson)!;
+                    }
+                }
+
+                // Save the submitted answers FIRST
+                foreach (var answer in submittedAnswers!)
+                {
+                    await _quizAttemptAnswerBusiness.CreateQuizAttemptAnswer(answer);
+                }
+
+                // NOW query the existing attempt with all answers included
+                var existingAttempt = await _dbContext.QuizAttempts
+                    .Where(x => x.Id == quizAttemptId && x.UserId == userId && x.IsCompleted == false)
+                    .Include(x => x.QuizAttemptSnapshot)
+                    .Include(x => x.QuizAttemptAnswers)
+                    .FirstOrDefaultAsync();
+
                 if (existingAttempt != null)
                 {
                     var jsonString = existingAttempt.QuizAttemptSnapshot.QuizQuestions;
@@ -191,13 +218,16 @@ namespace StudyNest.Business.v1
                     {
                         //We are sure to put ! because we have check above
                         List<QuestionDTO> parsedQuestions = JsonSerializer.Deserialize<List<QuestionDTO>>(jsonString)!;
-                        // Calculate the score ( Percentage of correct answers)
+
+                        // Calculate the score (Percentage of correct answers)
                         int totalQuestions = parsedQuestions.Count;
-                        int correctAnswers = existingAttempt.QuizAttemptAnswers.Where( x => x.IsCorrect).Count();   
+                        int correctAnswers = existingAttempt.QuizAttemptAnswers.Where(x => x.IsCorrect).Count();
                         int score = (int)Math.Round((double)(correctAnswers * 100) / totalQuestions);
+
                         // Update the QuizAttempt
                         existingAttempt.Score = score;
                         existingAttempt.IsCompleted = true;
+
                         // Update the QuizAttemptAnswers to set IsCorrect field and Score field
                         var updateResult = await _repository.UpdateAsync(existingAttempt);
                         if (updateResult.Result != null)
@@ -217,6 +247,39 @@ namespace StudyNest.Business.v1
                 else
                 {
                     result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "quiz attempt", quizAttemptId);
+                }
+            }
+            catch (Exception ex)
+            {
+                result.Message = ex.Message;
+                StudyNestLogger.Instance.Error(ex);
+            }
+            return result;
+        }
+        public async Task<ReturnResult<bool>> AutoSaveDraft(string id, List<CreateQuizAttemptAnswerDTO> draftAnswers)
+        {
+            ReturnResult<bool> result = new ReturnResult<bool>();
+            try
+            {
+                var existingAttempt = await _dbContext.QuizAttempts
+                                            .Where(x => x.Id == id && x.UserId == _userContext.UserId && x.IsCompleted == false)
+                                            .FirstOrDefaultAsync();
+                if (existingAttempt != null)
+                {
+                    existingAttempt.DraftAnswers = JsonSerializer.Serialize(draftAnswers);
+                    var updateResult = await _repository.UpdateAsync(existingAttempt);
+                    if (updateResult.Result != null)
+                    {
+                        result.Result = true;
+                    }
+                    else
+                    {
+                        result.Message = updateResult.Message;
+                    }
+                }
+                else
+                {
+                    result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "quiz attempt", id);
                 }
             }
             catch (Exception ex)
