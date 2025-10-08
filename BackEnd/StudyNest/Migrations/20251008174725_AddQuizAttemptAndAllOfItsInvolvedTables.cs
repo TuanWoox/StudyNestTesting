@@ -5,10 +5,19 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace StudyNest.Migrations
 {
+    /// <inheritdoc />
     public partial class AddQuizAttemptAndAllOfItsInvolvedTables : Migration
     {
+        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AddColumn<bool>(
+                name: "IsBeingConvertToSnapShot",
+                table: "Quizzes",
+                type: "boolean",
+                nullable: false,
+                defaultValue: false);
+
             migrationBuilder.CreateTable(
                 name: "QuizAttemptSnapshots",
                 columns: table => new
@@ -43,6 +52,7 @@ namespace StudyNest.Migrations
                     EndTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     Score = table.Column<int>(type: "integer", nullable: false),
                     IsCompleted = table.Column<bool>(type: "boolean", nullable: false),
+                    DraftAnswers = table.Column<string>(type: "jsonb", nullable: false),
                     DateCreated = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     DateModified = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     Deleted = table.Column<bool>(type: "boolean", nullable: false),
@@ -96,11 +106,11 @@ namespace StudyNest.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "QuizAttemptAnswerChoices",
+                name: "QuizAttempAnswerChoices",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
-                    QuizAttemptAnswerId = table.Column<string>(type: "text", nullable: false),
+                    QuizAttemptAnswerId = table.Column<string>(type: "text", nullable: true),
                     ChoiceId = table.Column<string>(type: "text", nullable: false),
                     DateCreated = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     DateModified = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
@@ -109,25 +119,33 @@ namespace StudyNest.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_QuizAttemptAnswerChoices", x => x.Id);
+                    table.PrimaryKey("PK_QuizAttempAnswerChoices", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_QuizAttemptAnswerChoices_QuizAttemptAnswers_QuizAttemptAnswerId",
+                        name: "FK_QuizAttempAnswerChoices_QuizAttemptAnswers_QuizAttemptAnswe~",
                         column: x => x.QuizAttemptAnswerId,
                         principalTable: "QuizAttemptAnswers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
-            // Indexes
             migrationBuilder.CreateIndex(
-                name: "IX_QuizAttemptAnswerChoices_Deleted",
-                table: "QuizAttemptAnswerChoices",
+                name: "IX_QuizAttempAnswerChoices_Deleted",
+                table: "QuizAttempAnswerChoices",
                 column: "Deleted");
 
             migrationBuilder.CreateIndex(
-                name: "IX_QuizAttemptAnswerChoices_QuizAttemptAnswerId",
-                table: "QuizAttemptAnswerChoices",
+                name: "IX_QuizAttempAnswerChoices_QuizAttemptAnswerId",
+                table: "QuizAttempAnswerChoices",
                 column: "QuizAttemptAnswerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_QuizAttemptAnswers_Deleted",
+                table: "QuizAttemptAnswers",
+                column: "Deleted");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_QuizAttemptAnswers_QuizAttemptId",
+                table: "QuizAttemptAnswers",
+                column: "QuizAttemptId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_QuizAttempts_Deleted",
@@ -150,16 +168,6 @@ namespace StudyNest.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_QuizAttemptAnswers_Deleted",
-                table: "QuizAttemptAnswers",
-                column: "Deleted");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_QuizAttemptAnswers_QuizAttemptId",
-                table: "QuizAttemptAnswers",
-                column: "QuizAttemptId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_QuizAttemptSnapshots_Deleted",
                 table: "QuizAttemptSnapshots",
                 column: "Deleted");
@@ -170,12 +178,24 @@ namespace StudyNest.Migrations
                 column: "QuizId");
         }
 
+        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(name: "QuizAttemptAnswerChoices");
-            migrationBuilder.DropTable(name: "QuizAttemptAnswers");
-            migrationBuilder.DropTable(name: "QuizAttempts");
-            migrationBuilder.DropTable(name: "QuizAttemptSnapshots");
+            migrationBuilder.DropTable(
+                name: "QuizAttempAnswerChoices");
+
+            migrationBuilder.DropTable(
+                name: "QuizAttemptAnswers");
+
+            migrationBuilder.DropTable(
+                name: "QuizAttempts");
+
+            migrationBuilder.DropTable(
+                name: "QuizAttemptSnapshots");
+
+            migrationBuilder.DropColumn(
+                name: "IsBeingConvertToSnapShot",
+                table: "Quizzes");
         }
     }
 }
