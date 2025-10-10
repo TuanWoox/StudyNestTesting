@@ -12,6 +12,8 @@ const useUpdateTag = () => {
         mutationFn: (payload) => tagService.updateTag(payload),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["tags"] });
+            queryClient.invalidateQueries({ queryKey: ["folders"] });
+            queryClient.invalidateQueries({ queryKey: ["notes"] });
             toast.success("Tag successfully updated");
         },
         onError: (err) => {

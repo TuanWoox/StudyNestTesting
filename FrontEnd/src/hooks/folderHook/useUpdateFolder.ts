@@ -12,6 +12,8 @@ const useUpdateFolder = () => {
         mutationFn: (payload) => folderService.updateFolder(payload),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["folders"] });
+            queryClient.invalidateQueries({ queryKey: ["notes"] });
+            queryClient.invalidateQueries({ queryKey: ["tags"] });
             toast.success("Folder successfully updated!");
         },
         onError: (err) => {
