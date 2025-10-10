@@ -6,6 +6,7 @@ using StudyNest.Common.Models.DTOs.EntityDTO.Quizzes;
 using StudyNest.Common.Utils.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -29,29 +30,58 @@ namespace StudyNest.Common.Llm.Providers
         {
             var apiKey = _cfg["ApiKeys:Gemini"];
             if (string.IsNullOrWhiteSpace(apiKey))
-            {
                 throw new InvalidOperationException("Missing ApiKeys:Gemini in configuration.");
-            }
+
             var model = "gemini-2.0-flash";
             var endpoint = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={apiKey}";
 
-            var parts = new List<object> { new { text = prompt } };
+            var parts = new List<Dictionary<string, object>>
+                {
+                    new() { ["text"] = prompt }
+                };
+
             foreach (var url in imageUrls ?? Array.Empty<string>())
             {
-                parts.Add(new
+                if (string.IsNullOrWhiteSpace(url)) continue;
+
+                byte[] bytes;
+                try
                 {
-                    fileData = new { fileUri = url, mimeType = InferImageMimeType(url) }
-                });
-            }
-            var payload = new
-            {
-                contents = new[] { new { role = "user", parts } },
-                generationConfig = new
+                    bytes = await _http.GetByteArrayAsync(url);
+                }
+                catch (Exception ex)
                 {
-                    responseMimeType = "application/json"
+                    StudyNestLogger.Instance.Warn($"Skip image (download failed): {url}. {ex.Message}");
+                    continue;
                 }
 
-            };
+                var base64 = Convert.ToBase64String(bytes);
+                parts.Add(new Dictionary<string, object>
+                {
+                    ["inline_data"] = new Dictionary<string, object>
+                    {
+                        ["mime_type"] = InferImageMimeType(url),
+                        ["data"] = base64
+                    }
+                });
+            }
+
+            var payload = new Dictionary<string, object>
+            {
+                ["contents"] = new object[]
+                {
+                new Dictionary<string, object>
+                {
+                    ["role"]  = "user",
+                    ["parts"] = parts
+                }
+                    },
+                    ["generation_config"] = new Dictionary<string, object>
+                    {
+                        ["response_mime_type"] = "application/json"
+                    }
+                };
+
 
             for (int attempt = 0; attempt < 3; attempt++)
             {
@@ -63,8 +93,9 @@ namespace StudyNest.Common.Llm.Providers
                         Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json")
                     };
                     using var res = await _http.SendAsync(req, cts.Token);
+                    Debug.WriteLine(res);
                     var body = await res.Content.ReadAsStringAsync(cts.Token);
-
+                    Debug.WriteLine(body);
                     res.EnsureSuccessStatusCode();
 
                     using var doc = JsonDocument.Parse(body);
