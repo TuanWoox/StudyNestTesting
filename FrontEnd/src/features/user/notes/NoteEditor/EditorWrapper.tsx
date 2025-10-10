@@ -22,10 +22,14 @@ const parseContentToBlocks = (content: string): OutputBlockData[] => {
 const EditorWrapper: React.FC<EditorWrapperProps> = ({ noteId, content, onChange, darkMode }) => {
     return (
         <div
-            className={`flex-1 h-full rounded-2xl transition-all duration-300 backdrop-blur-lg ${darkMode
+            className={`h-full rounded-2xl transition-all duration-300 backdrop-blur-lg ${darkMode
                 ? "bg-gray-800/50 border-2 border-gray-700/50 shadow-[0_8px_32px_rgba(0,0,0,0.3)]"
                 : "bg-white border-2 border-gray-200/50 shadow-[0_8px_32px_rgba(0,0,0,0.08)]"
                 } hover:border-blue-300/50 focus-within:border-blue-500/50 focus-within:shadow-lg`}
+            style={{
+                overflow: "auto",
+                scrollbarWidth: "none"
+            }}
         >
             <Editor
                 holderElementId={`editorjs-${noteId}`}

@@ -15,6 +15,8 @@ const useDeleteTag = () => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["tags"] });
+            queryClient.invalidateQueries({ queryKey: ["folders"] });
+            queryClient.invalidateQueries({ queryKey: ["notes"] });
             toast.success("Tag deleted successfully");
         },
         onError: (err) => {
