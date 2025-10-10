@@ -12,7 +12,6 @@ const questionService = {
     return data.result;
   },
   updateQuestion: async (payload: UpdateQuestionDTO): Promise<boolean> => {
-    console.log("payload: " + JSON.stringify(payload, null, 2));
     const { data } = await instance.put<ReturnResult<boolean>>(
       "Question",
       payload

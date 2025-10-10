@@ -16,11 +16,8 @@ namespace StudyNest.Common.Models.DTOs.EntityDTO.Quizzes
         public int Count_Mcq { get; set; } = 5;
         public int Count_Tf { get; set; } = 5;
         public int Count_Msq { get; set; } = 5;
-        [TrimmedRequired]
         public string Language { get; set; } = "English";
-        [TrimmedRequired]
         public string Difficulty { get; set; } = "medium";
-        [TrimmedRequired]
         public string NoteContent { get; set; } = "";
     }
 }

@@ -5,8 +5,6 @@ import { ExclamationCircleOutlined } from "@ant-design/icons";
 
 // Utility function to show unsaved changes confirm dialog
 export const confirmUnsavedChanges = (onDiscard: () => void): void => {
-  console.log("🔔 confirmUnsavedChanges called"); // Debug log
-
   // Use Ant Design's Modal.confirm with proper syntax
   const modalInstance = Modal.confirm({
     title: (
@@ -30,13 +28,8 @@ export const confirmUnsavedChanges = (onDiscard: () => void): void => {
     centered: true,
     width: 450,
     onOk() {
-      console.log("✅ User clicked Discard"); // Debug log
       onDiscard();
     },
-    onCancel() {
-      console.log("❌ User clicked Continue Editing"); // Debug log
-    },
+    onCancel() {},
   });
-
-  console.log("📦 Modal instance:", modalInstance); // Debug log
 };

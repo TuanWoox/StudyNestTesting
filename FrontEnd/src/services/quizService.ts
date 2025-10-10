@@ -22,8 +22,7 @@ const quizService = {
     const { data } = await instance.get<ReturnResult<QuizDetail>>(
       `/Quiz/${id}`
     );
-    console.log("Quiz Details: " + JSON.stringify(data.result, null, 2));
-    return data.result; // dateCreated is string here
+    return data.result;
   },
   getAllQuiz: async (
     payload: Page<string>
@@ -42,11 +41,9 @@ const quizService = {
     return data.result;
   },
   deleteQuiz: async (id: string): Promise<boolean> => {
-    // If backend sends { message }, interceptor will have rejected already.
     const { data } = await instance.delete<ReturnResult<boolean>>(
       `/Quiz/${id}`
     );
-    // In a happy path, data.message is falsy and result should be true.
     return data.result === true;
   },
 };
