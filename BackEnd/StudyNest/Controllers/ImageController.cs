@@ -21,7 +21,7 @@ namespace StudyNest.Controllers
         [HttpPost]
         public async Task<IActionResult> UploadImage(IFormFile file)
         {
-            ReturnResult<ImageUploadResult> result = new ReturnResult<ImageUploadResult>();
+            ReturnResult<object> result = new ReturnResult<object>();
             try
             {
                 result = await _imageService.UploadImage(file);
