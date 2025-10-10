@@ -123,6 +123,10 @@
   /* avoids “zoom” when rows change (supported in modern browsers) */
 }
 
+.ant-modal-body .codex-editor__redactor {
+  padding-bottom: 50px !important;
+}
+
 .hide-radio-dot .ant-radio {
   display: none;
 }

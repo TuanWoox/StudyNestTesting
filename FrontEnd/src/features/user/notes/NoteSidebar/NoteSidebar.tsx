@@ -12,10 +12,10 @@ interface NoteSidebarProps {
     selectedNote: Note | null;
     handleOpenEditor: (note: Note) => void;
     handleCreateNote: () => void;
-    setIsModalCreateVisible: React.Dispatch<React.SetStateAction<boolean>>;
-    setIsModalUpdateVisible: React.Dispatch<React.SetStateAction<boolean>>;
-    setIsModalDeleteVisible: React.Dispatch<React.SetStateAction<boolean>>;
+    setFolderModalMode: React.Dispatch<React.SetStateAction<"delete" | "create" | "update">>;
+    setIsModalFolderVisible: React.Dispatch<React.SetStateAction<boolean>>;
     setSelectedFolder: React.Dispatch<React.SetStateAction<Folder | null>>;
+    handleDeleteNote: (id: string) => void;
 }
 
 type ViewMode = 'all' | 'folder' | 'tag';
@@ -28,10 +28,10 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
     selectedNote,
     handleOpenEditor,
     handleCreateNote,
-    setIsModalCreateVisible,
-    setIsModalUpdateVisible,
-    setIsModalDeleteVisible,
-    setSelectedFolder
+    setFolderModalMode,
+    setIsModalFolderVisible,
+    setSelectedFolder,
+    handleDeleteNote,
 }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [viewMode, setViewMode] = useState<ViewMode>('all');
@@ -62,7 +62,8 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
                         label: 'Edit Folder',
                         onClick: () => {
                             setSelectedFolder(folder);             // chọn folder hiện tại
-                            setIsModalUpdateVisible(true);        // mở modal update
+                            setFolderModalMode("update");
+                            setIsModalFolderVisible(true);
                         },
                     },
                     {
@@ -72,7 +73,8 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
                         label: 'Delete Folder',
                         onClick: () => {
                             setSelectedFolder(folder);
-                            setIsModalDeleteVisible(true);
+                            setFolderModalMode("delete");
+                            setIsModalFolderVisible(true);
                         },
                     },
                 ]}
@@ -106,7 +108,11 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
                 </div>
             ),
             children: (folder.notes && folder.notes.length > 0) ? (
-                <div className="flex flex-col gap-2">
+                <div className="grid gap-4
+                    sm:grid-cols-1
+                    md:grid-cols-2
+                    lg:grid-cols-3
+                    xl:grid-cols-4">
                     {folder.notes.map((note) => (
                         <NoteCard
                             key={note.id}
@@ -114,6 +120,7 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
                             darkMode={darkMode}
                             isSelected={selectedNote?.id === note.id}
                             onSelect={() => handleOpenEditor(note)}
+                            onDelete={handleDeleteNote}
                         />
                     ))}
                 </div>
@@ -144,7 +151,11 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
             <span style={{ fontSize: 12, color: '#999' }}>{tag.noteTags?.length || 0} notes</span>
         </div>),
         children: (tag.noteTags && tag.noteTags.length > 0) ? (
-            <div className="flex flex-col gap-2">
+            <div className="grid gap-4
+                    sm:grid-cols-1
+                    md:grid-cols-2
+                    lg:grid-cols-3
+                    xl:grid-cols-4">
                 {tag.noteTags.map((noteTag: NoteTag) => (
                     noteTag.note ? (
                         <NoteCard
@@ -153,6 +164,7 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
                             darkMode={darkMode}
                             isSelected={selectedNote?.id === noteTag.note.id}
                             onSelect={() => handleOpenEditor(noteTag.note!)}
+                            onDelete={handleDeleteNote}
                         />
                     ) : null
                 ))}
@@ -184,14 +196,45 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
             <div className="flex justify-between items-center mb-4">
                 <Button type="primary" icon={<PlusOutlined />} onClick={handleCreateNote}>New</Button>
                 <Space size="middle">
-                    <Tooltip title="All Notes">
-                        <Button icon={<FileTextOutlined />} onClick={() => setViewMode("all")} type={viewMode === "all" ? "primary" : "default"} />
+                    <Tooltip
+                        title="All Notes"
+                        getPopupContainer={(trigger) => trigger.parentElement!} // tránh render tooltip ra ngoài gây layout shift
+                    >
+                        <Button
+                            icon={<FileTextOutlined />}
+                            onClick={() => setViewMode("all")}
+                            type={viewMode === "all" ? "primary" : "default"}
+                            style={{ display: "flex", alignItems: "center", justifyContent: "center" }} // giữ nút cố định kích thước
+                        />
                     </Tooltip>
-                    <Tooltip title="Folder View">
-                        <Button icon={<FolderOutlined />} onClick={() => setViewMode("folder")} type={viewMode === "folder" ? "primary" : "default"} />
+
+                    <Tooltip
+                        title="Folder View"
+                        getPopupContainer={(trigger) => trigger.parentElement!}
+                    >
+                        <Button
+                            icon={<FolderOutlined />}
+                            onClick={() => setViewMode("folder")}
+                            type={viewMode === "folder" ? "primary" : "default"}
+                            style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+                        />
                     </Tooltip>
-                    <Tooltip title="Tag View">
-                        <Button icon={<TagsOutlined />} onClick={() => setViewMode("tag")} type={viewMode === "tag" ? "primary" : "default"} />
+
+                    <Tooltip
+                        title="Tag View"
+                        getPopupContainer={(trigger) => trigger.parentElement!} // quan trọng
+                        placement="top" // tránh tooltip làm nhảy layout phía dưới
+                    >
+                        <Button
+                            icon={<TagsOutlined />}
+                            onClick={() => setViewMode("tag")}
+                            type={viewMode === "tag" ? "primary" : "default"}
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                            }}
+                        />
                     </Tooltip>
                 </Space>
             </div>
@@ -229,6 +272,7 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
                                 darkMode={darkMode}
                                 isSelected={selectedNote?.id === note.id}
                                 onSelect={() => handleOpenEditor(note)}
+                                onDelete={handleDeleteNote}
                             />
                         ))}
                     </div>
@@ -242,7 +286,10 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
                                 type="default"
                                 size="small"
                                 icon={<PlusOutlined />}
-                                onClick={() => setIsModalCreateVisible(true)}
+                                onClick={() => {
+                                    setFolderModalMode("create");
+                                    setIsModalFolderVisible(true);
+                                }}
                                 style={{
                                     background: darkMode ? "linear-gradient(135deg, #1E293B, #334155)" : "linear-gradient(135deg, #F3F4F6, #E5E7EB)",
                                     border: "none",
