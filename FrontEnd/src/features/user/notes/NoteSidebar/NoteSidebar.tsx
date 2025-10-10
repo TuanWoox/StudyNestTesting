@@ -12,9 +12,8 @@ interface NoteSidebarProps {
     selectedNote: Note | null;
     handleOpenEditor: (note: Note) => void;
     handleCreateNote: () => void;
-    setIsModalCreateVisible: React.Dispatch<React.SetStateAction<boolean>>;
-    setIsModalUpdateVisible: React.Dispatch<React.SetStateAction<boolean>>;
-    setIsModalDeleteVisible: React.Dispatch<React.SetStateAction<boolean>>;
+    setFolderModalMode: React.Dispatch<React.SetStateAction<"delete" | "create" | "update">>;
+    setIsModalFolderVisible: React.Dispatch<React.SetStateAction<boolean>>;
     setSelectedFolder: React.Dispatch<React.SetStateAction<Folder | null>>;
     handleDeleteNote: (id: string) => void;
 }
@@ -29,9 +28,8 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
     selectedNote,
     handleOpenEditor,
     handleCreateNote,
-    setIsModalCreateVisible,
-    setIsModalUpdateVisible,
-    setIsModalDeleteVisible,
+    setFolderModalMode,
+    setIsModalFolderVisible,
     setSelectedFolder,
     handleDeleteNote,
 }) => {
@@ -64,7 +62,8 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
                         label: 'Edit Folder',
                         onClick: () => {
                             setSelectedFolder(folder);             // chọn folder hiện tại
-                            setIsModalUpdateVisible(true);        // mở modal update
+                            setFolderModalMode("update");
+                            setIsModalFolderVisible(true);
                         },
                     },
                     {
@@ -74,7 +73,8 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
                         label: 'Delete Folder',
                         onClick: () => {
                             setSelectedFolder(folder);
-                            setIsModalDeleteVisible(true);
+                            setFolderModalMode("delete");
+                            setIsModalFolderVisible(true);
                         },
                     },
                 ]}
@@ -286,7 +286,10 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
                                 type="default"
                                 size="small"
                                 icon={<PlusOutlined />}
-                                onClick={() => setIsModalCreateVisible(true)}
+                                onClick={() => {
+                                    setFolderModalMode("create");
+                                    setIsModalFolderVisible(true);
+                                }}
                                 style={{
                                     background: darkMode ? "linear-gradient(135deg, #1E293B, #334155)" : "linear-gradient(135deg, #F3F4F6, #E5E7EB)",
                                     border: "none",

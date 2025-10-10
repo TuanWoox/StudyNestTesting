@@ -1,16 +1,14 @@
 import React, { useState } from "react";
 import { useOutletContext } from "react-router-dom";
-import { Note, Folder, Tag } from "@/types/note/notes";
+import { Note, Folder } from "@/types/note/notes";
 import { EStatus } from "@/utils/enums/EStatus";
 import useGetAllFolder from "@/hooks/folderHook/useGetAllFolder";
 import useGetAllTag from "@/hooks/tagHook/useGetAllTag";
 import useGetAllNote from "@/hooks/noteHook/useGetAllNote";
 import NoteSidebar from "./NoteSidebar/NoteSidebar";
 import NoteEditor from "./NoteEditor/NoteEditor";
-import ModalCreateFolder from "./ModalCreateFolder";
-import ModalUpdateFolder from "./ModalUpdateFolder";
-import ModalDeleteFolder from "./ModalDeleteFolder";
 import useDeleteNote from "@/hooks/noteHook/useDeleteNote";
+import ModalFolder from "./ModalFolder";
 
 const NotesPage: React.FC = () => {
     const darkMode = useOutletContext<boolean>();
@@ -43,9 +41,9 @@ const NotesPage: React.FC = () => {
     const [selectedNote, setSelectedNote] = useState<Note | null>(null);
     const [selectedFolder, setSelectedFolder] = useState<Folder | null>(null);
 
-    const [isModalCreateVisible, setIsModalCreateVisible] = useState(false);
-    const [isModalUpdateVisible, setIsModalUpdateVisible] = useState(false);
-    const [isModalDeleteVisible, setIsModalDeleteVisible] = useState(false);
+    const [folderModalMode, setFolderModalMode] = useState<"create" | "update" | "delete">("create");
+    const [isModalFolderVisible, setIsModalFolderVisible] = useState(false);
+
     const [isEditorVisible, setIsEditorVisible] = useState(false);
 
 
@@ -98,30 +96,21 @@ const NotesPage: React.FC = () => {
                 selectedNote={selectedNote}
                 handleOpenEditor={handleOpenEditor}
                 handleCreateNote={handleCreateNote}
-                setIsModalCreateVisible={setIsModalCreateVisible}
-                setIsModalUpdateVisible={setIsModalUpdateVisible}  // truyền thêm
-                setIsModalDeleteVisible={setIsModalDeleteVisible}  // truyền thêm
+                setFolderModalMode={setFolderModalMode}
+                setIsModalFolderVisible={setIsModalFolderVisible}
                 setSelectedFolder={setSelectedFolder}              // truyền thêm
                 handleDeleteNote={handleDeleteNote}
             />
-            <ModalCreateFolder
-                visible={isModalCreateVisible}
-                onCancel={() => setIsModalCreateVisible(false)}
+
+            <ModalFolder
+                visible={isModalFolderVisible}
+                mode={folderModalMode}
                 darkMode={darkMode}
-            />
-            <ModalUpdateFolder
-                visible={isModalUpdateVisible}
-                onCancel={() => setIsModalUpdateVisible(false)}
-                darkMode={darkMode}
+                onCancel={() => setIsModalFolderVisible(false)}
                 folder={selectedFolder}
                 setSelectedFolder={setSelectedFolder}
             />
-            <ModalDeleteFolder
-                visible={isModalDeleteVisible}
-                onCancel={() => setIsModalDeleteVisible(false)}
-                darkMode={darkMode}
-                folder={selectedFolder}
-            />
+
             <NoteEditor
                 visible={isEditorVisible}
                 onClose={handleCloseEditor}

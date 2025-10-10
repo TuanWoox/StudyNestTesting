@@ -156,6 +156,7 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
                     >
                         <button
                             className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 z-10"
+                            disabled={creatingNote || updatingNote}
                         >
                             <CloseOutlined />
                         </button>
@@ -164,6 +165,7 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
                     <button
                         onClick={onClose}
                         className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 z-10"
+                        disabled={creatingNote || updatingNote}
                     >
                         <CloseOutlined />
                     </button>

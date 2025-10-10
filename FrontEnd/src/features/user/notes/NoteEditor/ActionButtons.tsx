@@ -31,46 +31,11 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
         boxShadow: darkMode ? "0 2px 6px rgba(0,0,0,0.4)" : "0 2px 6px rgba(0,0,0,0.1)",
     } as React.CSSProperties;
 
+    const isLoading = isCreating || isUpdating;
+
     return (
         <div className="flex gap-3">
-            {confirmBeforeClose ? (
-                <Popconfirm
-                    title="Unsaved changes"
-                    description="You have unsaved changes. Are you sure you want to close without saving?"
-                    okText="Close without saving"
-                    cancelText="Cancel"
-                    placement="topRight"
-                    onConfirm={onClose}
-                >
-                    <Button
-                        type="text"
-                        style={{
-                            ...commonStyle,
-                            border: `1px solid ${darkMode ? "#3F3F46" : "#E5E7EB"}`,
-                            background: darkMode ? "#27272A" : "#FFFFFF",
-                            color: darkMode ? "#F97316" : "#EA580C",
-                        }}
-                        icon={<CloseOutlined />}
-                    >
-                        Close
-                    </Button>
-                </Popconfirm>
-            ) : (
-                <Button
-                    type="text"
-                    onClick={onClose}
-                    style={{
-                        ...commonStyle,
-                        border: `1px solid ${darkMode ? "#3F3F46" : "#E5E7EB"}`,
-                        background: darkMode ? "#27272A" : "#FFFFFF",
-                        color: darkMode ? "#F97316" : "#EA580C",
-                    }}
-                    icon={<CloseOutlined />}
-                >
-                    Close
-                </Button>
-            )}
-
+            {/* Save button */}
             <Button
                 type="text"
                 onClick={onSave}
@@ -90,10 +55,51 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
                     e.currentTarget.style.color = darkMode ? "#10B981" : "#059669";
                 }}
                 icon={<SaveOutlined />}
-                loading={isCreating || isUpdating}
+                loading={isLoading}
             >
                 Save
             </Button>
+
+            {/* Close button */}
+            {confirmBeforeClose && !isLoading ? (
+                <Popconfirm
+                    title="Unsaved changes"
+                    description="You have unsaved changes. Are you sure you want to close without saving?"
+                    okText="Close without saving"
+                    cancelText="Cancel"
+                    placement="topRight"
+                    onConfirm={onClose}
+                >
+                    <Button
+                        type="text"
+                        style={{
+                            ...commonStyle,
+                            border: `1px solid ${darkMode ? "#3F3F46" : "#E5E7EB"}`,
+                            background: darkMode ? "#27272A" : "#FFFFFF",
+                            color: darkMode ? "#F97316" : "#EA580C",
+                        }}
+                        icon={<CloseOutlined />}
+                        disabled={isLoading}
+                    >
+                        Close
+                    </Button>
+                </Popconfirm>
+            ) : (
+                <Button
+                    type="text"
+                    onClick={onClose}
+                    style={{
+                        ...commonStyle,
+                        border: `1px solid ${darkMode ? "#3F3F46" : "#E5E7EB"}`,
+                        background: darkMode ? "#27272A" : "#FFFFFF",
+                        color: darkMode ? "#F97316" : "#EA580C",
+                    }}
+                    icon={<CloseOutlined />}
+                    disabled={isLoading}
+                >
+                    Close
+                </Button>
+            )}
         </div>
     );
 };
