@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Antiforgery;
+using StudyNest.Common.Attributes;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -10,16 +11,16 @@ namespace StudyNest.Common.Models.DTOs.EntityDTO.Quizzes
 {
     public class CreateQuizDTO
     {
-        [Required]
+        [TrimmedRequired]
         public string NoteId { get; set; } = string.Empty;
-        [Required]
         public int Count_Mcq { get; set; } = 5;
-        [Required]
         public int Count_Tf { get; set; } = 5;
-        [Required]
         public int Count_Msq { get; set; } = 5;
+        [TrimmedRequired]
         public string Language { get; set; } = "English";
+        [TrimmedRequired]
         public string Difficulty { get; set; } = "medium";
+        [TrimmedRequired]
         public string NoteContent { get; set; } = "";
     }
 }

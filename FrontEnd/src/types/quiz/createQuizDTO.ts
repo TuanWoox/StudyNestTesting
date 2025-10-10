@@ -5,5 +5,5 @@ export interface CreateQuizDTO {
   count_Msq: number;
   language: string;
   difficulty: string;
-  noteContent: string;
+  noteContent?: string;
 }

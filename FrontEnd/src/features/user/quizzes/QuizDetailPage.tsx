@@ -1,5 +1,5 @@
-import React from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Card,
   Typography,
@@ -7,31 +7,33 @@ import {
   Button,
   Space,
   Tag,
-  List,
   Skeleton,
-  Collapse,
-  Badge,
   Empty,
+  Modal,
 } from "antd";
-import {
-  ArrowLeftOutlined,
-  FormOutlined,
-  CheckCircleOutlined,
-  QuestionCircleOutlined,
-  RightOutlined,
-  WarningOutlined,
-} from "@ant-design/icons";
-import useGetQuizDetail from "@/hooks/quizHook/useGetQuizDetail";
+import { WarningOutlined } from "@ant-design/icons";
 import { useQueryClient } from "@tanstack/react-query";
+import useGetQuizDetail from "@/hooks/quizHook/useGetQuizDetail";
+import { useUnsavedChanges } from "@/hooks/common/useUnsavedChanges";
 import { formatDMY } from "@/utils/date";
+import QuizHeader from "./components/QuizHeader";
+import QuestionList from "./components/QuestionList";
 
-const { Title, Text, Paragraph } = Typography;
-const { Panel } = Collapse;
+const { Text } = Typography;
 
 const QuizDetailPage: React.FC = () => {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const { id } = useParams<{ id: string }>();
+  const queryClient = useQueryClient();
+
+  const [isDirty, setIsDirty] = useState(false);
+  const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false);
+  const [headerHeight, setHeaderHeight] = useState(0);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const lastScrollTopRef = useRef(0);
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+
   const {
     data: quiz,
     isPending,
@@ -39,26 +41,57 @@ const QuizDetailPage: React.FC = () => {
     error,
   } = useGetQuizDetail(id, { enabled: !!id });
 
-  const questions = quiz?.questions ?? [];
-  const { mcq, tf, msq } = questions.reduce(
-    (acc, q) => {
-      if (q.type === "MCQ") acc.mcq++;
-      else if (q.type === "TF") acc.tf++;
-      else if (q.type === "MSQ") acc.msq++;
-      return acc;
-    },
-    { mcq: 0, tf: 0, msq: 0 }
-  );
+  // Measure header height on mount and resize
+  useEffect(() => {
+    if (headerRef.current) {
+      setHeaderHeight(headerRef.current.offsetHeight);
+    }
+  }, [quiz, isMobile]); // Re-measure if quiz data or mobile view changes
+
+  // Handle scroll to collapse/expand header with improved stability
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    if (!scrollContainer) return;
+
+    const handleScroll = () => {
+      const scrollTop = scrollContainer.scrollTop;
+      const lastScrollTop = lastScrollTopRef.current;
+      const delta = scrollTop - lastScrollTop;
+
+      // Hysteresis: only change state when scrolling past a certain delta
+      if (Math.abs(delta) < 10) return;
+
+      const isScrollingDown = delta > 0;
+
+      if (isScrollingDown && scrollTop > headerHeight && !isHeaderCollapsed) {
+        setIsHeaderCollapsed(true);
+      } else if (!isScrollingDown && isHeaderCollapsed) {
+        setIsHeaderCollapsed(false);
+      }
+
+      lastScrollTopRef.current = scrollTop <= 0 ? 0 : scrollTop;
+    };
+
+    scrollContainer.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      scrollContainer.removeEventListener("scroll", handleScroll);
+    };
+  }, [isHeaderCollapsed, headerHeight]);
+
+  const {
+    showConfirmDiscard,
+    isUnsavedModalOpen,
+    handleDiscardChanges,
+    handleContinueEditing,
+  } = useUnsavedChanges({ isDirty });
 
   const handleReturnQuiz = () => {
-    queryClient.invalidateQueries({
-      queryKey: ["quizzes"],
-      refetchType: "inactive",
+    showConfirmDiscard(() => {
+      queryClient.invalidateQueries({ queryKey: ["quizzes"] });
+      navigate(`/user/quiz`);
     });
-    navigate(`/user/quiz`);
   };
 
-  // Handle loading state
   if (isPending) {
     return (
       <Card
@@ -67,9 +100,10 @@ const QuizDetailPage: React.FC = () => {
           overflow: "auto",
           margin: "0 auto",
           boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
+          borderRadius: isMobile ? 12 : 16,
         }}
         bodyStyle={{
-          padding: 32,
+          padding: isMobile ? 16 : 32,
           height: "100%",
           display: "flex",
           flexDirection: "column",
@@ -80,7 +114,6 @@ const QuizDetailPage: React.FC = () => {
     );
   }
 
-  // Handle error state
   if (isError || !quiz) {
     return (
       <Card
@@ -89,9 +122,10 @@ const QuizDetailPage: React.FC = () => {
           overflow: "auto",
           margin: "0 auto",
           boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
+          borderRadius: isMobile ? 12 : 16,
         }}
         bodyStyle={{
-          padding: 32,
+          padding: isMobile ? 16 : 32,
           height: "100%",
           display: "flex",
           flexDirection: "column",
@@ -100,14 +134,25 @@ const QuizDetailPage: React.FC = () => {
         }}
       >
         <Empty
-          image={<WarningOutlined style={{ fontSize: 48, color: "#ff4d4f" }} />}
+          image={
+            <WarningOutlined
+              style={{
+                fontSize: isMobile ? 40 : 48,
+                color: "#ff4d4f",
+              }}
+            />
+          }
           description={
-            <Text type="danger">
+            <Text type="danger" style={{ fontSize: isMobile ? 13 : 14 }}>
               {error?.message || "Failed to load quiz details"}
             </Text>
           }
         >
-          <Button onClick={handleReturnQuiz} type="primary">
+          <Button
+            onClick={handleReturnQuiz}
+            type="primary"
+            size={isMobile ? "middle" : "large"}
+          >
             Back to Quizzes
           </Button>
         </Empty>
@@ -117,292 +162,160 @@ const QuizDetailPage: React.FC = () => {
 
   const onTakeQuiz = () => {
     navigate(`/user/quizAttempt/${id}`);
-  }
+  };
 
   // Quiz data successfully loaded
   return (
-    <Card
+    <div
+      ref={scrollContainerRef}
       style={{
         width: "100%",
-        overflow: "auto",
-        margin: "0 auto",
-        boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
-      }}
-      bodyStyle={{
-        padding: 32,
         height: "100%",
-        display: "flex",
-        flexDirection: "column",
+        overflow: "auto",
+        position: "relative",
+        backgroundColor: "#fafafa",
       }}
     >
-      <Flex vertical gap={16} style={{ marginBottom: 24 }}>
-        <Flex justify="space-between" align="center">
-          <Space size={16}>
-            <Title level={3} style={{ margin: 0 }}>
-              {quiz.title}
-            </Title>
-          </Space>
-          <Space>
-            <Button type="primary" icon={<FormOutlined />} onClick={onTakeQuiz}>
-              Take Quiz
-            </Button>
-            <Link to="/user/quiz">
-              <Button icon={<ArrowLeftOutlined />}>Back to Quizzes</Button>
-            </Link>
-          </Space>
-        </Flex>
-
-        <Flex gap={8}>
-          <Tag color="blue" style={{ padding: "4px 8px" }}>
-            <Space>
-              <span style={{ fontWeight: "bold" }}>{mcq}</span> Multiple Choice
-            </Space>
-          </Tag>
-          <Tag color="purple" style={{ padding: "4px 8px" }}>
-            <Space>
-              <span style={{ fontWeight: "bold" }}>{msq}</span> Multi-Select
-            </Space>
-          </Tag>
-          <Tag color="green" style={{ padding: "4px 8px" }}>
-            <Space>
-              <span style={{ fontWeight: "bold" }}>{tf}</span> True/False
-            </Space>
-          </Tag>
-        </Flex>
-      </Flex>
-
-      <Card style={{ marginBottom: 24 }}>
-        <Flex align="center" justify="space-between">
-          <Space>
-            <Tag color="cyan" style={{ fontSize: "14px", padding: "5px 10px" }}>
-              {(quiz?.questions ?? []).length} Questions
-            </Tag>
-          </Space>
-          <Space>
-            <Text type="secondary" style={{ fontSize: "14px" }}>
-              Created on {quiz.dateCreated && formatDMY(quiz.dateCreated)}
-            </Text>
-          </Space>
-        </Flex>
-      </Card>
-
-      <Title level={4} style={{ marginBottom: 16 }}>
-        Questions
-      </Title>
-
-      <Flex vertical gap={16} style={{ flex: 1, overflow: "auto" }}>
-        <Collapse
-          defaultActiveKey={["1"]}
-          expandIcon={({ isActive }) => (
-            <RightOutlined rotate={isActive ? 90 : 0} />
-          )}
-          style={{ background: "#fff" }}
+      {/* Sticky Header Overlay */}
+      <div
+        ref={headerRef}
+        style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 10,
+          transform: isHeaderCollapsed ? `translateY(-100%)` : "translateY(0)",
+          transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+          backgroundColor: "#ffffff",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+          borderRadius: isMobile ? "0 0 12px 12px" : "0 0 16px 16px",
+          willChange: "transform",
+        }}
+      >
+        <div
+          style={{
+            padding: isMobile ? 16 : 32,
+            paddingBottom: isMobile ? 16 : 32,
+          }}
         >
-          {questions.map((question, index) => {
-            // Use choices as they come from the API
-            const sortedChoices = question.choices ? [...question.choices] : [];
+          <QuizHeader
+            quiz={quiz}
+            onDirtyChange={setIsDirty}
+            showConfirmDiscard={showConfirmDiscard}
+            onTakeQuiz={onTakeQuiz}
+          />
+          <Card
+            style={{
+              marginTop: isMobile ? 12 : 16,
+              borderRadius: isMobile ? 10 : 12,
+              boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+            }}
+            bodyStyle={{
+              padding: isMobile ? 12 : 16,
+            }}
+          >
+            <Flex align="center" justify="space-between" wrap="wrap" gap={12}>
+              <Space>
+                <Tag
+                  color="cyan"
+                  style={{
+                    fontSize: isMobile ? 13 : 14,
+                    padding: isMobile ? "4px 8px" : "5px 10px",
+                    borderRadius: 8,
+                    fontWeight: 500,
+                    border: "none",
+                    boxShadow: "0 2px 8px rgba(19, 194, 194, 0.2)",
+                  }}
+                >
+                  📋 {(quiz?.questions ?? []).length} Question
+                  {(quiz?.questions ?? []).length !== 1 ? "s" : ""}
+                </Tag>
+              </Space>
+              <Space>
+                <Text
+                  type="secondary"
+                  style={{
+                    fontSize: isMobile ? 12 : 14,
+                  }}
+                >
+                  🗓️ Created on{" "}
+                  {quiz.dateCreated && formatDMY(quiz.dateCreated)}
+                </Text>
+              </Space>
+            </Flex>
+          </Card>
+        </div>
+      </div>
 
-            // isCorrect should already be set from the API for all question types
+      {/* Main Content with Spacer */}
+      <div style={{ padding: isMobile ? 16 : 32, paddingTop: 0 }}>
+        <Card
+          style={{
+            width: "100%",
+            margin: "0 auto",
+            boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
+            borderRadius: isMobile ? 12 : 16,
+            background: "#ffffff",
+          }}
+          bodyStyle={{
+            padding: isMobile ? 16 : 32,
+            minHeight: "100vh",
+          }}
+        >
+          <QuestionList
+            quizId={id!}
+            questions={quiz.questions ?? []}
+            onDirtyChange={setIsDirty}
+            showConfirmDiscard={showConfirmDiscard}
+          />
+        </Card>
+      </div>
 
-            return (
-              <Panel
-                key={question.id ?? String(index)}
-                header={
-                  <Flex
-                    justify="space-between"
-                    align="center"
-                    style={{ width: "100%" }}
-                  >
-                    <Space size={12}>
-                      <Badge
-                        count={index + 1}
-                        style={{
-                          backgroundColor:
-                            question.type === "MCQ"
-                              ? "#1890ff"
-                              : question.type === "MSQ"
-                                ? "#722ed1"
-                                : "#52c41a",
-                          marginRight: 8,
-                          boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                        }}
-                      />
-                      <Text strong style={{ fontSize: "16px" }}>
-                        {question.name}
-                      </Text>
-                    </Space>
-                    <Tag
-                      color={
-                        question.type === "MCQ"
-                          ? "blue"
-                          : question.type === "MSQ"
-                            ? "purple"
-                            : "green"
-                      }
-                      style={{ padding: "4px 8px", fontWeight: 500 }}
-                    >
-                      {question.type === "MCQ"
-                        ? "Multiple Choice"
-                        : question.type === "MSQ"
-                          ? "Multi-Select"
-                          : "True/False"}
-                    </Tag>
-                  </Flex>
-                }
-              >
-                {question.type === "MCQ" ? (
-                  <List
-                    size="small"
-                    bordered
-                    dataSource={sortedChoices}
-                    style={{
-                      borderRadius: "6px",
-                      overflow: "hidden",
-                      boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-                    }}
-                    renderItem={(choice) => {
-                      const isCorrect = choice.isCorrect;
-                      return (
-                        <List.Item
-                          style={{
-                            backgroundColor: isCorrect ? "#f6ffed" : undefined,
-                            borderLeft: isCorrect
-                              ? "3px solid #52c41a"
-                              : undefined,
-                            padding: "10px 16px",
-                            transition: "background-color 0.2s ease",
-                          }}
-                        >
-                          <Space>
-                            {isCorrect && (
-                              <CheckCircleOutlined
-                                style={{ color: "#52c41a", fontSize: "16px" }}
-                              />
-                            )}
-                            <Text style={{ fontSize: "14px" }}>
-                              {choice.text}
-                            </Text>
-                          </Space>
-                        </List.Item>
-                      );
-                    }}
-                  />
-                ) : question.type === "MSQ" ? (
-                  <div>
-                    <Text strong style={{ display: "block", marginBottom: 8 }}>
-                      Select all that apply:
-                    </Text>
-                    <List
-                      size="small"
-                      bordered
-                      dataSource={sortedChoices}
-                      renderItem={(choice) => {
-                        const isCorrect = choice.isCorrect;
-                        return (
-                          <List.Item
-                            style={{
-                              backgroundColor: isCorrect
-                                ? "#f0f5ff"
-                                : undefined,
-                              borderLeft: isCorrect
-                                ? "3px solid #722ed1"
-                                : undefined,
-                            }}
-                          >
-                            <Space>
-                              {isCorrect && (
-                                <CheckCircleOutlined
-                                  style={{ color: "#722ed1" }}
-                                />
-                              )}
-                              <Text>{choice.text}</Text>
-                            </Space>
-                          </List.Item>
-                        );
-                      }}
-                    />
-                  </div>
-                ) : (
-                  <List
-                    size="small"
-                    bordered
-                    dataSource={sortedChoices}
-                    style={{
-                      borderRadius: "6px",
-                      overflow: "hidden",
-                      boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-                    }}
-                    renderItem={(choice) => {
-                      const isCorrect = choice.isCorrect;
-                      return (
-                        <List.Item
-                          style={{
-                            backgroundColor: isCorrect ? "#f6ffed" : undefined,
-                            borderLeft: isCorrect
-                              ? "3px solid #52c41a"
-                              : undefined,
-                            padding: "10px 16px",
-                            transition: "background-color 0.2s ease",
-                          }}
-                        >
-                          <Space>
-                            {isCorrect && (
-                              <CheckCircleOutlined
-                                style={{ color: "#52c41a", fontSize: "16px" }}
-                              />
-                            )}
-                            <Text
-                              style={{
-                                fontSize: "14px",
-                                fontWeight: isCorrect ? 500 : 400,
-                              }}
-                            >
-                              {choice.text}
-                            </Text>
-                          </Space>
-                        </List.Item>
-                      );
-                    }}
-                  />
-                )}
-
-                {question.explanation && (
-                  <Card
-                    size="small"
-                    style={{
-                      marginTop: 16,
-                      backgroundColor: "#f0f5ff",
-                      borderLeft: "3px solid #1890ff",
-                      boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-                      borderRadius: "6px",
-                    }}
-                    title={
-                      <Space>
-                        <QuestionCircleOutlined style={{ color: "#1890ff" }} />
-                        <Text strong style={{ color: "#1890ff" }}>
-                          Explanation
-                        </Text>
-                      </Space>
-                    }
-                    bordered={false}
-                  >
-                    <Paragraph
-                      style={{
-                        margin: 0,
-                        lineHeight: "1.6",
-                        fontSize: "14px",
-                      }}
-                    >
-                      {question.explanation}
-                    </Paragraph>
-                  </Card>
-                )}
-              </Panel>
-            );
-          })}
-        </Collapse>
-      </Flex>
-    </Card>
+      <Modal
+        title={
+          <Space>
+            <WarningOutlined style={{ color: "#faad14", fontSize: 20 }} />
+            <span style={{ fontWeight: 600, fontSize: 16 }}>
+              Unsaved Changes
+            </span>
+          </Space>
+        }
+        open={isUnsavedModalOpen}
+        onOk={handleDiscardChanges}
+        onCancel={handleContinueEditing}
+        okText="Discard Changes"
+        cancelText="Continue Editing"
+        okButtonProps={{
+          danger: true,
+          size: "large",
+          style: { fontWeight: 500 },
+        }}
+        cancelButtonProps={{
+          size: "large",
+        }}
+        centered
+        width={isMobile ? 340 : 450}
+        styles={{
+          body: {
+            padding: isMobile ? "20px 16px" : "24px",
+          },
+        }}
+      >
+        <div style={{ paddingTop: 12 }}>
+          <p style={{ fontSize: isMobile ? 14 : 15, marginBottom: 12 }}>
+            You have unsaved changes that will be lost.
+          </p>
+          <p
+            style={{
+              fontSize: isMobile ? 14 : 15,
+              marginBottom: 0,
+              color: "#595959",
+            }}
+          >
+            Do you want to discard your changes or continue editing?
+          </p>
+        </div>
+      </Modal>
+    </div>
   );
 };
 

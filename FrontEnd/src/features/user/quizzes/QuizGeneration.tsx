@@ -28,9 +28,9 @@ const QuizGeneration: React.FC = () => {
   const [createQuiz, setCreateQuiz] = useState<CreateQuizDTO>({
     noteId: "",
     noteContent: "",
-    count_Mcq: 7,
+    count_Mcq: 3,
     count_Tf: 3,
-    count_Msq: 0,
+    count_Msq: 4,
     language: "English",
     difficulty: "easy",
   });
@@ -171,9 +171,7 @@ const QuizGeneration: React.FC = () => {
         }}
         className="quiz-generation-content"
       >
-        <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
-          {steps[current].content}
-        </div>
+        <div style={{ margin: "0 auto" }}>{steps[current].content}</div>
       </div>
 
       <Flex

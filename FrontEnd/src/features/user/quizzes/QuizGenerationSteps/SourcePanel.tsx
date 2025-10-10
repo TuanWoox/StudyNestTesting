@@ -1,10 +1,24 @@
 import React, { useEffect, useMemo } from "react";
-import { Card, Form, Input, Empty, Row, Col, Space, Spin } from "antd";
+import {
+  Card,
+  Form,
+  Input,
+  Empty,
+  Row,
+  Col,
+  Space,
+  Spin,
+  Typography,
+  Divider,
+} from "antd";
 import { SearchOutlined, FileOutlined } from "@ant-design/icons";
 import type { FormInstance } from "antd";
 import useGetAllNote from "@/hooks/noteHook/useGetAllNote";
 import NoteCard from "@/features/user/notes/NoteSidebar/NoteCard";
 import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
+import { HeaderStep } from "../components";
+
+const { Title, Text } = Typography;
 
 interface SourcePanelProps {
   selectedNoteId?: string;
@@ -43,6 +57,7 @@ export const SourcePanel: React.FC<SourcePanelProps> = ({
       return inTitle || inTags;
     });
   }, [notesData, query]);
+
   // Keep hidden form field in sync with external selectedNoteId
   useEffect(() => {
     if (selectedNoteId) {
@@ -62,67 +77,74 @@ export const SourcePanel: React.FC<SourcePanelProps> = ({
   }, [notesData, selectedNoteId, form, setSelectedNoteId]);
 
   return (
-    <Card
-      style={{ borderRadius: 16 }}
-      bodyStyle={{ padding: 20 }}
-      title={
-        <Space>
-          <FileOutlined />
-          <span>Select Source Material</span>
-        </Space>
-      }
-    >
-      <Space direction="vertical" size={16} style={{ width: "100%" }}>
-        <Form form={form} layout="vertical">
-          {/* Hidden field to validate a note is selected */}
-          <Form.Item
-            name="noteId"
-            rules={[{ required: true, message: "Please select a note!" }]}
-            style={{ display: "none" }}
-            initialValue={selectedNoteId}
-          >
-            <Input />
-          </Form.Item>
-        </Form>
-
-        <Input
-          allowClear
-          placeholder="Search by title or tag (e.g., React, DB)"
-          prefix={<SearchOutlined />}
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          style={{ marginBottom: 8, width: "100%" }}
-        />
-
-        {/* Notes grid */}
-        {isLoading ? (
-          <div style={{ textAlign: "center", padding: "40px 0" }}>
-            <Spin size="large" />
+    <div style={{ margin: "0 auto" }}>
+      <Card style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+        <Space direction="vertical" size={28} style={{ width: "100%" }}>
+          <div>
+            <Title level={4}>Search Notes</Title>
+            <Text
+              type="secondary"
+              style={{ display: "block", marginBottom: 16 }}
+            >
+              Find notes by title or tag
+            </Text>
+            <Input
+              allowClear
+              size="large"
+              placeholder="Search by title or tag (e.g., React, DB)"
+              prefix={<SearchOutlined />}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              style={{ width: "100%" }}
+            />
           </div>
-        ) : !filteredNotes || filteredNotes.length === 0 ? (
-          <Empty description="No notes found" />
-        ) : (
-          <Row gutter={[16, 16]}>
-            {filteredNotes.map((note) => {
-              const isSelected = note.id === selectedNoteId;
 
-              return (
-                <Col xs={24} md={12} key={note.id}>
-                  <NoteCard
-                    note={note}
-                    darkMode={isDarkMode}
-                    isSelected={isSelected}
-                    onSelect={() => {
-                      setSelectedNoteId(note.id);
-                      form.setFieldsValue({ noteId: note.id });
-                    }}
-                  />
-                </Col>
-              );
-            })}
-          </Row>
-        )}
-      </Space>
-    </Card>
+          <Divider style={{ margin: 0 }} />
+
+          {/* Notes Grid Section */}
+          <div>
+            <Title level={4}>Available Notes</Title>
+            <Text
+              type="secondary"
+              style={{ display: "block", marginBottom: 16 }}
+            >
+              {filteredNotes.length > 0
+                ? `${filteredNotes.length} note${
+                    filteredNotes.length !== 1 ? "s" : ""
+                  } found`
+                : "No notes available"}
+            </Text>
+
+            {isLoading ? (
+              <div style={{ textAlign: "center", padding: "40px 0" }}>
+                <Spin size="large" />
+              </div>
+            ) : !filteredNotes || filteredNotes.length === 0 ? (
+              <Empty description="No notes found" />
+            ) : (
+              <Row gutter={[16, 16]}>
+                {filteredNotes.map((note) => {
+                  const isSelected = note.id === selectedNoteId;
+
+                  return (
+                    <Col xs={24} md={12} key={note.id}>
+                      <NoteCard
+                        note={note}
+                        darkMode={isDarkMode}
+                        isSelected={isSelected}
+                        onSelect={() => {
+                          setSelectedNoteId(note.id);
+                          form.setFieldsValue({ noteId: note.id });
+                        }}
+                      />
+                    </Col>
+                  );
+                })}
+              </Row>
+            )}
+          </div>
+        </Space>
+      </Card>
+    </div>
   );
 };

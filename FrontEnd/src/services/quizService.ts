@@ -4,6 +4,7 @@ import { PagedData } from "@/types/common/paged-data";
 import { ReturnResult } from "@/types/common/return-result";
 import { CreateQuizDTO } from "@/types/quiz/createQuizDTO";
 import { QuizDetail, QuizList } from "@/types/quiz/quiz";
+import { UpdateQuizDTO } from "@/types/quiz/updateQuizDTO";
 
 interface GenerateQuizResult {
   id: string;
@@ -21,6 +22,7 @@ const quizService = {
     const { data } = await instance.get<ReturnResult<QuizDetail>>(
       `/Quiz/${id}`
     );
+    console.log("Quiz Details: " + JSON.stringify(data.result, null, 2));
     return data.result; // dateCreated is string here
   },
   getAllQuiz: async (
@@ -29,6 +31,14 @@ const quizService = {
     const { data } = await instance.post<
       ReturnResult<PagedData<QuizList, string>>
     >("/Quiz/GetPaging", payload);
+    return data.result;
+  },
+  updateQuiz: async (payload: UpdateQuizDTO): Promise<boolean> => {
+    const { data } = await instance.put<ReturnResult<boolean>>(
+      "/Quiz",
+      payload
+    );
+    console.log("updateQuiz: " + JSON.stringify(data.result, null, 2));
     return data.result;
   },
   deleteQuiz: async (id: string): Promise<boolean> => {

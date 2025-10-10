@@ -38,12 +38,11 @@ namespace StudyNest.Common.Llm
                 - Common:
                   - Each question has EXACTLY 4 distinct choices.
                   - Choice text must be concise and unambiguous.
-                  - Explanation ≤ 50 words, describes *why* the answer(s) is/are correct.
+                  - Explanation ≤ 200 words, describes *why* the answer(s) is/are correct.
                 - MCQ:
                   - Exactly 1 choice with ""isCorrect"": true; others false.
                 - MSQ:
                   - At least 2 choices with ""isCorrect"": true.
-                  - At least 1 choice with ""isCorrect"": false.
                 - TF:
                   - Choices must be exactly [""True"", ""False""] as texts.
                   - Exactly 1 isCorrect = true.
