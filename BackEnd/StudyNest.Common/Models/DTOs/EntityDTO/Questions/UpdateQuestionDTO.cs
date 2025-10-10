@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace StudyNest.Common.Models.DTOs.EntityDTO.Questions
 {
-    [AutoMap(typeof(Question), ReverseMap = true, PreserveReferences = true)]
+    [AutoMap(typeof(DbEntities.Entities.Question), ReverseMap = true, PreserveReferences = true)]
     public class UpdateQuestionDTO : BaseKey
     {
         [TrimmedRequired]
@@ -20,6 +20,6 @@ namespace StudyNest.Common.Models.DTOs.EntityDTO.Questions
         [TrimmedRequired]
         public string Type { get; set; } = string.Empty;  // mcq/msq/tf
         public string Explanation { get; set; } = string.Empty;
-        public List<Choice> Choices { get; set; } = new List<Choice>();
+        public List<DbEntities.Entities.Choice> Choices { get; set; } = new List<DbEntities.Entities.Choice>();
     }
 }
