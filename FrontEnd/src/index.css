@@ -134,3 +134,21 @@
 .hide-checkbox-dot .ant-checkbox {
   display: none;
 }
+
+.ce-block--alignment-left img {
+  display: block;
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.ce-block--alignment-center img {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.ce-block--alignment-right img {
+  display: block;
+  margin-left: auto;
+  margin-right: 0;
+}

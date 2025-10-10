@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using StudyNest.Common.Interfaces;
 using StudyNest.Common.Models.DTOs.CoreDTO;
+using StudyNest.Common.Models.DTOs.EntityDTO.Image;
 using StudyNest.Common.Utils.Extensions;
 using System;
 using System.Collections.Generic;
@@ -25,9 +26,9 @@ namespace StudyNest.Business.v1
            this._configuration = configuration;
            this._settingBusiness = settingBusiness;
         }
-        public async Task<ReturnResult<ImageUploadResult>> UploadImage(IFormFile file)
+        public async Task<ReturnResult<object>> UploadImage(IFormFile file)
         {
-            ReturnResult<ImageUploadResult> result = new ReturnResult<ImageUploadResult>();
+            ReturnResult<object> result = new ReturnResult<object>();
             try
             {
                 if (!file.HasValidImageExtension())
@@ -46,11 +47,22 @@ namespace StudyNest.Business.v1
                     ImageUploadResult uploadResult = await _cloudinary.UploadAsync(uploadParams);
                     if (uploadResult.Error != null)
                     {
+                        result.Result = new
+                        {
+                            Success = 0,
+                        };
                         result.Message = uploadResult.Error.Message;
                     }
                     else
                     {
-                        result.Result = uploadResult;
+                        result.Result = new
+                        {
+                            Success = 1,
+                            File = new EditorJsImageResultDTO
+                            {
+                                Url = uploadResult.SecureUrl.ToString(),
+                            }
+                        };
                     }
 
                 }

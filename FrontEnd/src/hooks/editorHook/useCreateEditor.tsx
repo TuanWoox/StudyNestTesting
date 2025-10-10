@@ -44,6 +44,10 @@ import IndentTune from 'editorjs-indent-tune';
 import Undo from 'editorjs-undo';
 import DragDrop from 'editorjs-drag-drop';
 import MultiBlockSelectionPlugin from 'editorjs-multiblock-selection-plugin';
+import instance from '@/config/axiosConfig';
+import { ImageToolTune } from 'editorjs-image-resize-crop';
+
+const baseURL = import.meta.env.VITE_API_URL
 
 export interface InputForCreateEditor {
     holderElementId?: string;
@@ -84,10 +88,19 @@ export function useCreateEditor({
                     // ── Media & Embed ──────────────────────────────────
                     image: {
                         class: ImageTool,
+                        tunes: ['alignmentTune', 'imageResize'], // Allow users to choose left, center, right
                         config: {
-                            endpoints: {
-                                byFile: 'http://localhost:8008/uploadFile',
-                                byUrl: 'http://localhost:8008/fetchUrl',
+                            uploader: {
+                                uploadByFile(file) {
+                                    const formData = new FormData();
+                                    formData.append('file', file);
+                                    return instance.post(`${baseURL}/Image`, formData, {
+                                        headers: { 'Content-Type': 'multipart/form-data' },
+                                    }).then(({ data }) => ({
+                                        success: data?.result?.success,
+                                        file: { url: data?.result?.file?.url },
+                                    }));
+                                },
                             },
                         },
                     },
@@ -161,6 +174,10 @@ export function useCreateEditor({
                     indentTune: {
                         class: IndentTune as unknown as ToolConstructable,
                     },
+                    imageResize: {
+                        class: ImageToolTune as unknown as ToolConstructable,
+                        config: { resize: true, crop: false },
+                    },
                 },
 
                 tunes: [
@@ -168,6 +185,7 @@ export function useCreateEditor({
                     'alignmentTune',
                     'noticeTune',
                     'indentTune',
+                    'imageResize',
                 ],
 
                 onReady: () => {
