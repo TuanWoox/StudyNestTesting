@@ -35,5 +35,28 @@ namespace StudyNest.Controllers
             }
             return Ok(result);
         }
+        [AllowAnonymous]
+        [HttpPost("Register")]
+        public async Task<IActionResult> Register(UserRegister model)
+        {
+            ReturnResult<string> result = new ReturnResult<string>();
+            try
+            {
+                result = await _authBusiness.Register(model);
+            }
+            catch(Exception ex)
+            {
+                StudyNestLogger.Instance.Error(ex);
+            }
+            return Ok(result);
+        }
+        [HttpGet]
+        public IActionResult Auth()
+        {
+            ReturnResult<bool> result = new ReturnResult<bool>();
+            result.Result = true;
+            return Ok(result);
+        }
+
     }
 }

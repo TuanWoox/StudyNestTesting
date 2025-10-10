@@ -16,8 +16,7 @@ import Feedback from "./features/user/Feedback";
 // Admin features
 import Dashboard from "./features/admin/Dashboard";
 import ManageUser from "./features/admin/ManageUser";
-import AdminFeedback from "./features/admin/ManageFeedback";
-import { ERole } from "./utils/enums/ERole";
+import AdminFeedback from "./features/admin/ManageFeedback";;
 import QuizGeneration from "./features/user/quizzes/QuizGeneration";
 import QuizDetailPage from "./features/user/quizzes/QuizDetailPage";
 import QuizView from "./features/user/quizzes/QuizAttempt/QuizView";
@@ -35,7 +34,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "/user",
-    element: <InnerLayout role={ERole.User} />,
+    element: <InnerLayout />,
     children: [
       { index: true, element: <Navigate to="/user/notes" /> },
       { path: "notes", element: <NotesPage /> },
@@ -50,7 +49,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "/admin",
-    element: <InnerLayout role={ERole.Admin} />,
+    element: <InnerLayout />,
     children: [
       { index: true, element: <Navigate to="/admin/dashboard" /> },
       { path: "dashboard", element: <Dashboard /> },

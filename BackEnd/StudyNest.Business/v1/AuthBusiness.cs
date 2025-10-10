@@ -1,16 +1,21 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using CloudinaryDotNet.Actions;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using StudyNest.Common.DbEntities.Identities;
 using StudyNest.Common.Interfaces;
 using StudyNest.Common.Models.DTOs.CoreDTO;
 using StudyNest.Common.Models.DTOs.EntityDTO.User;
+using StudyNest.Common.Utils.Enums;
 using StudyNest.Common.Utils.Extensions;
+using StudyNest.Common.Utils.Helper;
 using StudyNest.Data;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Configuration;
+using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
@@ -19,12 +24,13 @@ using System.Threading.Tasks;
 
 namespace StudyNest.Business.v1
 {
-    public class AuthBusiness: IAuthBusiness
+    public class AuthBusiness : IAuthBusiness
     {
-        private readonly IConfiguration configuration;
-        private readonly UserManager<ApplicationUser> userManager;
+        private readonly IConfiguration _configuration;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<ApplicationRole> _roleManager;
         private readonly ApplicationDbContext _appDbContext;
-        private readonly RoleManager<ApplicationRole> roleManager;
+
         public AuthBusiness(
             IConfiguration configuration,
             UserManager<ApplicationUser> userManager,
@@ -32,68 +38,166 @@ namespace StudyNest.Business.v1
             ApplicationDbContext applicationDbContext
         )
         {
-            this.configuration = configuration;
-            this.userManager = userManager;
-            this.roleManager = roleManager;
+            _configuration = configuration;
+            _userManager = userManager;
+            _roleManager = roleManager;
             _appDbContext = applicationDbContext;
         }
 
         public async Task<ReturnResult<string>> Login(UserLogin model)
         {
-            ReturnResult<string> result = new ReturnResult<string>();
+            var result = new ReturnResult<string>();
+
             try
             {
-                ApplicationUser? existingUser = null;
-                //Check by email
+                ApplicationUser? user = null;
+
                 if (new EmailAddressAttribute().IsValid(model.UserNameOrEmail))
+                    user = await _userManager.FindByEmailAsync(model.UserNameOrEmail);
+                else
+                    user = await _userManager.FindByNameAsync(model.UserNameOrEmail);
+
+                if (user == null)
                 {
-                    existingUser = await userManager.FindByEmailAsync(model.UserNameOrEmail);
+                    result.Message = "User not found";
+                    return result;
                 }
-                //Check by username
-                else existingUser = await userManager.FindByNameAsync(model.UserNameOrEmail);
-                if (existingUser == null) result.Message = "User Not Found";
-                //Validate The Password
-                var isPasswordValid = await userManager.CheckPasswordAsync(existingUser, model.Password);
+
+                var isPasswordValid = await _userManager.CheckPasswordAsync(user, model.Password);
                 if (!isPasswordValid)
                 {
                     result.Message = "Password is incorrect";
+                    return result;
+                }
 
-                } else result.Result = await GenerateJwtToken(existingUser, model.RememberMe);
+                result.Result = await GenerateJwtToken(user, model.RememberMe);
             }
             catch (Exception ex)
             {
-                result.Message = "An error occurred during login.";
+                result.Message = ex.Message ?? ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
                 StudyNestLogger.Instance.Error(ex);
-                
             }
+
             return result;
         }
 
+        public async Task<ReturnResult<string>> Register(UserRegister model)
+        {
+            var result = new ReturnResult<string>();
+
+            try
+            {
+                var existingRole = await _appDbContext.Roles
+                    .FirstOrDefaultAsync(r => r.Name == UserRoleEnum.user.ToString());
+
+                if (existingRole == null)
+                {
+                    result.Message = "User role not found";
+                    return result;
+                }
+
+                // Check if username or email already exists
+                if (await _userManager.FindByNameAsync(model.Username) != null)
+                {
+                    result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_EXIST, model.Username);
+                    return result;
+                }
+
+                if (await _userManager.FindByEmailAsync(model.Email) != null)
+                {
+                    result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_EXIST, model.Email);
+                    return result;
+                }
+
+                var newUser = new ApplicationUser
+                {
+                    UserName = model.Username,
+                    FullName = model.FullName,
+                    Email = model.Email,
+                    EmailConfirmed = true,
+                    DateOfBirth = DateTimeOffset.UtcNow,
+                    Deleted = false,
+                    DateCreated = DateTimeOffset.UtcNow
+                };
+
+                var createResult = await _userManager.CreateAsync(newUser, model.Password);
+
+                if (!createResult.Succeeded)
+                {
+                    result.Message = "Failed to create user: " + string.Join(", ", createResult.Errors.Select(e => e.Description));
+                    return result;
+                }
+
+                // Re-fetch user by username to ensure tracking consistency
+                var createdUser = await _userManager.FindByNameAsync(model.Username);
+                if (createdUser == null)
+                {
+                    result.Message += $" User '{model.Username}' could not be retrieved after creation.";
+                }
+                else
+                {
+                    // Assign role
+                    var roleResult = await _userManager.AddToRoleAsync(createdUser, UserRoleEnum.user.ToString());
+                    if (!roleResult.Succeeded)
+                    {
+                        result.Message += " Failed to assign role: " + string.Join(", ", roleResult.Errors.Select(e => e.Description));
+                    }
+
+                    // Re-fetch by email to ensure latest tracking state
+                    createdUser = await _userManager.FindByEmailAsync(model.Email);
+                    if (createdUser == null)
+                    {
+                        result.Message += $" User '{model.Username}' could not be retrieved by email after role assignment.";
+                    }
+                    else
+                    {
+                        // Confirm email
+                        var token = await _userManager.GenerateEmailConfirmationTokenAsync(createdUser);
+                        var confirmResult = await _userManager.ConfirmEmailAsync(createdUser, token);
+                        if (!confirmResult.Succeeded)
+                        {
+                            result.Message += " Email confirmation failed: " + string.Join(", ", confirmResult.Errors.Select(e => e.Description));
+                        }
+                    }
+                }
+
+                // If no message yet, registration succeeded
+                if (string.IsNullOrEmpty(result.Message))
+                {
+                    result.Result = await GenerateJwtToken(newUser, false);
+                }
+            }
+            catch (Exception ex)
+            {
+                result.Message = ex.Message ?? ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
+                StudyNestLogger.Instance.Error(ex);
+            }
+
+            return result;
+        }
 
         private async Task<string> GenerateJwtToken(ApplicationUser user, bool rememberMe)
         {
-
-            var roles = await userManager.GetRolesAsync(user);
+            var roles = await _userManager.GetRolesAsync(user);
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(configuration["Jwt:Key"]);
-            //Add Key Value For JWT, Id, UserName and Email
-            var myClaim = new List<Claim>
+            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
+
+            var claims = new List<Claim>
             {
-                new(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new(ClaimTypes.Name, user.UserName ?? string.Empty),
-                new(ClaimTypes.Email, user.Email ?? string.Empty)
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.UserName ?? string.Empty),
+                new Claim(ClaimTypes.Email, user.Email ?? string.Empty)
             };
-            //Add Role Value For JWT, many role
-            foreach (var role in roles)
-            {
-                myClaim.Add(new Claim(ClaimTypes.Role, role));
-            }
+
+            claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new ClaimsIdentity(myClaim),
+                Subject = new ClaimsIdentity(claims),
                 Expires = rememberMe ? DateTime.UtcNow.AddDays(365) : DateTime.UtcNow.AddDays(30),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
+
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
