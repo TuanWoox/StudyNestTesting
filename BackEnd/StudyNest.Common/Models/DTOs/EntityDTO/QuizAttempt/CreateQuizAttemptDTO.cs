@@ -13,8 +13,5 @@ namespace StudyNest.Common.Models.DTOs.EntityDTO.QuizAttempt
     {
         [TrimmedRequired]
         public string QuizId { get; set; }
-        
-        [Range(1, 60, ErrorMessage = "Duration must be between 1 and 60 minutes.")]
-        public int DurationInMinutes { get; set; } = 0; // 0 means no time limit
     }
 }

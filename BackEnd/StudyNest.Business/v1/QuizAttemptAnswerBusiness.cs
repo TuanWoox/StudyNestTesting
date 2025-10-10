@@ -32,109 +32,94 @@ namespace StudyNest.Business.v1
             this._repository = repository;
             this._mapper = mapper;
         }
-        public async Task<ReturnResult<QuizAttemptAnswerDTO>> CreateQuizAttemptAnswer(CreateQuizAttemptAnswerDTO newEntity)
+        public async Task<ReturnResult<bool>> CreateQuizAttemptAnswer(string quizAttemptId, List<CreateQuizAttemptAnswerDTO> newEntity)
         {
-            ReturnResult<QuizAttemptAnswerDTO> result = new ReturnResult<QuizAttemptAnswerDTO>();
+            ReturnResult<bool> result = new ReturnResult<bool>();
             try
             {
-                var existingAttempt = await _context.QuizAttempts.Where(x => x.Id == newEntity.QuizAttemptId
-                                                                    && x.UserId == _userContext.UserId
-                                                                    && x.EndTime > DateTimeOffset.UtcNow
-                                                                    )
+                // Fetch the existing quiz attempt to ensure it belongs to the user
+                var existingAttempt = await _context.QuizAttempts.Where(x => x.Id == quizAttemptId
+                                                                    && x.UserId == _userContext.UserId)
                                                                  .Include(x => x.QuizAttemptSnapshot)
                                                                  .ThenInclude(x => x.Quiz)
                                                                  .AsNoTracking()
                                                                  .FirstOrDefaultAsync();
-                var existingAttemptAnswer = await _context.QuizAttemptAnswers.Where(x => x.QuizAttemptId == newEntity.QuizAttemptId
-                                                                                && x.SnapshotQuestionId == newEntity.SnapShotQuestionId)
-                                                                            .FirstOrDefaultAsync();
-
-
                 // Check if the attempt exists and belongs to the user
                 if (existingAttempt != null && existingAttempt.QuizAttemptSnapshot.Quiz.OwnerId == _userContext.UserId)
                 {
-                    if (existingAttemptAnswer == null)
+                    var questionsString = existingAttempt.QuizAttemptSnapshot.QuizQuestions;
+                    if (!string.IsNullOrEmpty(questionsString))
                     {
-                        var jsonString = existingAttempt.QuizAttemptSnapshot.QuizQuestions;
-                        if (!string.IsNullOrEmpty(jsonString))
+                        // Deserialize the questions JSON string to a list of QuestionDTO
+                        List<QuestionDTO> quizQuestions = JsonSerializer.Deserialize<List<QuestionDTO>>(questionsString)!;
+                        List<QuizAttemptAnswer> answersToAdd = new List<QuizAttemptAnswer>();
+                        foreach (var answer in newEntity)
                         {
-                            //Always is not null because of the check above
-                            List<QuestionDTO> parsedQuestions = JsonSerializer.Deserialize<List<QuestionDTO>>(jsonString)!;
-
-                            // Check if the SnapshotQuestionId exists in the quiz attempt snapshot
-                            var question = parsedQuestions.FirstOrDefault(x => x.Id == newEntity.SnapShotQuestionId);
-                            if (question != null)
+                            // Find the question in the snapshot
+                            var existingQuestionInSnapshot = quizQuestions.FirstOrDefault(q => q.Id == answer.SnapShotQuestionId);
+                            if (existingQuestionInSnapshot != null)
                             {
-                                List<string> correctAnswerIds = question.Choices.Where(c => c.IsCorrect).Select(c => c.Id).ToList();
-                                List<string> providedAnswerIds = newEntity.QuizAttemptAnswerChoices.Select(c => c.ChoiceId).ToList();
-
-                                // Validate that all provided choice IDs exist in the question's choices
-                                var validChoiceIds = question.Choices.Select(c => c.Id).ToList();
-                                var invalidChoices = providedAnswerIds.Except(validChoiceIds).ToList();
-
+                                List<string> allChoicesIdInQuestionInSnapshot = existingQuestionInSnapshot.Choices.Select(c => c.Id).ToList();
+                                List<string> allSelectedChoicesIdInAnswer = answer.QuizAttemptAnswerChoices.Select(c => c.ChoiceId).ToList();
+                                // Validate that all selected choices exist in the question
+                                var invalidChoices = allSelectedChoicesIdInAnswer.Except(allChoicesIdInQuestionInSnapshot).ToList();
                                 if (invalidChoices.Any())
                                 {
-                                    result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "choice(s)", string.Join(", ", invalidChoices));
-                                    return result;
+                                    continue; // Skip this answer if it has invalid choices
                                 }
-
-                                // Determine if the provided answers are correct
-                                bool isCorrect = correctAnswerIds.Count == newEntity.QuizAttemptAnswerChoices.Count && !correctAnswerIds.Except(providedAnswerIds).Any();
+                                List<string> correctAnswerIds = existingQuestionInSnapshot.Choices.Where(c => c.IsCorrect).Select(c => c.Id).ToList();
                                 QuizAttemptAnswer attemptAnswer = new QuizAttemptAnswer
                                 {
-                                    QuizAttemptId = newEntity.QuizAttemptId,
-                                    SnapshotQuestionId = newEntity.SnapShotQuestionId,
-                                    IsCorrect = isCorrect,
+                                    QuizAttemptId = quizAttemptId,
+                                    SnapshotQuestionId = answer.SnapShotQuestionId,
+                                    IsCorrect = correctAnswerIds.Count == allSelectedChoicesIdInAnswer.Count && !correctAnswerIds.Except(allSelectedChoicesIdInAnswer).Any(),
                                 };
-                                // Create the QuizAttemptAnswer first to get its Id
-                                var savedResult = await _repository.CreateAsync(attemptAnswer);
-                                if (savedResult.Message == null)
+                                answersToAdd.Add(attemptAnswer);
+                            }
+                        }
+                        // Bulk Insert All Valid Answers
+                        if (answersToAdd.Any())
+                        {
+                            await _context.QuizAttemptAnswers.AddRangeAsync(answersToAdd);
+                            // Now Add The Choices For Each Answer
+                            List<QuizAttemptAnswerChoice> choicesToAdd = new List<QuizAttemptAnswerChoice>();
+                            foreach (var answer in answersToAdd)
+                            {
+                                var correspondingAnswerDto = newEntity.FirstOrDefault(a => a.SnapShotQuestionId == answer.SnapshotQuestionId);
+                                if(correspondingAnswerDto != null)
                                 {
-                                    List<QuizAttemptAnswerChoice> attemptAnswerChoices = new List<QuizAttemptAnswerChoice>();
-                                    // Now create QuizAttempAnswerChoice entries
-                                    foreach (var choiceId in providedAnswerIds)
+                                    foreach (var choice in correspondingAnswerDto.QuizAttemptAnswerChoices)
                                     {
                                         QuizAttemptAnswerChoice answerChoice = new QuizAttemptAnswerChoice
                                         {
-                                            QuizAttemptAnswerId = savedResult.Result.Id,
-                                            ChoiceId = choiceId
+                                            QuizAttemptAnswerId = answer.Id,
+                                            ChoiceId = choice.ChoiceId
                                         };
-                                        attemptAnswerChoices.Add(answerChoice);
+                                        choicesToAdd.Add(answerChoice);
                                     }
-                                    await _context.AddRangeAsync(attemptAnswerChoices);
-                                    await _context.SaveChangesAsync();
-                                    // Assign the choices to the savedResult for returning
-                                    savedResult.Result.QuizAttemptAnswerChoices = attemptAnswerChoices;
-                                    // Mapping the result to DTO, so that EF navigation properties are not exposed
-                                    result.Result = _mapper.Map<QuizAttemptAnswerDTO>(savedResult.Result);
-
                                 }
                             }
-                            else
+                            //Bulk Insert All Choices
+                            if (choicesToAdd.Any())
                             {
-                                result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "question in quiz snapshot", newEntity.SnapShotQuestionId);
+                                await _context.QuizAttemptAnswerChoices.AddRangeAsync(choicesToAdd);
                             }
+                            result.Result = await _context.SaveChangesAsync() > 0;
                         }
-                        else
-                        {
-                            result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "questions in quiz snapshot", newEntity.QuizAttemptId);
-                        }
-
                     }
                     else
                     {
-                        result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_EXIST, "Answer for this question");
+                        result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "questions in quiz snapshot", quizAttemptId);
                     }
-                    
                 }
                 else
                 {
-                    result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "quiz attempt", newEntity.QuizAttemptId);
+                    result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "quiz attempt", quizAttemptId);
                 }
-
             }
             catch (Exception ex)
             {
+                result.Message = ex.Message ?? ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
                 StudyNestLogger.Instance.Error(ex);
             }
             return result;

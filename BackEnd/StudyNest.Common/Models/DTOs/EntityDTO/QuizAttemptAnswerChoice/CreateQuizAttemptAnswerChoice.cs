@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace StudyNest.Common.Models.DTOs.EntityDTO.QuizAttemptAnswerChoice
 {
-    public class CreateQuizAttempAnswerChoice
+    public class CreateQuizAttemptAnswerChoice
     {
         [TrimmedRequired]
         public string ChoiceId { get; set; }

@@ -115,6 +115,10 @@ const QuizDetailPage: React.FC = () => {
     );
   }
 
+  const onTakeQuiz = () => {
+    navigate(`/user/quizAttempt/${id}`);
+  }
+
   // Quiz data successfully loaded
   return (
     <Card
@@ -139,7 +143,7 @@ const QuizDetailPage: React.FC = () => {
             </Title>
           </Space>
           <Space>
-            <Button type="primary" icon={<FormOutlined />}>
+            <Button type="primary" icon={<FormOutlined />} onClick={onTakeQuiz}>
               Take Quiz
             </Button>
             <Link to="/user/quiz">
@@ -217,8 +221,8 @@ const QuizDetailPage: React.FC = () => {
                             question.type === "MCQ"
                               ? "#1890ff"
                               : question.type === "MSQ"
-                              ? "#722ed1"
-                              : "#52c41a",
+                                ? "#722ed1"
+                                : "#52c41a",
                           marginRight: 8,
                           boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
                         }}
@@ -232,16 +236,16 @@ const QuizDetailPage: React.FC = () => {
                         question.type === "MCQ"
                           ? "blue"
                           : question.type === "MSQ"
-                          ? "purple"
-                          : "green"
+                            ? "purple"
+                            : "green"
                       }
                       style={{ padding: "4px 8px", fontWeight: 500 }}
                     >
                       {question.type === "MCQ"
                         ? "Multiple Choice"
                         : question.type === "MSQ"
-                        ? "Multi-Select"
-                        : "True/False"}
+                          ? "Multi-Select"
+                          : "True/False"}
                     </Tag>
                   </Flex>
                 }

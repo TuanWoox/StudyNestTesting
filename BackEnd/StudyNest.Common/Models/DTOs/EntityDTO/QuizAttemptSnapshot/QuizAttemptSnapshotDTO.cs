@@ -1,5 +1,8 @@
 ﻿using AutoMapper;
+using StudyNest.Common.DbEntities.BaseEntity;
 using StudyNest.Common.DbEntities.Entities;
+using StudyNest.Common.Interfaces;
+using StudyNest.Common.Models.DTOs.EntityDTO.Quizzes;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -11,15 +14,13 @@ using System.Threading.Tasks;
 namespace StudyNest.Common.Models.DTOs.EntityDTO.QuizAttemptSnapshot
 {
     [AutoMap(typeof(DbEntities.Entities.QuizAttemptSnapshot), ReverseMap = true, PreserveReferences = true)]
-    public class QuizAttemptSnapshotDTO
+    public class QuizAttemptSnapshotDTO: BaseEntity<string>, IMapFrom<DbEntities.Entities.QuizAttemptSnapshot>
     {
         [Required]
         public string QuizId { get; set; }
 
-        public Quiz Quiz { get; set; }
-
-        //This store a snapshot of the quiz questions at the time of the attempt
-        [Column(TypeName = "jsonb")]
         public string QuizQuestions { get; set; }
+        public List<Question.QuestionDTO>? QuizQuestionsParsed { get; set; } = new List<Question.QuestionDTO>();
+        
     }
 }

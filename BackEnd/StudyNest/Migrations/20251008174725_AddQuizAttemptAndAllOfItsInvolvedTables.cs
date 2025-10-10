@@ -105,8 +105,9 @@ namespace StudyNest.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            // ✅ Corrected table name here
             migrationBuilder.CreateTable(
-                name: "QuizAttempAnswerChoices",
+                name: "QuizAttemptAnswerChoices",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
@@ -119,22 +120,22 @@ namespace StudyNest.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_QuizAttempAnswerChoices", x => x.Id);
+                    table.PrimaryKey("PK_QuizAttemptAnswerChoices", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_QuizAttempAnswerChoices_QuizAttemptAnswers_QuizAttemptAnswe~",
+                        name: "FK_QuizAttemptAnswerChoices_QuizAttemptAnswers_QuizAttemptAnswerId",
                         column: x => x.QuizAttemptAnswerId,
                         principalTable: "QuizAttemptAnswers",
                         principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_QuizAttempAnswerChoices_Deleted",
-                table: "QuizAttempAnswerChoices",
+                name: "IX_QuizAttemptAnswerChoices_Deleted",
+                table: "QuizAttemptAnswerChoices",
                 column: "Deleted");
 
             migrationBuilder.CreateIndex(
-                name: "IX_QuizAttempAnswerChoices_QuizAttemptAnswerId",
-                table: "QuizAttempAnswerChoices",
+                name: "IX_QuizAttemptAnswerChoices_QuizAttemptAnswerId",
+                table: "QuizAttemptAnswerChoices",
                 column: "QuizAttemptAnswerId");
 
             migrationBuilder.CreateIndex(
@@ -181,8 +182,9 @@ namespace StudyNest.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            // ✅ Corrected name here too
             migrationBuilder.DropTable(
-                name: "QuizAttempAnswerChoices");
+                name: "QuizAttemptAnswerChoices");
 
             migrationBuilder.DropTable(
                 name: "QuizAttemptAnswers");

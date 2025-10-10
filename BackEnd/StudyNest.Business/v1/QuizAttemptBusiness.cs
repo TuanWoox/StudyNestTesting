@@ -21,9 +21,9 @@ namespace StudyNest.Business.v1
         ApplicationDbContext _dbContext;
         IRepository<QuizAttempt, string> _repository;
         IUserContext _userContext;
+        IQuizAttemptAnswerBusiness _quizAttemptAnswerBusiness;
         IQuizAttemptSnapshotBusiness _quizAttemptSnapshotBusiness;
         IMapper _mapper;
-        IQuizAttemptAnswerBusiness _quizAttemptAnswerBusiness;
         public QuizAttemptBusiness(ApplicationDbContext dbContext, IRepository<QuizAttempt, string> repository, IUserContext userContext,
             IQuizAttemptSnapshotBusiness quizAttemptSnapshotBusiness, IMapper mapper, IQuizAttemptAnswerBusiness quizAttemptAnswerBusiness)
         {
@@ -39,16 +39,16 @@ namespace StudyNest.Business.v1
             ReturnResult<PagedData<SelectQuizAttemptDTO, string>> result = new ReturnResult<PagedData<SelectQuizAttemptDTO, string>>();
             try
             {
-                var query = _dbContext.QuizAttempts.AsNoTracking()
-                    .Where(x => x.UserId == _userContext.UserId)
-                    .OrderByDescending(x => x.DateCreated)
-                    .AsQueryable();
+                var query = _dbContext.QuizAttempts.Where(x => x.UserId == _userContext.UserId)
+                                                .OrderByDescending(x => x.DateCreated)
+                                                .AsNoTracking()
+                                                .AsQueryable();
                 var pagedData = await _repository.GetPagingAsync<Page<string>, SelectQuizAttemptDTO>(query, page, isExported);
                 result.Result = pagedData;
             }
             catch (Exception ex)
             {
-                result.Message = ex.Message;
+                result.Message = ex.Message ?? ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
                 StudyNestLogger.Instance.Error(ex);
             }
             return result;
@@ -60,12 +60,16 @@ namespace StudyNest.Business.v1
             {
                 var existingQuizAttempt = await _dbContext.QuizAttempts.Where(x => x.Id == id.Trim()
                                                                         && x.UserId == _userContext.UserId)
+                                                                       .Include(x => x.QuizAttemptSnapshot)
                                                                        .Include(x => x.QuizAttemptAnswers)
                                                                        .ThenInclude(x => x.QuizAttemptAnswerChoices)
                                                                        .FirstOrDefaultAsync();
                 if(existingQuizAttempt != null)
                 {
+                    List<QuestionDTO> parsedQuestions = JsonSerializer.Deserialize<List<QuestionDTO>>(existingQuizAttempt.QuizAttemptSnapshot.QuizQuestions)!;
                     result.Result = _mapper.Map<QuizAttemptDTO>(existingQuizAttempt);
+                    result.Result.QuizAttemptSnapshot.QuizQuestions = "";
+                    result.Result.QuizAttemptSnapshot.QuizQuestionsParsed = parsedQuestions;
                 }
                 else
                 {
@@ -74,169 +78,70 @@ namespace StudyNest.Business.v1
             }
             catch (Exception ex)
             {
-                result.Message = ex.Message;
+                result.Message = ex.Message ?? ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
                 StudyNestLogger.Instance.Error(ex);
             }
             return result;
         }
-        public async Task<ReturnResult<QuizAttemptDTO>> CreateQuizAttempt(CreateQuizAttemptDTO newEntity)
+        public async Task<ReturnResult<string>> SubmitQuizAttempt(string quizId, List<CreateQuizAttemptAnswerDTO> submittedAnswers)
         {
-            ReturnResult<QuizAttemptDTO> result = new ReturnResult<QuizAttemptDTO>();
+            ReturnResult<string> result = new ReturnResult<string>();
             try
             {
-                // Find any not finished attempt for this user and this quiz, as long as the complete time is under the now time
-                var notFinishedAttempt = await _dbContext.QuizAttempts
-                    .Where(x => x.QuizId == newEntity.QuizId
-                             && x.UserId == _userContext.UserId
-                             && x.EndTime > DateTimeOffset.UtcNow
-                             && x.IsCompleted == false
-                     )
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync();
-
-                if (notFinishedAttempt == null)
+               var createdResult = await CreateQuizAttempt(new CreateQuizAttemptDTO { QuizId = quizId });
+                // Check if quiz attempt creation was successful
+                if (createdResult.Result == null)
                 {
-                    //Find the existing quiz
-                    var existingQuiz = await _dbContext.Quizzes
-                        .Where(x => x.Id == newEntity.QuizId)
-                        .AsNoTracking()
-                        .FirstOrDefaultAsync();
-
-                    if (existingQuiz != null)
-                    {
-                        if (existingQuiz.OwnerId == _userContext.UserId)
-                        {
-                            if (existingQuiz.IsBeingConvertToSnapShot)
-                            {
-                                result.Message = "This quiz is being converted to snapshot. Please try again later.";
-                            }
-                            else
-                            {
-                                // Find the latest snapshot for this quiz
-                                var latestSnapshot = await _dbContext.QuizAttemptSnapshots
-                                    .Where(x => x.QuizId == newEntity.QuizId)
-                                    .OrderByDescending(x => x.DateCreated)
-                                    .AsNoTracking()
-                                    .FirstOrDefaultAsync();
-
-                                if (latestSnapshot == null)
-                                {
-                                    var createdResult = await _quizAttemptSnapshotBusiness.CreateSnapShot(newEntity.QuizId);
-                                    if (createdResult.Result != null)
-                                    {
-                                        latestSnapshot = createdResult.Result;
-                                    }
-                                    else
-                                    {
-                                        result.Message = createdResult.Message;
-                                    }
-                                }
-
-                                if (latestSnapshot != null)
-                                {
-                                    var quizAttempt = new QuizAttempt()
-                                    {
-                                        QuizId = newEntity.QuizId,
-                                        UserId = _userContext.UserId,
-                                        EndTime = DateTimeOffset.UtcNow.AddMinutes(newEntity.DurationInMinutes),
-                                        QuizAttemptSnapshotId = latestSnapshot.Id.ToString(),
-                                    };
-                                    var savedResult = await _repository.CreateAsync(quizAttempt);
-                                    if(savedResult.Message == null)
-                                    {
-                                        result.Result = _mapper.Map<QuizAttemptDTO>(savedResult.Result);
-                                        // Schedule a background job to submit the quiz attempt when the time is up
-                                        BackgroundJob.Schedule(() => SubmitQuizAttempt(result.Result.Id, _userContext.UserId, null), quizAttempt.EndTime.UtcDateTime);
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            result.Message = "You are forbidden to create quiz attempt for this quiz";
-                        }
-                    }
-                    else
-                    {
-                        result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "quiz", newEntity.QuizId);
-                    }
+                    // If creation failed, return the error message
+                    result.Message = createdResult.Message ?? "Failed to create quiz attempt.";
+                    return result;
                 }
-                else
+                // Check if submitted answers exist
+                if (submittedAnswers == null || !submittedAnswers.Any())
                 {
-                    result.Message = "You have an unfinished attempt for this quiz.";
+                    result.Message = "No answers were submitted.";
+                    return result;
                 }
-            }
-            catch (Exception ex)
-            {
-                result.Message = ex.Message;
-                StudyNestLogger.Instance.Error(ex);
-            }
-            return result;
-        }
-        public async Task<ReturnResult<QuizAttemptDTO>> SubmitQuizAttempt(string quizAttemptId,string userId = "", List<CreateQuizAttemptAnswerDTO> submittedAnswers = null)
-        {
-            ReturnResult<QuizAttemptDTO> result = new ReturnResult<QuizAttemptDTO>();
-            try
-            {
-                if (string.IsNullOrEmpty(userId))
-                {
-                    userId = _userContext.UserId;
-                }
-
-                // If submittedAnswers is null, try to get the draft answers from the existing attempt record ( This will triggered by background job )
-                if (submittedAnswers == null)
-                {
-                    var attemptWithDraft = await _dbContext.QuizAttempts
-                        .Where(x => x.Id == quizAttemptId && x.UserId == userId && x.IsCompleted == false)
-                        .AsNoTracking()
-                        .FirstOrDefaultAsync();
-
-                    var draftAnswersJson = attemptWithDraft?.DraftAnswers;
-                    if (draftAnswersJson != null)
-                    {
-                        submittedAnswers = JsonSerializer.Deserialize<List<CreateQuizAttemptAnswerDTO>>(draftAnswersJson)!;
-                    }
-                }
-
-                // Save the submitted answers FIRST
-                foreach (var answer in submittedAnswers!)
-                {
-                    await _quizAttemptAnswerBusiness.CreateQuizAttemptAnswer(answer);
-                }
-
+                // Save all answers at once, not one by one
+                await _quizAttemptAnswerBusiness.CreateQuizAttemptAnswer(createdResult.Result.Id,submittedAnswers);
                 // NOW query the existing attempt with all answers included
-                var existingAttempt = await _dbContext.QuizAttempts
-                    .Where(x => x.Id == quizAttemptId && x.UserId == userId && x.IsCompleted == false)
-                    .Include(x => x.QuizAttemptSnapshot)
-                    .Include(x => x.QuizAttemptAnswers)
-                    .FirstOrDefaultAsync();
-
+                var existingAttempt = await _dbContext.QuizAttempts.Where(x => x.Id == createdResult.Result.Id && x.UserId == _userContext.UserId)
+                                                                .Include(x => x.QuizAttemptSnapshot)
+                                                                .Include(x => x.QuizAttemptAnswers)
+                                                                .FirstOrDefaultAsync();
                 if (existingAttempt != null)
                 {
+                    // Check if snapshot exists
+                    if (existingAttempt.QuizAttemptSnapshot == null)
+                    {
+                        result.Message = "Quiz attempt snapshot not found.";
+                        return result;
+                    }
+
                     var jsonString = existingAttempt.QuizAttemptSnapshot.QuizQuestions;
                     if (!string.IsNullOrEmpty(jsonString))
                     {
                         //We are sure to put ! because we have check above
                         List<QuestionDTO> parsedQuestions = JsonSerializer.Deserialize<List<QuestionDTO>>(jsonString)!;
 
+                        // Check if questions were parsed successfully
+                        if (parsedQuestions == null || !parsedQuestions.Any())
+                        {
+                            result.Message = "No questions found in quiz snapshot.";
+                            return result;
+                        }
                         // Calculate the score (Percentage of correct answers)
                         int totalQuestions = parsedQuestions.Count;
                         int correctAnswers = existingAttempt.QuizAttemptAnswers.Where(x => x.IsCorrect).Count();
-                        int score = (int)Math.Round((double)(correctAnswers * 100) / totalQuestions);
-
-                        // Update the QuizAttempt
-                        existingAttempt.Score = score;
-                        existingAttempt.IsCompleted = true;
-
-                        // Update the QuizAttemptAnswers to set IsCorrect field and Score field
-                        var updateResult = await _repository.UpdateAsync(existingAttempt);
-                        if (updateResult.Result != null)
+                        existingAttempt.Score = (int)Math.Round((double)(correctAnswers * 100) / totalQuestions);
+                        // Update the attempt as completed
+                        if (await _dbContext.SaveChangesAsync() > 0)
                         {
-                            result.Result = _mapper.Map<QuizAttemptDTO>(updateResult.Result);
+                            result.Result = existingAttempt.Id;
                         }
                         else
                         {
-                            result.Message = updateResult.Message;
+                            result.Message = "Failed to update quiz attempt with score.";
                         }
                     }
                     else
@@ -246,45 +151,86 @@ namespace StudyNest.Business.v1
                 }
                 else
                 {
-                    result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "quiz attempt", quizAttemptId);
+                    result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "quiz attempt", createdResult.Result.Id);
                 }
             }
             catch (Exception ex)
             {
-                result.Message = ex.Message;
+                result.Message = ex.Message ?? ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
                 StudyNestLogger.Instance.Error(ex);
             }
             return result;
         }
-        public async Task<ReturnResult<bool>> AutoSaveDraft(string id, List<CreateQuizAttemptAnswerDTO> draftAnswers)
+        public async Task<ReturnResult<QuizAttemptDTO>> CreateQuizAttempt(CreateQuizAttemptDTO newEntity)
         {
-            ReturnResult<bool> result = new ReturnResult<bool>();
+            ReturnResult<QuizAttemptDTO> result = new ReturnResult<QuizAttemptDTO>();
             try
             {
-                var existingAttempt = await _dbContext.QuizAttempts
-                                            .Where(x => x.Id == id && x.UserId == _userContext.UserId && x.IsCompleted == false)
-                                            .FirstOrDefaultAsync();
-                if (existingAttempt != null)
+                // Find the existing quiz
+                var existingQuiz = await _dbContext.Quizzes.Where(x => x.Id == newEntity.QuizId)
+                                                           .AsNoTracking()
+                                                           .FirstOrDefaultAsync();
+                if (existingQuiz != null)
                 {
-                    existingAttempt.DraftAnswers = JsonSerializer.Serialize(draftAnswers);
-                    var updateResult = await _repository.UpdateAsync(existingAttempt);
-                    if (updateResult.Result != null)
+                    if (existingQuiz.OwnerId == _userContext.UserId)
                     {
-                        result.Result = true;
+                        if (existingQuiz.IsBeingConvertToSnapShot)
+                        {
+                            result.Message = "This quiz is being converted to snapshot. Please try again later.";
+                        }
+                        else
+                        {
+                            // Find the latest snapshot for this quiz
+                            var latestSnapshot = await _dbContext.QuizAttemptSnapshots
+                                                                .Where(x => x.QuizId == newEntity.QuizId)
+                                                                .OrderByDescending(x => x.DateCreated)
+                                                                .AsNoTracking()
+                                                                .FirstOrDefaultAsync();
+
+                            // Create snapshot if it doesn't exist
+                            if (latestSnapshot == null)
+                            {
+                                var createdResult = await _quizAttemptSnapshotBusiness.CreateSnapShot(newEntity.QuizId);
+                                if (createdResult.Result != null)
+                                {
+                                    latestSnapshot = createdResult.Result;
+                                }
+                                else
+                                {
+                                    result.Message = createdResult.Message;
+                                }
+                            }
+
+                            // Create quiz attempt with the snapshot
+                            if (latestSnapshot != null)
+                            {
+                                var quizAttempt = new QuizAttempt()
+                                {
+                                    QuizId = newEntity.QuizId,
+                                    UserId = _userContext.UserId,
+                                    QuizAttemptSnapshotId = latestSnapshot.Id.ToString(),
+                                };
+                                var savedResult = await _repository.CreateAsync(quizAttempt);
+                                if (savedResult.Message == null)
+                                {
+                                    result.Result = _mapper.Map<QuizAttemptDTO>(savedResult.Result);
+                                }
+                            }
+                        }
                     }
                     else
                     {
-                        result.Message = updateResult.Message;
+                        result.Message = "You are forbidden to create quiz attempt for this quiz";
                     }
                 }
                 else
                 {
-                    result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "quiz attempt", id);
+                    result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "quiz", newEntity.QuizId);
                 }
             }
             catch (Exception ex)
             {
-                result.Message = ex.Message;
+                result.Message = ex.Message ?? ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
                 StudyNestLogger.Instance.Error(ex);
             }
             return result;

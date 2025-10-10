@@ -11,11 +11,10 @@ namespace StudyNest.Common.Models.DTOs.EntityDTO.QuizAttemptAnswer
 {
     public class CreateQuizAttemptAnswerDTO
     {
-        [TrimmedRequired]
         public string QuizAttemptId { get; set; }
         [TrimmedRequired]
         public string SnapShotQuestionId { get; set; }
         [Required]
-        public List<CreateQuizAttempAnswerChoice> QuizAttemptAnswerChoices { get; set; }
+        public List<CreateQuizAttemptAnswerChoice> QuizAttemptAnswerChoices { get; set; }
     }
 }

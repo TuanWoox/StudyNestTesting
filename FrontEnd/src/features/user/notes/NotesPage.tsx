@@ -10,6 +10,7 @@ import NoteEditor from "./NoteEditor/NoteEditor";
 import ModalCreateFolder from "./ModalCreateFolder";
 import ModalUpdateFolder from "./ModalUpdateFolder";
 import ModalDeleteFolder from "./ModalDeleteFolder";
+import Spinner from "@/components/Spinner/Spinner";
 
 const NotesPage: React.FC = () => {
     const darkMode = useOutletContext<boolean>();
@@ -50,7 +51,7 @@ const NotesPage: React.FC = () => {
 
 
     if (loadingNotes || loadingFolders || loadingTags)
-        return <div className="p-4">Loading...</div>;
+        return <Spinner></Spinner>;
     if (errorNotes || errorFolders || errorTags) return <div className="p-4 text-red-500">Failed to load folders.</div>;
 
     const handleCreateNote = () => {
