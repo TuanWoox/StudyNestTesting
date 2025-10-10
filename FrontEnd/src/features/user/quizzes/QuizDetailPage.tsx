@@ -40,13 +40,14 @@ const QuizDetailPage: React.FC = () => {
   } = useGetQuizDetail(id, { enabled: !!id });
 
   const questions = quiz?.questions ?? [];
-  const { mcq, tf } = questions.reduce(
+  const { mcq, tf, msq } = questions.reduce(
     (acc, q) => {
       if (q.type === "MCQ") acc.mcq++;
-      if (q.type === "TF") acc.tf++;
+      else if (q.type === "TF") acc.tf++;
+      else if (q.type === "MSQ") acc.msq++;
       return acc;
     },
-    { mcq: 0, tf: 0 }
+    { mcq: 0, tf: 0, msq: 0 }
   );
 
   const handleReturnQuiz = () => {
@@ -114,6 +115,10 @@ const QuizDetailPage: React.FC = () => {
     );
   }
 
+  const onTakeQuiz = () => {
+    navigate(`/user/quizAttempt/${id}`);
+  }
+
   // Quiz data successfully loaded
   return (
     <Card
@@ -130,35 +135,54 @@ const QuizDetailPage: React.FC = () => {
         flexDirection: "column",
       }}
     >
-      <Flex justify="space-between" align="center" style={{ marginBottom: 24 }}>
-        <Space size={16}>
-          <Title level={3} style={{ margin: 0 }}>
-            {quiz.title}
-          </Title>
-          <Tag color="blue">{mcq} MCQ</Tag>
-          <Tag color="green">{tf} True/False</Tag>
-        </Space>
-        <Space>
-          <Button type="primary" icon={<FormOutlined />}>
-            Take Quiz
-          </Button>
-          <Link to="/user/quiz">
-            <Button icon={<ArrowLeftOutlined />}>Back to Quizzes</Button>
-          </Link>
-        </Space>
+      <Flex vertical gap={16} style={{ marginBottom: 24 }}>
+        <Flex justify="space-between" align="center">
+          <Space size={16}>
+            <Title level={3} style={{ margin: 0 }}>
+              {quiz.title}
+            </Title>
+          </Space>
+          <Space>
+            <Button type="primary" icon={<FormOutlined />} onClick={onTakeQuiz}>
+              Take Quiz
+            </Button>
+            <Link to="/user/quiz">
+              <Button icon={<ArrowLeftOutlined />}>Back to Quizzes</Button>
+            </Link>
+          </Space>
+        </Flex>
+
+        <Flex gap={8}>
+          <Tag color="blue" style={{ padding: "4px 8px" }}>
+            <Space>
+              <span style={{ fontWeight: "bold" }}>{mcq}</span> Multiple Choice
+            </Space>
+          </Tag>
+          <Tag color="purple" style={{ padding: "4px 8px" }}>
+            <Space>
+              <span style={{ fontWeight: "bold" }}>{msq}</span> Multi-Select
+            </Space>
+          </Tag>
+          <Tag color="green" style={{ padding: "4px 8px" }}>
+            <Space>
+              <span style={{ fontWeight: "bold" }}>{tf}</span> True/False
+            </Space>
+          </Tag>
+        </Flex>
       </Flex>
 
       <Card style={{ marginBottom: 24 }}>
         <Flex align="center" justify="space-between">
-          <div>
-            <Text strong>
-              Total Questions: {(quiz?.questions ?? []).length}
+          <Space>
+            <Tag color="cyan" style={{ fontSize: "14px", padding: "5px 10px" }}>
+              {(quiz?.questions ?? []).length} Questions
+            </Tag>
+          </Space>
+          <Space>
+            <Text type="secondary" style={{ fontSize: "14px" }}>
+              Created on {quiz.dateCreated && formatDMY(quiz.dateCreated)}
             </Text>
-          </div>
-          <div>
-            <Text strong>Created:</Text>{" "}
-            <Text>{quiz.dateCreated && formatDMY(quiz.dateCreated)}</Text>
-          </div>
+          </Space>
         </Flex>
       </Card>
 
@@ -175,37 +199,53 @@ const QuizDetailPage: React.FC = () => {
           style={{ background: "#fff" }}
         >
           {questions.map((question, index) => {
-            // Sort choices by orderNo to display them in correct order
-            const sortedChoices = question.choices
-              ? [...question.choices].sort((a, b) => a.orderNo - b.orderNo)
-              : [];
+            // Use choices as they come from the API
+            const sortedChoices = question.choices ? [...question.choices] : [];
 
-            // Find the correct choice based on correctIndex (which corresponds to orderNo)
-            const correctChoice =
-              question.type === "MCQ" && Number.isInteger(question.correctIndex)
-                ? sortedChoices[question.correctIndex]
-                : undefined;
+            // isCorrect should already be set from the API for all question types
 
             return (
               <Panel
                 key={question.id ?? String(index)}
                 header={
-                  <Flex justify="space-between" align="center">
-                    <Space>
+                  <Flex
+                    justify="space-between"
+                    align="center"
+                    style={{ width: "100%" }}
+                  >
+                    <Space size={12}>
                       <Badge
                         count={index + 1}
                         style={{
                           backgroundColor:
-                            question.type === "MCQ" ? "#1890ff" : "#52c41a",
+                            question.type === "MCQ"
+                              ? "#1890ff"
+                              : question.type === "MSQ"
+                                ? "#722ed1"
+                                : "#52c41a",
                           marginRight: 8,
+                          boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
                         }}
                       />
-                      <Text strong>{question.name}</Text>
+                      <Text strong style={{ fontSize: "16px" }}>
+                        {question.name}
+                      </Text>
                     </Space>
-                    <Tag color={question.type === "MCQ" ? "blue" : "green"}>
+                    <Tag
+                      color={
+                        question.type === "MCQ"
+                          ? "blue"
+                          : question.type === "MSQ"
+                            ? "purple"
+                            : "green"
+                      }
+                      style={{ padding: "4px 8px", fontWeight: 500 }}
+                    >
                       {question.type === "MCQ"
                         ? "Multiple Choice"
-                        : "True/False"}
+                        : question.type === "MSQ"
+                          ? "Multi-Select"
+                          : "True/False"}
                     </Tag>
                   </Flex>
                 }
@@ -215,8 +255,13 @@ const QuizDetailPage: React.FC = () => {
                     size="small"
                     bordered
                     dataSource={sortedChoices}
+                    style={{
+                      borderRadius: "6px",
+                      overflow: "hidden",
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                    }}
                     renderItem={(choice) => {
-                      const isCorrect = choice.id === correctChoice?.id;
+                      const isCorrect = choice.isCorrect;
                       return (
                         <List.Item
                           style={{
@@ -224,35 +269,101 @@ const QuizDetailPage: React.FC = () => {
                             borderLeft: isCorrect
                               ? "3px solid #52c41a"
                               : undefined,
+                            padding: "10px 16px",
+                            transition: "background-color 0.2s ease",
                           }}
                         >
                           <Space>
                             {isCorrect && (
                               <CheckCircleOutlined
-                                style={{ color: "#52c41a" }}
+                                style={{ color: "#52c41a", fontSize: "16px" }}
                               />
                             )}
-                            <Text>{choice.text}</Text>
+                            <Text style={{ fontSize: "14px" }}>
+                              {choice.text}
+                            </Text>
                           </Space>
                         </List.Item>
                       );
                     }}
                   />
-                ) : (
-                  <Card
-                    size="small"
-                    style={{
-                      backgroundColor: "#f6ffed",
-                      borderLeft: "3px solid #52c41a",
-                    }}
-                  >
-                    <Text>
-                      Correct Answer:{" "}
-                      <Text strong>
-                        {question.correctTrueFalse ? "True" : "False"}
-                      </Text>
+                ) : question.type === "MSQ" ? (
+                  <div>
+                    <Text strong style={{ display: "block", marginBottom: 8 }}>
+                      Select all that apply:
                     </Text>
-                  </Card>
+                    <List
+                      size="small"
+                      bordered
+                      dataSource={sortedChoices}
+                      renderItem={(choice) => {
+                        const isCorrect = choice.isCorrect;
+                        return (
+                          <List.Item
+                            style={{
+                              backgroundColor: isCorrect
+                                ? "#f0f5ff"
+                                : undefined,
+                              borderLeft: isCorrect
+                                ? "3px solid #722ed1"
+                                : undefined,
+                            }}
+                          >
+                            <Space>
+                              {isCorrect && (
+                                <CheckCircleOutlined
+                                  style={{ color: "#722ed1" }}
+                                />
+                              )}
+                              <Text>{choice.text}</Text>
+                            </Space>
+                          </List.Item>
+                        );
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <List
+                    size="small"
+                    bordered
+                    dataSource={sortedChoices}
+                    style={{
+                      borderRadius: "6px",
+                      overflow: "hidden",
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                    }}
+                    renderItem={(choice) => {
+                      const isCorrect = choice.isCorrect;
+                      return (
+                        <List.Item
+                          style={{
+                            backgroundColor: isCorrect ? "#f6ffed" : undefined,
+                            borderLeft: isCorrect
+                              ? "3px solid #52c41a"
+                              : undefined,
+                            padding: "10px 16px",
+                            transition: "background-color 0.2s ease",
+                          }}
+                        >
+                          <Space>
+                            {isCorrect && (
+                              <CheckCircleOutlined
+                                style={{ color: "#52c41a", fontSize: "16px" }}
+                              />
+                            )}
+                            <Text
+                              style={{
+                                fontSize: "14px",
+                                fontWeight: isCorrect ? 500 : 400,
+                              }}
+                            >
+                              {choice.text}
+                            </Text>
+                          </Space>
+                        </List.Item>
+                      );
+                    }}
+                  />
                 )}
 
                 {question.explanation && (
@@ -262,16 +373,26 @@ const QuizDetailPage: React.FC = () => {
                       marginTop: 16,
                       backgroundColor: "#f0f5ff",
                       borderLeft: "3px solid #1890ff",
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                      borderRadius: "6px",
                     }}
                     title={
                       <Space>
-                        <QuestionCircleOutlined />
-                        <Text>Explanation</Text>
+                        <QuestionCircleOutlined style={{ color: "#1890ff" }} />
+                        <Text strong style={{ color: "#1890ff" }}>
+                          Explanation
+                        </Text>
                       </Space>
                     }
                     bordered={false}
                   >
-                    <Paragraph style={{ margin: 0 }}>
+                    <Paragraph
+                      style={{
+                        margin: 0,
+                        lineHeight: "1.6",
+                        fontSize: "14px",
+                      }}
+                    >
                       {question.explanation}
                     </Paragraph>
                   </Card>

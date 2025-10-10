@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Hangfire;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.VisualBasic;
@@ -79,10 +80,13 @@ namespace StudyNest.Business.v1
                     result.Message = "The note is insufficient or meaningless. Quiz was not created.";
                     return result;
                 }
-
+                // Initially Mark That We Are Converting This Quiz To A Snapshot
+                newQuiz.IsBeingConvertToSnapShot = true;
                 await _context.AddAsync(newQuiz);
                 await _context.SaveChangesAsync();
                 result.Result = new {id = newQuiz.Id.ToString() };
+                // Enqueue A Background Job To Convert This Quiz To A Snapshot
+                BackgroundJob.Enqueue<IQuizAttemptSnapshotBusiness>(x => x.CreateSnapShot(newQuiz.Id.ToString().Trim()));
             }
             catch (Exception ex)
             {

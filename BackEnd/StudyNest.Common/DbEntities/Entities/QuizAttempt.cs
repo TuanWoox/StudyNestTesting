@@ -3,6 +3,7 @@ using StudyNest.Common.DbEntities.Identities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,9 +21,7 @@ namespace StudyNest.Common.DbEntities.Entities
         [Required]
         public string QuizAttemptSnapshotId { get; set; }
         public QuizAttemptSnapshot  QuizAttemptSnapshot { get; set; }
-        public DateTimeOffset EndTime { get; set; }
         public int Score { get; set; }
-        public bool IsCompleted { get; set; }
         public ICollection<QuizAttemptAnswer> QuizAttemptAnswers { get; set; } = new List<QuizAttemptAnswer>();
     }
 }

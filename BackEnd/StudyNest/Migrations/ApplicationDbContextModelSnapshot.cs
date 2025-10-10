@@ -353,6 +353,9 @@ namespace StudyNest.Migrations
                     b.Property<bool>("Deleted")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsBeingConvertToSnapShot")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("NoteId")
                         .IsRequired()
                         .HasColumnType("text");
@@ -399,7 +402,6 @@ namespace StudyNest.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("QuizAttemptAnswerId")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -408,7 +410,7 @@ namespace StudyNest.Migrations
 
                     b.HasIndex("QuizAttemptAnswerId");
 
-                    b.ToTable("QuizAttempAnswerChoice");
+                    b.ToTable("QuizAttempAnswerChoices");
                 });
 
             modelBuilder.Entity("StudyNest.Common.DbEntities.Entities.QuizAttempt", b =>
@@ -427,12 +429,6 @@ namespace StudyNest.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("Deleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTimeOffset>("EndTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsCompleted")
                         .HasColumnType("boolean");
 
                     b.Property<string>("QuizAttemptSnapshotId")
@@ -460,7 +456,7 @@ namespace StudyNest.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("QuizAttempt");
+                    b.ToTable("QuizAttempts");
                 });
 
             modelBuilder.Entity("StudyNest.Common.DbEntities.Entities.QuizAttemptAnswer", b =>
@@ -498,7 +494,7 @@ namespace StudyNest.Migrations
 
                     b.HasIndex("QuizAttemptId");
 
-                    b.ToTable("QuizAttemptAnswer");
+                    b.ToTable("QuizAttemptAnswers");
                 });
 
             modelBuilder.Entity("StudyNest.Common.DbEntities.Entities.QuizAttemptSnapshot", b =>
@@ -533,7 +529,7 @@ namespace StudyNest.Migrations
 
                     b.HasIndex("QuizId");
 
-                    b.ToTable("QuizAttemptSnapshot");
+                    b.ToTable("QuizAttemptSnapshots");
                 });
 
             modelBuilder.Entity("StudyNest.Common.DbEntities.Entities.Setting", b =>
@@ -990,9 +986,7 @@ namespace StudyNest.Migrations
                 {
                     b.HasOne("StudyNest.Common.DbEntities.Entities.QuizAttemptAnswer", "QuizAttemptAnswer")
                         .WithMany("QuizAttemptAnswerChoices")
-                        .HasForeignKey("QuizAttemptAnswerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("QuizAttemptAnswerId");
 
                     b.Navigation("QuizAttemptAnswer");
                 });

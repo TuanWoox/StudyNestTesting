@@ -18,6 +18,7 @@ using StudyNest.Common.Interfaces;
 using StudyNest.Common.Utils.Configuration;
 using StudyNest.Common.Utils.Extensions;
 using StudyNest.Data;
+using StudyNest.Infrastructures.Hangfire;
 using StudyNest.Middleware;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -52,6 +53,9 @@ namespace StudyNest
             {
                 options.AllowSynchronousIO = true;
             });
+
+            services.AddHangfireSetup(Configuration);
+            HangfireConfiguration.ConfigureGlobalFilters();
 
             AddCorsDomain(services);
             AddControllerWithNewtonsoftJson(services);
@@ -93,6 +97,8 @@ namespace StudyNest
             {
                 endpoints.MapControllers();
             });
+
+            app.AddHangfireDashBoardSetup(Configuration);
             await InitData(app.ApplicationServices);
         }
 

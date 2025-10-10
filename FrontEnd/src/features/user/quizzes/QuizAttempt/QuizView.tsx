@@ -1,0 +1,56 @@
+import { useGetOneForAttempting } from "@/hooks/quizAttemptSnapshotHook/useGetOneForAttempting";
+import { useReduxDispatch } from "@/hooks/reduxHook/useReduxDispatch";
+import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
+import { initState, nextQuestion, previousQuestion, selectQuizAttempt } from "@/store/quizAttemptSlice";
+import { useEffect } from "react";
+import { useParams } from "react-router-dom";
+import QuestionCard from "./QuestionCard";
+import { QuizHeader } from "./QuizHeader";
+import { QuizProgress } from "./QuizProgress";
+import { QuizNavigation } from "./QuizNavigation";
+import { useSubmitQuizAttempt } from "@/hooks/quizAttempt/useSubmitQuizAttempt";
+import Spinner from "@/components/Spinner/Spinner";
+
+const QuizView = () => {
+    const { id } = useParams<{ id: string }>();
+    const { data, isLoading } = useGetOneForAttempting(id || "", { enabled: !!id });
+    const quizAttempt = useReduxSelector(selectQuizAttempt);
+    const dispatch = useReduxDispatch();
+    const { submitAnswer, isLoading: isSubmitting } = useSubmitQuizAttempt();
+
+    function onPrevious() {
+        dispatch(previousQuestion())
+    }
+
+    function onNext() {
+        dispatch(nextQuestion())
+    }
+
+    function onSubmit() {
+        submitAnswer({ quizId: quizAttempt.quizId, submittedAnswer: quizAttempt.createQuizAttempAnswerList });
+    }
+
+    useEffect(() => {
+        if (id != quizAttempt.quizId || JSON.stringify(data) != quizAttempt.quizAttemptSnapshot) {
+            dispatch(initState({
+                quizId: id as string, quizAttemptSnapshot: JSON.stringify(data), createQuizAttempAnswerList: [],
+                questionId: data?.quizQuestionsParsed[0]?.id ?? ""
+            }));
+        }
+    }, [data, id, dispatch, quizAttempt.quizAttemptSnapshot, quizAttempt.quizId])
+
+    if (isLoading) return <Spinner></Spinner>
+    return (
+        <div className="mx-auto mt-12 max-w-4xl">
+            <QuizHeader />
+            <QuizProgress />
+            <QuestionCard />
+            <QuizNavigation
+                onPrevious={onPrevious} onNext={onNext}
+                onSubmit={onSubmit} isSubmitting={isSubmitting}
+            />
+        </div>
+    )
+};
+
+export default QuizView;

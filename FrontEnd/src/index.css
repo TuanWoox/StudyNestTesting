@@ -122,3 +122,11 @@
   scrollbar-gutter: stable;
   /* avoids “zoom” when rows change (supported in modern browsers) */
 }
+
+.hide-radio-dot .ant-radio {
+  display: none;
+}
+
+.hide-checkbox-dot .ant-checkbox {
+  display: none;
+}

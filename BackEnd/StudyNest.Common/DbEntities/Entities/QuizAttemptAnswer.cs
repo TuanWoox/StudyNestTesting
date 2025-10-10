@@ -17,7 +17,7 @@ namespace StudyNest.Common.DbEntities.Entities
         [Required]
         public string SnapshotQuestionId { get; set; }
         public bool IsCorrect { get; set; }
-        public ICollection<QuizAttempAnswerChoice> QuizAttemptAnswerChoices { get; set; } = new List<QuizAttempAnswerChoice>();
+        public ICollection<QuizAttemptAnswerChoice> QuizAttemptAnswerChoices { get; set; } = new List<QuizAttemptAnswerChoice>();
 
     }
 }
