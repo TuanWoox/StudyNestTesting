@@ -55,6 +55,7 @@ namespace StudyNest
             });
 
             services.AddHangfireSetup(Configuration);
+            services.AddSignalR();
             HangfireConfiguration.ConfigureGlobalFilters();
 
             AddCorsDomain(services);
@@ -96,7 +97,9 @@ namespace StudyNest
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHub<Business.Hubs.QuizAttemptSnapshotHub>("/hub/quiz-attempt-snapshot");
             });
+            
 
             app.AddHangfireDashBoardSetup(Configuration);
             await InitData(app.ApplicationServices);
@@ -130,8 +133,8 @@ namespace StudyNest
                        .WithOrigins(corsLst)
                        .SetIsOriginAllowedToAllowWildcardSubdomains()
                        .AllowAnyMethod()
-                       .AllowAnyHeader();
-
+                       .AllowAnyHeader()
+                       .AllowCredentials();
                 });
             });
         }

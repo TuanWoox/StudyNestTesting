@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using StudyNest.Business.Repository;
 using StudyNest.Common.DbEntities.Entities;
@@ -25,14 +26,16 @@ namespace StudyNest.Business.v1
         IRepository<QuizAttemptSnapshot, string> _repository;
         IMapper _mapper;
         IUserContext _userContext;
+        IHubContext<Hubs.QuizAttemptSnapshotHub, Hubs.IQuizAttemptSnapshotClient> _snapshotHub;
         public QuizAttemptSnapshotBusiness(ApplicationDbContext context, IRepository<QuizAttemptSnapshot, string> repository, IMapper mapper,
-            IUserContext userContext
+            IUserContext userContext, IHubContext<Hubs.QuizAttemptSnapshotHub, Hubs.IQuizAttemptSnapshotClient> snapshotHub
             ) 
         {
             this._context = context;
             this._repository = repository;
             this._mapper = mapper;
             this._userContext = userContext;
+            this._snapshotHub = snapshotHub;
         }
         public async Task<ReturnResult<QuizAttemptSnapshotDTO>> GetOneByIdForAttempting(string quizId)
         {
@@ -88,6 +91,7 @@ namespace StudyNest.Business.v1
             ReturnResult<QuizAttemptSnapshot> result = new ReturnResult<QuizAttemptSnapshot>();
             try
             {
+                await Task.Delay(20000); // Simulate some delay for demonstration purposes
                 var existingQuiz = await _context.Quizzes.Where(x => x.Id == quizId.Trim())
                                                 .Include(x => x.Questions)
                                                 .ThenInclude(q => q.Choices)
@@ -107,6 +111,7 @@ namespace StudyNest.Business.v1
                     existingQuiz.IsBeingConvertToSnapShot = false;
                     _context.Quizzes.Update(existingQuiz);
                     await _context.SaveChangesAsync();
+                    await _snapshotHub.Clients.User(existingQuiz.OwnerId).CompleteCreateQuizAttemptSnapshot(new { quizId = existingQuiz.Id, quiztitle = existingQuiz.Title });
                 }
                 else
                 {

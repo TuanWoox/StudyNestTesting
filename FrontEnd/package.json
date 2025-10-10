@@ -24,6 +24,7 @@
     "@editorjs/text-variant-tune": "^1.0.3",
     "@editorjs/warning": "^1.4.1",
     "@heroicons/react": "^2.2.0",
+    "@microsoft/signalr": "^9.0.6",
     "@reduxjs/toolkit": "^2.8.2",
     "@sotaproject/strikethrough": "^1.0.1",
     "@tailwindcss/vite": "^4.1.12",

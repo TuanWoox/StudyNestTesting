@@ -7,16 +7,20 @@ import { store } from "./store/store";
 import { QueryClientProvider } from "@tanstack/react-query"
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import queryClient from "@/config/reactQueryConfig";
+import { QuizAttemptSnapshotHubProvider } from "./context/QuizSnapshotHubContext/QuizSnapshotHubContext";
 
 function App() {
   return (
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-      <Toaster richColors expand={false} position="top-right" />
-      <ReactQueryDevtools initialIsOpen={false}/>
+        <QuizAttemptSnapshotHubProvider>
+          <RouterProvider router={router} />
+          <ReactQueryDevtools initialIsOpen={false} />
+        </QuizAttemptSnapshotHubProvider>
+        <Toaster richColors expand={false} position="top-right" />
       </QueryClientProvider>
     </Provider>
+
   )
 }
 
