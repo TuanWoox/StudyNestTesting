@@ -4,6 +4,7 @@ import { PagedData } from "@/types/common/paged-data";
 import { ReturnResult } from "@/types/common/return-result";
 import { CreateQuizDTO } from "@/types/quiz/createQuizDTO";
 import { QuizDetail, QuizList } from "@/types/quiz/quiz";
+import { UpdateQuizDTO } from "@/types/quiz/updateQuizDTO";
 
 interface GenerateQuizResult {
   id: string;
@@ -21,7 +22,7 @@ const quizService = {
     const { data } = await instance.get<ReturnResult<QuizDetail>>(
       `/Quiz/${id}`
     );
-    return data.result; // dateCreated is string here
+    return data.result;
   },
   getAllQuiz: async (
     payload: Page<string>
@@ -31,12 +32,18 @@ const quizService = {
     >("/Quiz/GetPaging", payload);
     return data.result;
   },
+  updateQuiz: async (payload: UpdateQuizDTO): Promise<boolean> => {
+    const { data } = await instance.put<ReturnResult<boolean>>(
+      "/Quiz",
+      payload
+    );
+    console.log("updateQuiz: " + JSON.stringify(data.result, null, 2));
+    return data.result;
+  },
   deleteQuiz: async (id: string): Promise<boolean> => {
-    // If backend sends { message }, interceptor will have rejected already.
     const { data } = await instance.delete<ReturnResult<boolean>>(
       `/Quiz/${id}`
     );
-    // In a happy path, data.message is falsy and result should be true.
     return data.result === true;
   },
 };

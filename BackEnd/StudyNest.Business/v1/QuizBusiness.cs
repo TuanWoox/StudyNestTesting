@@ -1,4 +1,5 @@
 ﻿using Hangfire;
+﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -31,43 +32,48 @@ namespace StudyNest.Business.v1
         private readonly ApplicationDbContext _context;
         private readonly IUserContext _userContext;
         private readonly IRepository<Quiz, string> _repository;
+        private readonly IMapper _mapper;
         private readonly int MaxQuestions = 20;
-        public QuizBusiness(ILlmQuizGenerator llm, ApplicationDbContext context, IUserContext userContext, IRepository<Quiz,string> repository)
+        public QuizBusiness(ILlmQuizGenerator llm, ApplicationDbContext context, IUserContext userContext, IRepository<Quiz,string> repository, IMapper mapper)
         {
             this._llm = llm;
             this._context = context;
             this._userContext = userContext;
             this._repository = repository;
+            this._mapper = mapper;
         }
 
         public async Task<ReturnResult<object>> GenerateAsync(CreateQuizDTO dto)
         {
             var result = new ReturnResult<object>();
-            var total = (dto?.Count_Mcq ?? 0) + (dto?.Count_Tf ?? 0);
+            var total = (dto?.Count_Mcq ?? 0) + (dto?.Count_Tf ?? 0) + (dto?.Count_Msq ?? 0);
+
             if (dto is null)
             {
-                result.Message = ResponseMessage.MESSAGE_ITEM_NOT_EXIST.Replace("{0}", "Request body");
+                result.Message = "The request data is missing or invalid.";
                 return result;
             }
-            if ((dto.Count_Mcq < 0) || (dto.Count_Tf < 0))
+            if ((dto.Count_Mcq < 0) || (dto.Count_Tf < 0) || (dto.Count_Msq < 0))
             {
-                result.Message = "Count_Mcq/Count_Tf must be ≥ 0.";
+                result.Message = "Each question type count must be a non-negative number.";
                 return result;
             }
             if (total <= 0)
             {
-                result.Message = "Total number of questions must be > 0.";
+                result.Message = "Please specify at least one question to generate.";
                 return result;
             }
             if (total > MaxQuestions)
             {
-                result.Message = $"Total questions must be ≤ {MaxQuestions}.";
+                result.Message = $"You can only generate up to {MaxQuestions} questions at a time.";
                 return result;
             }
-            var note = await _context.Notes.Where(n => n.Id == dto.NoteId).FirstOrDefaultAsync();
-            if (note == null)
+
+            var note = await _context.Notes
+                .FirstOrDefaultAsync(n => n.Id == dto.NoteId);
+            if (note is null)
             {
-                result.Message = "Note not found.";
+                result.Message = "The selected note could not be found. Please check and try again.";
                 return result;
             }
             dto.NoteContent = note.Content;
@@ -75,7 +81,7 @@ namespace StudyNest.Business.v1
             try
             {
                 var newQuiz = await _llm.GenerateAsync(dto);
-                if (newQuiz is null || newQuiz.Questions == null || newQuiz.Questions.Count == 0)
+                if (newQuiz is null || newQuiz.Questions is null || newQuiz.Questions.Count == 0)
                 {
                     result.Message = "The note is insufficient or meaningless. Quiz was not created.";
                     return result;
@@ -107,10 +113,6 @@ namespace StudyNest.Business.v1
                     .OrderByDescending(q => q.DateCreated ?? DateTimeOffset.MinValue)
                     .AsQueryable();
                 rs.Result = await _repository.GetPagingAsync<Page<string>, QuizListDTO>(query, page, isExported);
-                if (rs.Result.Page.TotalElements == 0)
-                {
-                    rs.Message = ResponseMessage.MESSAGE_ALL_ITEM_NOT_FOUND;
-                }
             }
             catch (Exception ex)
             {
@@ -149,35 +151,176 @@ namespace StudyNest.Business.v1
             }
             return rs;
         }
+
+        public async Task<ReturnResult<bool>> UpdateQuiz(UpdateQuizDTO request)
+        {
+            var rs = new ReturnResult<bool>();
+            try
+            {
+                var existingQuiz = await _context.Quizzes
+                    .Include(q => q.Questions)
+                        .ThenInclude(x => x.Choices)
+                    .FirstOrDefaultAsync(q => q.Id == request.Id && q.OwnerId == _userContext.UserId);
+
+                if (existingQuiz is null)
+                {
+                    rs.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "Quiz", request.Id);
+                    return rs;
+                }
+
+                if (request.Questions is null || request.Questions.Count == 0)
+                {
+                    rs.Message = "Quiz cannot have empty question";
+                    return rs;
+                }
+
+                existingQuiz.Title = request.Title?.Trim() ?? existingQuiz.Title;
+
+                var incomingQuestions = request.Questions;
+
+                // ---- REMOVE questions not present anymore (by Id) ----
+                var incomingIds = new HashSet<string>(
+                    incomingQuestions.Where(q => !string.IsNullOrWhiteSpace(q.Id)).Select(q => q.Id!),
+                    StringComparer.OrdinalIgnoreCase
+                );
+
+                var removeQuestions = existingQuiz.Questions
+                    .Where(q => !incomingIds.Contains(q.Id))
+                    .ToList();
+                _context.Questions.RemoveRange(removeQuestions);
+
+                // ---- ADD / UPDATE questions ----
+                foreach (var qDto in incomingQuestions)
+                {
+                    // 1) Build temp choice list for validation (không ép Id/QuestionId)
+                    var choicesForValidate = (qDto.Choices ?? new List<ChoiceUpsertDTO>())
+                        .Select(c => new Choice { Text = c.Text, IsCorrect = c.IsCorrect })
+                        .ToList();
+
+                    // 2) Validate per-question (re-use validator)
+                    var v = QuestionBusiness.ValidateQuestion(qDto.Name, qDto.Type, qDto.Explanation ?? string.Empty, choicesForValidate);
+                    if (!string.IsNullOrEmpty(v)) { rs.Message = v; return rs; }
+
+                    if (string.IsNullOrWhiteSpace(qDto.Id))
+                    {
+                        // NEW Question
+                        var newQ = new Question
+                        {
+                            QuizId = existingQuiz.Id,
+                            Name = qDto.Name,
+                            Type = qDto.Type,
+                            Explanation = qDto.Explanation ?? string.Empty,
+                            Choices = (qDto.Choices ?? new())
+                                .Select(c => new Choice
+                                {
+                                    Text = c.Text,
+                                    IsCorrect = c.IsCorrect
+                                })
+                                .ToList()
+                        };
+                        existingQuiz.Questions.Add(newQ);
+                    }
+                    else
+                    {
+                        // UPDATE Question
+                        var qEntity = existingQuiz.Questions.FirstOrDefault(x => x.Id == qDto.Id);
+                        if (qEntity is null) continue; // hoặc báo lỗi "Question not found in quiz"
+
+                        // Phòng payload lẫn quiz
+                        if (!string.Equals(qEntity.QuizId, existingQuiz.Id, StringComparison.OrdinalIgnoreCase))
+                        {
+                            rs.Message = "Question does not belong to this quiz.";
+                            return rs;
+                        }
+
+                        // Scalars
+                        qEntity.Name = qDto.Name;
+                        qEntity.Type = qDto.Type;
+                        qEntity.Explanation = qDto.Explanation ?? string.Empty;
+
+                        // ---- DIFF Choices (remove / add / update) ----
+                        var incomingChoices = qDto.Choices ?? new List<ChoiceUpsertDTO>();
+
+                        // a) Remove choices không còn trong incoming
+                        var incomingChoiceIds = new HashSet<string>(
+                            incomingChoices.Where(c => !string.IsNullOrWhiteSpace(c.Id)).Select(c => c.Id!),
+                            StringComparer.OrdinalIgnoreCase
+                        );
+
+                        var toRemoveChoices = qEntity.Choices
+                            .Where(c => !incomingChoiceIds.Contains(c.Id))
+                            .ToList();
+                        _context.Choices.RemoveRange(toRemoveChoices);
+
+                        // b) Add or Update
+                        foreach (var cDto in incomingChoices)
+                        {
+                            if (string.IsNullOrWhiteSpace(cDto.Id))
+                            {
+                                // Add
+                                qEntity.Choices.Add(new Choice
+                                {
+                                    QuestionId = qEntity.Id,
+                                    Text = cDto.Text,
+                                    IsCorrect = cDto.IsCorrect
+                                });
+                            }
+                            else
+                            {
+                                // Update
+                                var cEntity = qEntity.Choices.FirstOrDefault(c => c.Id == cDto.Id);
+                                if (cEntity is null) continue;
+                                cEntity.Text = cDto.Text;
+                                cEntity.IsCorrect = cDto.IsCorrect;
+                            }
+                        }
+                    }
+                }
+
+                rs.Result = await _context.SaveChangesAsync() > 0;
+                if (!rs.Result)
+                {
+                    rs.Message = "Quiz was not updated. Please try again.";
+                }
+            }
+            catch (Exception ex)
+            {
+                rs.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
+                StudyNestLogger.Instance.Error(ex);
+            }
+            return rs;
+        }
+
+
         public async Task<ReturnResult<bool>> DeleteById(string id)
         {
-            var result = new ReturnResult<bool>();
+            var rs = new ReturnResult<bool>();
             try
             {
                 if (string.IsNullOrWhiteSpace(id))
                 {
-                    result.Message = ResponseMessage.MESSAGE_ITEM_NOT_EXIST.Replace("{0}", "quiz id");
-                    return result;
+                    rs.Message = ResponseMessage.MESSAGE_ITEM_NOT_EXIST.Replace("{0}", "quiz id");
+                    return rs;
                 }
                 var quizToDelete = await _context.Quizzes.Where(x => x.Id == id).ToListAsync();
                 if (quizToDelete.Count == 0)
                 {
-                    result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "quiz", id);
-                    return result;
+                    rs.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "quiz", id);
+                    return rs;
                 }
                 _context.RemoveRange(quizToDelete);
 
-                result.Result = await _context.SaveChangesAsync() > 0;
+                rs.Result = await _context.SaveChangesAsync() > 0;
 
-                if (!result.Result)
-                    result.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
+                if (!rs.Result)
+                    rs.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
             }
             catch (Exception ex)
             {
                 StudyNestLogger.Instance.Error(ex);
-                result.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
+                rs.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
             }
-            return result;
+            return rs;
         }
     }
 }

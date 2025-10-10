@@ -55,7 +55,7 @@ namespace StudyNest.Controllers
             return Ok(rs);
         }
         [HttpPost]
-        public async Task<IActionResult> CreateQuiz([FromBody] CreateQuizDTO model)
+        public async Task<IActionResult> CreateQuiz(CreateQuizDTO model)
         {
             var rs = new ReturnResult<object>();
             try
@@ -68,19 +68,33 @@ namespace StudyNest.Controllers
             }
             return Ok(rs);
         }
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteQuiz(string id)
+        [HttpPut]
+        public async Task<IActionResult> UpdateQuiz(UpdateQuizDTO request)
         {
-            ReturnResult<bool> result = new ReturnResult<bool>();
+            var rs = new ReturnResult<bool>();
             try
             {
-                result = await _quizBusiness.DeleteById(id);
+                rs = await _quizBusiness.UpdateQuiz(request);
             }
             catch (Exception ex)
             {
                 StudyNestLogger.Instance.Error(ex);
             }
-            return Ok(result);
+            return Ok(rs);
+        }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteQuiz(string id)
+        {
+            var rs = new ReturnResult<bool>();
+            try
+            {
+                rs = await _quizBusiness.DeleteById(id);
+            }
+            catch (Exception ex)
+            {
+                StudyNestLogger.Instance.Error(ex);
+            }
+            return Ok(rs);
         }
     }
 }

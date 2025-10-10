@@ -2,34 +2,71 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Button,
-  ConfigProvider,
   Flex,
-  Space,
-  Table,
   Card,
   Typography,
   Skeleton,
   Empty,
-  Popconfirm,
-  Tooltip,
+  Row,
+  Col,
+  Pagination,
 } from "antd";
-import type { TableProps } from "antd";
 import { QuizList } from "@/types/quiz/quiz";
-import {
-  DeleteOutlined,
-  PlusOutlined,
-  WarningOutlined,
-} from "@ant-design/icons";
+import { PlusOutlined, WarningOutlined } from "@ant-design/icons";
 import useGetAllQuiz from "@/hooks/quizHook/useGetAllQuiz";
 import useDeleteQuiz from "@/hooks/quizHook/useDeleteQuiz";
-import { formatDMY } from "@/utils/date";
+import { QuizCard } from "./quizzes/components";
 
 const { Title, Text } = Typography;
 
 const Quizzes: React.FC = () => {
   // Pagination state
   const [page, setPage] = useState(1); // UI uses 1-based indexing
-  const [pageSize, setPageSize] = useState(8);
+  const [pageSize, setPageSize] = useState(4);
+
+  // Add custom styles
+  React.useEffect(() => {
+    const style = document.createElement("style");
+    style.innerHTML = `
+      @media (min-width: 768px) {
+        .quiz-card:hover {
+          transform: translateY(-8px) scale(1.02);
+          box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15) !important;
+        }
+        
+        .quiz-view-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 16px rgba(24, 144, 255, 0.3) !important;
+        }
+        
+        .quiz-start-btn:hover {
+          border-color: #1890ff !important;
+          color: #1890ff !important;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(24, 144, 255, 0.2);
+        }
+      }
+      
+      .quiz-card .quiz-title:hover {
+        color: #1890ff;
+      }
+      
+      .quiz-card .quiz-more-btn:hover {
+        color: #1890ff !important;
+        background-color: rgba(24, 144, 255, 0.1) !important;
+      }
+      
+      @media (max-width: 767px) {
+        .quiz-card {
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
 
   // Pass pagination parameters to the hook
   const {
@@ -56,6 +93,7 @@ const Quizzes: React.FC = () => {
     setPage(newPage);
     setPageSize(newPageSize);
   };
+
   // Handle quiz deletion
   const handleDelete = async (quizId: string) => {
     setDeletingId(quizId);
@@ -74,90 +112,6 @@ const Quizzes: React.FC = () => {
     }
   };
 
-  const columns: TableProps<QuizList>["columns"] = [
-    {
-      title: "#",
-      key: "index",
-      width: 50,
-      render: (_: unknown, __: QuizList, idx: number) =>
-        (page - 1) * pageSize + idx + 1,
-    },
-    {
-      title: "Title",
-      dataIndex: "title",
-      key: "title",
-      width: 300,
-      ellipsis: {
-        showTitle: false,
-      },
-      render: (text, record: QuizList) => (
-        <Tooltip placement="topLeft" title={text}>
-          <Link to={`/user/quiz/${record.id}`}>
-            <Text
-              strong
-              style={{
-                color: "#1677ff",
-                cursor: "pointer",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                display: "block",
-              }}
-            >
-              {text}
-            </Text>
-          </Link>
-        </Tooltip>
-      ),
-    },
-    {
-      title: "Total Question",
-      dataIndex: "totalQuestion",
-      key: "totalQuestion",
-      align: "center",
-      width: 100,
-    },
-    {
-      title: "Date Create",
-      dataIndex: "dateCreated",
-      key: "dateCreated",
-      align: "center",
-      width: 100,
-      render: (date: string) => formatDMY(date),
-    },
-    {
-      title: "Action",
-      key: "action",
-      align: "center",
-      width: 140,
-      render: (_: unknown, record: { id: string }) => (
-        <Space size="middle">
-          <Popconfirm
-            title="Delete this quiz?"
-            description="This action cannot be undone."
-            okText="Delete"
-            cancelText="Cancel"
-            okButtonProps={{
-              danger: true,
-              loading: deletingId === record.id && isLoading,
-            }}
-            onConfirm={() => handleDelete(record.id)}
-          >
-            <Button
-              type="link"
-              danger
-              style={{ fontWeight: 500 }}
-              icon={<DeleteOutlined />}
-              loading={deletingId === record.id && isLoading}
-            >
-              Delete
-            </Button>
-          </Popconfirm>
-        </Space>
-      ),
-    },
-  ];
-
   // Render skeleton while loading
   if (isPending) {
     return (
@@ -166,23 +120,64 @@ const Quizzes: React.FC = () => {
           width: "100%",
           height: "100%",
           boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
-        }}
-        bodyStyle={{
-          padding: 32,
-          height: "100%",
           display: "flex",
           flexDirection: "column",
+          overflow: "hidden",
+        }}
+        bodyStyle={{
+          padding: window.innerWidth < 768 ? 16 : 32,
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          overflow: "auto",
         }}
       >
         <Flex
           justify="space-between"
           align="center"
-          style={{ marginBottom: 32 }}
+          wrap="wrap"
+          gap={16}
+          style={{ marginBottom: window.innerWidth < 768 ? 20 : 32 }}
         >
-          <Skeleton.Input active style={{ width: 300 }} />
-          <Skeleton.Button active />
+          <div
+            style={{ flex: window.innerWidth < 576 ? "1 1 100%" : "0 1 auto" }}
+          >
+            <Skeleton.Input
+              active
+              style={{
+                width: window.innerWidth < 576 ? "100%" : 250,
+                height: window.innerWidth < 576 ? 28 : 32,
+                marginBottom: 8,
+              }}
+            />
+            <Skeleton.Input
+              active
+              style={{
+                width: window.innerWidth < 576 ? "100%" : 350,
+                height: 20,
+              }}
+            />
+          </div>
+          <Skeleton.Button
+            active
+            size={window.innerWidth < 576 ? "default" : "large"}
+            style={{ width: window.innerWidth < 576 ? "100%" : 120 }}
+          />
         </Flex>
-        <Skeleton active paragraph={{ rows: 5 }} style={{ flex: 1 }} />
+        <Row
+          gutter={[
+            window.innerWidth < 576 ? 12 : 16,
+            window.innerWidth < 576 ? 12 : 16,
+          ]}
+        >
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+            <Col key={i} xs={24} sm={12} md={12} lg={8} xl={6}>
+              <Card style={{ borderRadius: 12 }}>
+                <Skeleton active paragraph={{ rows: 3 }} />
+              </Card>
+            </Col>
+          ))}
+        </Row>
       </Card>
     );
   }
@@ -195,25 +190,43 @@ const Quizzes: React.FC = () => {
           width: "100%",
           height: "100%",
           boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
         }}
         bodyStyle={{
-          padding: 32,
-          height: "100%",
+          padding: window.innerWidth < 768 ? 16 : 32,
+          flex: 1,
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
+          overflow: "auto",
         }}
       >
         <Empty
-          image={<WarningOutlined style={{ fontSize: 48, color: "#ff4d4f" }} />}
+          image={
+            <WarningOutlined
+              style={{
+                fontSize: window.innerWidth < 576 ? 36 : 48,
+                color: "#ff4d4f",
+              }}
+            />
+          }
           description={
-            <Text type="danger">
+            <Text
+              type="danger"
+              style={{ fontSize: window.innerWidth < 576 ? 13 : 14 }}
+            >
               {error?.message || "Failed to load quizzes"}
             </Text>
           }
         >
-          <Button type="primary" onClick={() => refetch()}>
+          <Button
+            type="primary"
+            onClick={() => refetch()}
+            size={window.innerWidth < 576 ? "middle" : "large"}
+          >
             Try Again
           </Button>
         </Empty>
@@ -230,27 +243,45 @@ const Quizzes: React.FC = () => {
         width: "100%",
         height: "100%",
         boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
-      }}
-      bodyStyle={{
-        padding: 32,
-        height: "100%",
         display: "flex",
         flexDirection: "column",
+        overflow: "hidden",
+      }}
+      bodyStyle={{
+        padding: window.innerWidth < 768 ? 16 : 32,
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        overflow: "auto",
       }}
     >
-      <Flex justify="space-between" align="center" style={{ marginBottom: 32 }}>
-        <div>
-          <Title level={2} style={{ margin: 0 }}>
+      <Flex
+        justify="space-between"
+        align="center"
+        wrap="wrap"
+        gap={16}
+        style={{ marginBottom: window.innerWidth < 768 ? 20 : 32 }}
+      >
+        <div
+          style={{ flex: window.innerWidth < 576 ? "1 1 100%" : "0 1 auto" }}
+        >
+          <Title level={window.innerWidth < 576 ? 3 : 2} style={{ margin: 0 }}>
             AI Quiz Generator
           </Title>
-          <Text type="secondary">Take and manage your quizzes with ease.</Text>
+          <Text
+            type="secondary"
+            style={{ fontSize: window.innerWidth < 576 ? 13 : 14 }}
+          >
+            Take and manage your quizzes with ease.
+          </Text>
         </div>
         <Link to="/user/quiz/generate">
           <Button
             type="primary"
             icon={<PlusOutlined />}
-            size="large"
+            size={window.innerWidth < 576 ? "middle" : "large"}
             style={{ borderRadius: 6 }}
+            block={window.innerWidth < 576}
           >
             Generate
           </Button>
@@ -263,52 +294,75 @@ const Quizzes: React.FC = () => {
           flexDirection: "column",
           flex: 1,
           minHeight: 0,
+          overflowY: "auto",
+          overflowX: "hidden",
         }}
       >
         {hasQuizzes ? (
-          <ConfigProvider
-            theme={{
-              components: {
-                Table: {
-                  borderColor: "#e4e4e4",
-                  headerBg: "#fafafa",
-                  headerColor: "#222",
-                  rowHoverBg: "#f0f5ff",
-                },
-              },
-            }}
-          >
-            <Table<QuizList>
-              rowKey="id"
-              columns={columns}
-              dataSource={quizzes}
-              pagination={{
-                current: page,
-                pageSize: pageSize,
-                total: totalElements,
-                onChange: handleTableChange,
-                showTotal: (total, range) =>
-                  `${range[0]}-${range[1]} of ${total} items`,
-                position: ["bottomRight"],
-              }}
-              tableLayout="fixed"
-              sticky
-              size="middle"
+          <>
+            {/* Quiz Cards Grid */}
+            <Row
+              gutter={[
+                window.innerWidth < 576 ? 12 : 16,
+                window.innerWidth < 576 ? 12 : 16,
+              ]}
               style={{
-                flex: 1,
-                borderRadius: 8,
-                overflow: "hidden",
+                marginBottom: window.innerWidth < 768 ? 16 : 24,
               }}
-              loading={isPending}
-            />
-          </ConfigProvider>
+            >
+              {quizzes.map((quiz, index) => (
+                <Col
+                  key={quiz.id}
+                  xs={24}
+                  sm={12}
+                  md={12}
+                  lg={8}
+                  xl={6}
+                  xxl={6}
+                >
+                  <QuizCard
+                    quiz={quiz}
+                    index={index}
+                    page={page}
+                    pageSize={pageSize}
+                    onDelete={handleDelete}
+                    deletingId={deletingId}
+                    isDeleting={isLoading}
+                  />
+                </Col>
+              ))}
+            </Row>
+
+            {/* Pagination */}
+            <Flex
+              justify="center"
+              style={{
+                paddingTop: window.innerWidth < 768 ? 8 : 16,
+                paddingBottom: window.innerWidth < 768 ? 8 : 16,
+                position: "sticky",
+                bottom: 0,
+                zIndex: 10,
+              }}
+            >
+              <Pagination
+                current={page}
+                pageSize={pageSize}
+                total={totalElements}
+                onChange={handleTableChange}
+                showTotal={(total, range) =>
+                  `${range[0]}-${range[1]} of ${total} quizzes`
+                }
+              />
+            </Flex>
+          </>
         ) : (
           <Empty
             style={{
-              flex: 1,
               display: "flex",
               flexDirection: "column",
               justifyContent: "center",
+              alignItems: "center",
+              minHeight: 300,
             }}
             description="No quizzes found. Generate your first quiz!"
             image={Empty.PRESENTED_IMAGE_SIMPLE}

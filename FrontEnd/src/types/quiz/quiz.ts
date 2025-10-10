@@ -22,7 +22,8 @@ export interface Question {
 }
 
 export interface Choice {
+  questionId: string;
   id: string;
   text: string;
-  isCorrect?: boolean; // Added for MSQ support and API compatibility
+  isCorrect: boolean;
 }
