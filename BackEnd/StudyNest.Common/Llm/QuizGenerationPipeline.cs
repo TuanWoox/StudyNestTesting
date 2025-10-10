@@ -42,7 +42,7 @@ namespace StudyNest.Common.Llm
                 - MCQ:
                   - Exactly 1 choice with ""isCorrect"": true; others false.
                 - MSQ:
-                  - At least 2 choices with ""isCorrect"": true.
+                  - At least 1 choices with ""isCorrect"": true.
                 - TF:
                   - Choices must be exactly [""True"", ""False""] as texts.
                   - Exactly 1 isCorrect = true.
@@ -104,7 +104,7 @@ namespace StudyNest.Common.Llm
                     elig.ValueKind == JsonValueKind.False)
                 {
                     var reason = probe.RootElement.TryGetProperty("reason", out var r) ? r.GetString() : "Ineligible note.";
-                    throw new InvalidOperationException($"Rejected by gate: {reason}");
+                    return new Quiz();    
                 }
 
                 // Check if quiz data is nested inside "quiz" property
@@ -177,22 +177,6 @@ namespace StudyNest.Common.Llm
                             // Reset all and mark first as correct
                             foreach (var c in validChoices) c.IsCorrect = false;
                             validChoices[0].IsCorrect = true;
-                        }
-                    }
-                    // For MSQ, ensure at least one correct and at least one incorrect
-                    else if (type == "MSQ")
-                    {
-                        var correctCount = validChoices.Count(c => c.IsCorrect);
-                        if (correctCount == 0)
-                        {
-                            // Mark first two as correct
-                            validChoices[0].IsCorrect = true;
-                            validChoices[1].IsCorrect = true;
-                        }
-                        else if (correctCount == validChoices.Count)
-                        {
-                            // All correct, mark last as incorrect
-                            validChoices[validChoices.Count - 1].IsCorrect = false;
                         }
                     }
 
