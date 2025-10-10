@@ -10,6 +10,7 @@ import { QuizProgress } from "./QuizProgress";
 import { QuizNavigation } from "./QuizNavigation";
 import { useSubmitQuizAttempt } from "@/hooks/quizAttempt/useSubmitQuizAttempt";
 import Spinner from "@/components/Spinner/Spinner";
+import QuizSnapshotNotReady from "./QuizSnapshotNotReady";
 
 const QuizView = () => {
     const { id } = useParams<{ id: string }>();
@@ -40,6 +41,7 @@ const QuizView = () => {
     }, [data, id, dispatch, quizAttempt.quizAttemptSnapshot, quizAttempt.quizId])
 
     if (isLoading) return <Spinner></Spinner>
+    if (!data) return <QuizSnapshotNotReady></QuizSnapshotNotReady>
     return (
         <div className="mx-auto mt-12 max-w-4xl">
             <QuizHeader />
