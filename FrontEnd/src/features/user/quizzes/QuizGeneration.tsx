@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { Steps, Card, Flex, Typography, Button, Form } from "antd";
 import { Link } from "react-router-dom";
 import {
@@ -15,9 +15,9 @@ import { ReviewPanel } from "./QuizGenerationSteps/ReviewPanel";
 
 import type { CreateQuizDTO } from "@/types/quiz/createQuizDTO";
 import useGenerateQuiz from "@/hooks/quizHook/useGenerateQuiz";
-import { notes } from "./NoteDummyData";
+import useGetAllNote from "@/hooks/noteHook/useGetAllNote";
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 const QuizGeneration: React.FC = () => {
   const [current, setCurrent] = useState(0);
@@ -26,33 +26,24 @@ const QuizGeneration: React.FC = () => {
   const { generateQuiz, isLoading } = useGenerateQuiz();
   // Quiz options state
   const [createQuiz, setCreateQuiz] = useState<CreateQuizDTO>({
-    note: "",
-    count_Mcq: 10,
-    count_Tf: 10,
+    noteId: "",
+    noteContent: "",
+    count_Mcq: 7,
+    count_Tf: 3,
+    count_Msq: 0,
     language: "English",
     difficulty: "easy",
   });
 
   // Selection & search state
-  const [selectedNoteId, setSelectedNoteId] = useState<string | undefined>(
-    notes[0]?.id
-  );
+  const [selectedNoteId, setSelectedNoteId] = useState<string | undefined>();
   const [query, setQuery] = useState("");
 
-  // Derived data
-  const filteredNotes = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return notes;
-    return notes.filter((n) => {
-      const inTitle = n.title.toLowerCase().includes(q);
-      const inTags = n.tags?.some((t) => t.toLowerCase().includes(q));
-      return inTitle || inTags;
-    });
-  }, [query]);
+  // Get notes data for selected note
+  const { data: notesData } = useGetAllNote();
 
-  const selectedNote = useMemo(
-    () => notes.find((n) => n.id === selectedNoteId),
-    [selectedNoteId]
+  const selectedNote = notesData?.data?.find(
+    (note) => note.id === selectedNoteId
   );
 
   // Navigation
@@ -60,10 +51,12 @@ const QuizGeneration: React.FC = () => {
     if (current === 0) {
       // Ensure a note is selected
       await form.validateFields(); // validates hidden noteId
-      // Persist selected note text into createQuiz.note
+
+      // Persist selected note ID and content into createQuiz
       setCreateQuiz((prev) => ({
         ...prev,
-        note: selectedNote?.content ?? selectedNote?.excerpt ?? "",
+        noteId: selectedNoteId || "",
+        noteContent: selectedNote?.content ?? "",
       }));
     }
     setCurrent((c) => Math.min(c + 1, 2));
@@ -81,7 +74,6 @@ const QuizGeneration: React.FC = () => {
       icon: <FileOutlined />,
       content: (
         <SourcePanel
-          notes={filteredNotes}
           selectedNoteId={selectedNoteId}
           query={query}
           form={form}
@@ -113,6 +105,7 @@ const QuizGeneration: React.FC = () => {
         overflow: "auto",
         margin: "0 auto",
         boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
+        borderRadius: 16,
       }}
       bodyStyle={{
         padding: 32,
@@ -120,14 +113,53 @@ const QuizGeneration: React.FC = () => {
         display: "flex",
         flexDirection: "column",
       }}
+      className="quiz-generation-card"
     >
-      <Title level={3} style={{ marginBottom: 24 }}>
-        Quiz Generation
-      </Title>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 24,
+        }}
+      >
+        <div>
+          <Title level={3} style={{ margin: 0 }}>
+            Quiz Generation
+          </Title>
+          <Text type="secondary">
+            Create a customized quiz from your notes to test your knowledge
+          </Text>
+        </div>
+        <Link to="/user/quiz">
+          <Button icon={<ArrowLeftOutlined />} disabled={isLoading}>
+            Back to Quizzes
+          </Button>
+        </Link>
+      </div>
 
-      <Steps current={current} style={{ marginBottom: 32 }}>
-        {steps.map((item) => (
-          <Steps.Step key={item.title} title={item.title} icon={item.icon} />
+      <Steps
+        current={current}
+        style={{ marginBottom: 32 }}
+        responsive={false}
+        size="small"
+        type="navigation"
+        className="custom-steps"
+      >
+        {steps.map((item, index) => (
+          <Steps.Step
+            key={item.title}
+            title={item.title}
+            icon={item.icon}
+            status={
+              current === index
+                ? "process"
+                : current > index
+                ? "finish"
+                : "wait"
+            }
+            disabled={isLoading}
+          />
         ))}
       </Steps>
 
@@ -137,28 +169,36 @@ const QuizGeneration: React.FC = () => {
           overflowY: "auto",
           marginBottom: 24,
         }}
+        className="quiz-generation-content"
       >
-        {steps[current].content}
+        <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
+          {steps[current].content}
+        </div>
       </div>
 
-      <Flex justify="space-between">
-        <Link to="/user/quiz">
-          <Button icon={<ArrowLeftOutlined />} disabled={isLoading}>
-            Back to Quizzes
-          </Button>
-        </Link>
+      <Flex
+        justify="flex-end"
+        style={{ borderTop: "1px solid #f0f0f0", paddingTop: 24 }}
+      >
         <div>
           {current > 0 && (
             <Button
-              style={{ marginRight: 8 }}
+              style={{ marginRight: 12 }}
               onClick={prev}
               disabled={isLoading}
+              size="large"
             >
               Previous
             </Button>
           )}
           {current < steps.length - 1 && (
-            <Button type="primary" onClick={next} disabled={isLoading}>
+            <Button
+              type="primary"
+              onClick={next}
+              disabled={isLoading}
+              size="large"
+              style={{ minWidth: 100 }}
+            >
               Next
             </Button>
           )}
@@ -168,6 +208,8 @@ const QuizGeneration: React.FC = () => {
               onClick={handleGenerateQuiz}
               loading={isLoading}
               icon={isLoading ? <LoadingOutlined /> : undefined}
+              size="large"
+              style={{ minWidth: 160 }}
             >
               {isLoading ? "Generating Quiz..." : "Generate Quiz"}
             </Button>

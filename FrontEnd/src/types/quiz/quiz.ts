@@ -16,16 +16,13 @@ export interface QuizDetail {
 export interface Question {
   id: string;
   name: string;
-  type: "MCQ" | "TF";
-  correctIndex: number;
-  correctTrueFalse: boolean;
+  type: "MCQ" | "TF" | "MSQ";
   explanation: string;
-  orderNo: number;
   choices: Choice[];
 }
 
 export interface Choice {
   id: string;
   text: string;
-  orderNo: number;
+  isCorrect?: boolean; // Added for MSQ support and API compatibility
 }

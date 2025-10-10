@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Hangfire;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.VisualBasic;
@@ -39,16 +40,16 @@ namespace StudyNest.Business.v1
             this._repository = repository;
         }
 
-        public async Task<ReturnResult<object>> GenerateAsync(CreateQuizDTO prompt)
+        public async Task<ReturnResult<object>> GenerateAsync(CreateQuizDTO dto)
         {
             var result = new ReturnResult<object>();
-            var total = (prompt?.Count_Mcq ?? 0) + (prompt?.Count_Tf ?? 0);
-            if (prompt is null)
+            var total = (dto?.Count_Mcq ?? 0) + (dto?.Count_Tf ?? 0);
+            if (dto is null)
             {
                 result.Message = ResponseMessage.MESSAGE_ITEM_NOT_EXIST.Replace("{0}", "Request body");
                 return result;
             }
-            if ((prompt.Count_Mcq < 0) || (prompt.Count_Tf < 0))
+            if ((dto.Count_Mcq < 0) || (dto.Count_Tf < 0))
             {
                 result.Message = "Count_Mcq/Count_Tf must be ≥ 0.";
                 return result;
@@ -63,19 +64,29 @@ namespace StudyNest.Business.v1
                 result.Message = $"Total questions must be ≤ {MaxQuestions}.";
                 return result;
             }
+            var note = await _context.Notes.Where(n => n.Id == dto.NoteId).FirstOrDefaultAsync();
+            if (note == null)
+            {
+                result.Message = "Note not found.";
+                return result;
+            }
+            dto.NoteContent = note.Content;
 
             try
             {
-                var newQuiz = await _llm.GenerateAsync(prompt);
-                if (newQuiz is null)
+                var newQuiz = await _llm.GenerateAsync(dto);
+                if (newQuiz is null || newQuiz.Questions == null || newQuiz.Questions.Count == 0)
                 {
-                    result.Message = ResponseMessage.MESSAGE_CREATE_ERROR;
+                    result.Message = "The note is insufficient or meaningless. Quiz was not created.";
                     return result;
                 }
-
+                // Initially Mark That We Are Converting This Quiz To A Snapshot
+                newQuiz.IsBeingConvertToSnapShot = true;
                 await _context.AddAsync(newQuiz);
                 await _context.SaveChangesAsync();
                 result.Result = new {id = newQuiz.Id.ToString() };
+                // Enqueue A Background Job To Convert This Quiz To A Snapshot
+                BackgroundJob.Enqueue<IQuizAttemptSnapshotBusiness>(x => x.CreateSnapShot(newQuiz.Id.ToString().Trim()));
             }
             catch (Exception ex)
             {
