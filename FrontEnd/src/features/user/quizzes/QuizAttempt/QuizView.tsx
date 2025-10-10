@@ -27,13 +27,13 @@ const QuizView = () => {
     }
 
     function onSubmit() {
-        submitAnswer({ quizId: quizAttempt.quizId, submittedAnswer: quizAttempt.createQuizAttempAnswerList });
+        submitAnswer({ quizId: quizAttempt.quizId, submittedAnswer: quizAttempt.createQuizAttemptAnswerList });
     }
 
     useEffect(() => {
         if (id != quizAttempt.quizId || JSON.stringify(data) != quizAttempt.quizAttemptSnapshot) {
             dispatch(initState({
-                quizId: id as string, quizAttemptSnapshot: JSON.stringify(data), createQuizAttempAnswerList: [],
+                quizId: id as string, quizAttemptSnapshot: JSON.stringify(data), createQuizAttemptAnswerList: [],
                 questionId: data?.quizQuestionsParsed[0]?.id ?? ""
             }));
         }
