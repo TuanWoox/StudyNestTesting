@@ -1,8 +1,11 @@
+// ...existing code...
 import { useEffect, useState, ReactNode } from "react";
 import * as signalR from "@microsoft/signalr";
 
 import { QuizAttemptSnapshotHubContext } from "./QuizAttemptSnapshotHubContextValue"
 import { toast } from "sonner";
+import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
+import { selectRole } from "@/store/authSlice";
 
 interface ProviderProps {
     children: ReactNode;
@@ -11,16 +14,18 @@ interface ProviderProps {
 const baseURL = import.meta.env.VITE_API_URL_BASIC;
 
 export const QuizAttemptSnapshotHubProvider = ({ children }: ProviderProps) => {
-    const [accessToken, setAccessToken] = useState<string | null>(() =>
-        localStorage.getItem("accessToken")
-    );
 
+    const role = useReduxSelector(selectRole);
 
     const [notificationConnection, setNotificationConnection] =
         useState<signalR.HubConnection | null>(null);
 
     useEffect(() => {
-        if (!accessToken) return;
+
+        const token = localStorage.getItem("accessToken");
+
+        // if either missing, don't connect
+        if (!token || !role) return;
 
         let connection: signalR.HubConnection | null = null;
 
@@ -28,7 +33,7 @@ export const QuizAttemptSnapshotHubProvider = ({ children }: ProviderProps) => {
             try {
                 connection = new signalR.HubConnectionBuilder()
                     .withUrl(`${baseURL}/hub/quiz-attempt-snapshot`, {
-                        accessTokenFactory: () => accessToken || "",
+                        accessTokenFactory: () => token ?? "",
                     })
                     .withAutomaticReconnect()
                     .build();
@@ -51,8 +56,6 @@ export const QuizAttemptSnapshotHubProvider = ({ children }: ProviderProps) => {
 
         connectSignalR();
 
-
-
         return () => {
             if (connection) {
                 connection
@@ -61,16 +64,11 @@ export const QuizAttemptSnapshotHubProvider = ({ children }: ProviderProps) => {
                     .catch((err) => console.error("❌ Error stopping connection:", err));
             }
         };
-    }, [accessToken]);
-
-    const onSetAccessToken = () => {
-        setAccessToken(localStorage.getItem("accessToken"));
-    };
+    }, [role]);
 
     return (
-        <QuizAttemptSnapshotHubContext.Provider value={{ notificationConnection, onSetAccessToken }}>
+        <QuizAttemptSnapshotHubContext.Provider value={{ notificationConnection }}>
             {children}
         </QuizAttemptSnapshotHubContext.Provider>
     );
 };
-

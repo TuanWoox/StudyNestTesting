@@ -11,5 +11,6 @@ namespace StudyNest.Common.Interfaces
     public interface IAuthBusiness
     {
         public Task<ReturnResult<string>> Login(UserLogin model);
+        public Task<ReturnResult<string>> Register(UserRegister model);
     }
 }

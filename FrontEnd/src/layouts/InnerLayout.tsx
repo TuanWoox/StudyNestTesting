@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { ProLayout } from "@ant-design/pro-components";
-import { useNavigate, Outlet } from "react-router-dom";
+import { useNavigate, Outlet, Navigate } from "react-router-dom";
 import {
   UserOutlined,
   SettingOutlined,
@@ -12,15 +12,15 @@ import { SunIcon, MoonIcon } from "@heroicons/react/24/outline";
 import logo from "@/assets/react.svg";
 import { ERole } from "@/utils/enums/ERole";
 import { adminMenus, userMenus } from "@/constants/menus";
+import { selectRole } from "@/store/authSlice";
+import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
 
-interface InnerLayoutProps {
-  role: string;
-}
 
-const InnerLayout = ({ role }: InnerLayoutProps) => {
+const InnerLayout = () => {
   const navigate = useNavigate();
   const [darkMode, setDarkMode] = useState(false);
-
+  const role = useReduxSelector(selectRole);
+  if (!role) return <Navigate to="/login" replace />
   const layoutTitle = role === ERole.Admin ? "Admin Panel" : "Study Nest";
   const menus = role === ERole.Admin ? adminMenus : userMenus;
 
