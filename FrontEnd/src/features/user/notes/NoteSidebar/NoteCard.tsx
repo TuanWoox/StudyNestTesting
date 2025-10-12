@@ -76,7 +76,9 @@ const NoteCard: React.FC<NoteCardProps> = ({
                 </Popconfirm>
             </div>
 
-            <h3 className="font-bold text-lg mb-3 truncate">{note.title}</h3>
+            <h3 className="font-bold text-lg mb-3 line-clamp-1">
+                {note.title}
+            </h3>
             <p className="text-sm mb-4 line-clamp-2">
                 {getPlainTextFromEditorJs(note.content) || "No content"}
             </p>
