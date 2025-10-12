@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Navigate, useNavigate } from 'react-router-dom';
 import Spinner from '@/components/Spinner/Spinner';
 import useLogin from '@/hooks/authHook/useLogin';
 import { useReduxSelector } from '@/hooks/reduxHook/useReduxSelector';
-import { selectRole } from '@/store/authSlice';
+import { initAuthState, selectRole } from '@/store/authSlice';
 import { ERole } from '@/utils/enums/ERole';
+import GoogleLogin from '@/components/GoogleLogin/GoogleLogin';
+import { useReduxDispatch } from '@/hooks/reduxHook/useReduxDispatch';
 
 interface LoginFormInputs {
     username: string;
@@ -17,6 +19,7 @@ const Login: React.FC = () => {
     const navigate = useNavigate();
     const { login, isAuthenticating } = useLogin();
     const role = useReduxSelector(selectRole);
+    const dispatch = useReduxDispatch();
 
     const {
         register,
@@ -30,6 +33,29 @@ const Login: React.FC = () => {
             rememberMe: false
         }
     });
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get("token");
+        if (!token) {
+            params.delete("token");
+            return;
+        }
+
+        window.localStorage.setItem("accessToken", token);
+        dispatch(initAuthState(token));
+
+        switch (role) {
+            case ERole.User:
+                navigate("/user/notes");
+                break;
+            case ERole.Admin:
+                navigate("/admin/dashboard");
+                break;
+            default:
+                break;
+        }
+    }, []);
 
     // Handle role-based redirects
     switch (role) {
@@ -135,22 +161,27 @@ const Login: React.FC = () => {
                         )}
                     </button>
 
-                    {/* Links */}
-                    <div className="flex justify-between text-sm text-gray-600">
-                        <span
-                            className="cursor-pointer hover:text-gray-900 transition"
-                            onClick={() => navigate('/forgot-password')}
-                        >
-                            Forgot Password?
-                        </span>
-                        <span
-                            className="cursor-pointer hover:text-gray-900 transition"
-                            onClick={() => navigate('/register')}
-                        >
-                            Register
-                        </span>
-                    </div>
                 </form>
+
+                <div className="my-7 w-full">
+                    <GoogleLogin />
+                </div>
+
+                {/* Links */}
+                <div className="flex justify-between w-full text-sm text-gray-600">
+                    <span
+                        className="cursor-pointer hover:text-gray-900 transition"
+                        onClick={() => navigate('/forgot-password')}
+                    >
+                        Forgot Password?
+                    </span>
+                    <span
+                        className="cursor-pointer hover:text-gray-900 transition"
+                        onClick={() => navigate('/register')}
+                    >
+                        Register
+                    </span>
+                </div>
             </div>
         </div>
     );

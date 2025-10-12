@@ -12,14 +12,18 @@ import { SunIcon, MoonIcon } from "@heroicons/react/24/outline";
 import logo from "@/assets/react.svg";
 import { ERole } from "@/utils/enums/ERole";
 import { adminMenus, userMenus } from "@/constants/menus";
-import { selectRole } from "@/store/authSlice";
+import { resetAuthState, selectRole } from "@/store/authSlice";
 import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
+import { useReduxDispatch } from "@/hooks/reduxHook/useReduxDispatch";
+import { useQueryClient } from "@tanstack/react-query";
 
 
 const InnerLayout = () => {
   const navigate = useNavigate();
+  const dispatch = useReduxDispatch();
   const [darkMode, setDarkMode] = useState(false);
   const role = useReduxSelector(selectRole);
+  const queryClient = useQueryClient();
   if (!role) return <Navigate to="/login" replace />
   const layoutTitle = role === ERole.Admin ? "Admin Panel" : "Study Nest";
   const menus = role === ERole.Admin ? adminMenus : userMenus;
@@ -44,7 +48,12 @@ const InnerLayout = () => {
           icon: <LogoutOutlined />,
           label: "Logout",
           danger: true,
-          onClick: () => console.log("Logging out..."),
+          onClick: () => {
+            dispatch(resetAuthState());
+            window.localStorage.removeItem("accessToken");
+            queryClient.clear(); // <- This removes all cached queries
+            navigate('/login')
+          },
         },
       ]}
     />
