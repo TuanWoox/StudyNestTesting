@@ -11,7 +11,7 @@ interface NoteSidebarProps {
     tags: Tag[];
     selectedNote: Note | null;
     handleOpenEditor: (note: Note) => void;
-    handleCreateNote: () => void;
+    handleCreateNote: (folder?: Folder | undefined) => void;
     setFolderModalMode: React.Dispatch<React.SetStateAction<"delete" | "create" | "update">>;
     setIsModalFolderVisible: React.Dispatch<React.SetStateAction<boolean>>;
     setSelectedFolder: React.Dispatch<React.SetStateAction<Folder | null>>;
@@ -57,6 +57,14 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
 
                 items={[
                     {
+                        key: 'create-note',
+                        icon: <PlusOutlined />,
+                        label: 'Create Note',
+                        onClick: () => {
+                            handleCreateNote(folder);
+                        },
+                    },
+                    {
                         key: 'edit',
                         icon: <EditOutlined />,
                         label: 'Edit Folder',
@@ -84,11 +92,19 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
         return {
             key: folder.id,
             label: (
-                <div className="flex justify-between items-center w-full">
-                    <div style={{ fontWeight: 600, fontSize: 16 }}>
-                        <FolderOutlined /> {folder.folderName}
+                <div className="flex justify-between items-center w-full overflow-hidden">
+                    {/* Folder name */}
+                    <div className="flex items-center gap-2 min-w-0 overflow-hidden">
+                        <FolderOutlined className="flex-shrink-0" />
+                        <Tooltip title={folder.folderName} placement="topLeft">
+                            <span className="text-base font-semibold line-clamp-1 cursor-pointer hover:text-blue-600 transition-colors">
+                                {folder.folderName}
+                            </span>
+                        </Tooltip>
                     </div>
-                    <div className="flex items-center gap-2">
+
+                    {/* Notes count + menu */}
+                    <div className="flex items-center gap-2 flex-shrink-0 ml-2">
                         <span style={{ fontSize: 12, color: '#999' }}>
                             {folder.notes?.length || 0} notes
                         </span>
@@ -101,11 +117,12 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
                                     background: 'transparent',
                                     color: darkMode ? '#E2E8F0' : '#111827',
                                 }}
-                                onClick={(e) => e.stopPropagation()} // tránh click vào collapse
+                                onClick={(e) => e.stopPropagation()}
                             />
                         </Dropdown>
                     </div>
                 </div>
+
             ),
             children: (folder.notes && folder.notes.length > 0) ? (
                 <div className="grid gap-4
@@ -121,6 +138,7 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
                             isSelected={selectedNote?.id === note.id}
                             onSelect={() => handleOpenEditor(note)}
                             onDelete={handleDeleteNote}
+                            isDeleteAvailable={true}
                         />
                     ))}
                 </div>
@@ -165,6 +183,7 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
                             isSelected={selectedNote?.id === noteTag.note.id}
                             onSelect={() => handleOpenEditor(noteTag.note!)}
                             onDelete={handleDeleteNote}
+                            isDeleteAvailable={true}
                         />
                     ) : null
                 ))}
@@ -194,7 +213,7 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
             }}>
             {/* Actions */}
             <div className="flex justify-between items-center mb-4">
-                <Button type="primary" icon={<PlusOutlined />} onClick={handleCreateNote}>New</Button>
+                <Button type="primary" icon={<PlusOutlined />} onClick={() => handleCreateNote()}>New</Button>
                 <Space size="middle">
                     <Tooltip
                         title="All Notes"
@@ -273,6 +292,7 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
                                 isSelected={selectedNote?.id === note.id}
                                 onSelect={() => handleOpenEditor(note)}
                                 onDelete={handleDeleteNote}
+                                isDeleteAvailable={true}
                             />
                         ))}
                     </div>
