@@ -43,7 +43,7 @@ const QuizView = () => {
     if (isLoading) return <Spinner></Spinner>
     if (!data) return <QuizSnapshotNotReady></QuizSnapshotNotReady>
     return (
-        <div className="w-full p-4 overflow-y-auto"
+        <div className="w-full lg:max-w-5xl mx-auto p-4 overflow-y-auto"
             style={{
                 scrollbarWidth: "none"
             }}

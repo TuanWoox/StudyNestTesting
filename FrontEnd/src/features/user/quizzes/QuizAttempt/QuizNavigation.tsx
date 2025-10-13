@@ -33,7 +33,7 @@ export function QuizNavigation({
                 size={buttonSize}
                 icon={<LeftOutlined />}
             >
-                Previous
+                Prev
             </Button>
 
             <div className="flex-1 flex justify-center">
