@@ -64,7 +64,7 @@ const TrueFalseQuestion = ({ question, answer }: TrueFalseQuestionPropType) => {
 
             {falseChoice && (
                 <Button
-                    size="small"
+                    size="middle"
                     type={selectedAnswer === falseChoice.id ? "primary" : "default"}
                     icon={<CloseOutlined style={{ fontSize: "24px" }} />}
                     onClick={() => onAnswerChange(falseChoice.id)}
