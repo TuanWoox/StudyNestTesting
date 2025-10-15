@@ -13,7 +13,11 @@ const QuizResultView = () => {
     }
 
     return (
-        <div className="mx-auto mt-12 max-w-7xl">
+        <div className="w-full mx-auto p-4 overflow-y-auto"
+            style={{
+                scrollbarWidth: "none"
+            }}
+        >
             <ResultHeader score={data?.score} id={data?.quizId} />
             <QuestionResultsList answers={data?.quizAttemptAnswers} questions={data?.quizAttemptSnapshot.quizQuestionsParsed} />
         </div>
