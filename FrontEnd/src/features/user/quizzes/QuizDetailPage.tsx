@@ -190,9 +190,7 @@ const QuizDetailPage: React.FC = () => {
           transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
           backgroundColor: token.colorBgContainer,
           boxShadow: token.boxShadow,
-          borderRadius: isMobile
-            ? `0 0 ${token.borderRadiusLG}px ${token.borderRadiusLG}px`
-            : `0 0 ${token.borderRadiusLG}px ${token.borderRadiusLG}px`,
+          borderRadius: `0 0 ${token.borderRadiusLG}px ${token.borderRadiusLG}px`,
           willChange: "transform",
         }}
       >
