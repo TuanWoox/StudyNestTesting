@@ -34,28 +34,36 @@ export const QuestionItem: React.FC<QuestionItemProps> = ({
 }) => {
   const { token } = useToken();
 
+  // Theme constants
+  const borderColor = `2px solid ${token.colorPrimary}E0`;
+  const shadowColor = `4px 4px 0px ${token.colorPrimary}55`;
+
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
   const getQuestionTypeInfo = (type: string) => {
     switch (type) {
       case "MCQ":
         return {
-          color: "blue",
+          color: token.colorInfo,
+          bgColor: token.colorInfoBg,
           label: "Multiple Choice",
         };
       case "MSQ":
         return {
-          color: "purple",
+          color: token.colorPrimary,
+          bgColor: token.colorPrimaryBg,
           label: "Multi-Select",
         };
       case "TF":
         return {
-          color: "green",
+          color: token.colorSuccess,
+          bgColor: token.colorSuccessBg,
           label: "True/False",
         };
       default:
         return {
-          color: "default",
+          color: token.colorTextSecondary,
+          bgColor: token.colorFillSecondary,
           label: type,
         };
     }
@@ -66,15 +74,9 @@ export const QuestionItem: React.FC<QuestionItemProps> = ({
   return (
     <Card
       style={{
-        marginBottom: isMobile ? token.marginSM : token.marginLG,
-        borderRadius: token.borderRadiusLG,
-        border: `1px solid ${token.colorBorderSecondary}`,
-        backgroundColor: token.colorBgContainer,
-        boxShadow: token.boxShadow,
+        border: "none",
       }}
-      bodyStyle={{
-        padding: isMobile ? token.padding : token.paddingLG,
-      }}
+      bodyStyle={{ padding: "12px" }}
     >
       {/* Question Header */}
       <Flex
@@ -86,7 +88,7 @@ export const QuestionItem: React.FC<QuestionItemProps> = ({
         <Flex
           align="flex-start"
           gap={isMobile ? token.marginXS : token.marginSM}
-          style={{ flex: 1, minWidth: 0 }}
+          style={{ flex: 1, minWidth: 0, padding: "0px" }}
         >
           <Badge
             count={index + 1}
@@ -94,6 +96,8 @@ export const QuestionItem: React.FC<QuestionItemProps> = ({
               backgroundColor: token.colorPrimary,
               fontSize: isMobile ? 13 : 15,
               fontWeight: 600,
+              fontFamily: "monospace",
+              color: token.colorWhite,
             }}
           />
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -106,21 +110,36 @@ export const QuestionItem: React.FC<QuestionItemProps> = ({
                 lineHeight: 1.5,
                 wordBreak: "break-word",
                 fontWeight: 600,
+                fontFamily: "monospace",
               }}
             >
               {question.name}
             </Text>
             <Space size={isMobile ? token.marginXXS : token.marginXS} wrap>
               <Tag
-                color={typeInfo.color}
                 style={{
                   fontWeight: 500,
                   fontSize: isMobile ? 12 : 13,
+                  fontFamily: "monospace",
+                  borderRadius: 0,
+                  color: typeInfo.color,
+                  backgroundColor: typeInfo.bgColor,
+                  border: `1px solid ${typeInfo.color}`,
                 }}
               >
                 {typeInfo.label}
               </Tag>
-              <Tag>{question.choices?.length || 0} choices</Tag>
+              <Tag
+                style={{
+                  fontFamily: "monospace",
+                  borderRadius: 0,
+                  color: token.colorTextSecondary,
+                  backgroundColor: token.colorFillSecondary,
+                  border: `1px solid ${token.colorBorder}`,
+                }}
+              >
+                {question.choices?.length || 0} choices
+              </Tag>
             </Space>
           </div>
         </Flex>
@@ -160,8 +179,10 @@ export const QuestionItem: React.FC<QuestionItemProps> = ({
           style={{
             marginTop: 0,
             backgroundColor: token.colorInfoBg,
+            border: borderColor,
             borderLeft: `3px solid ${token.colorInfo}`,
-            borderRadius: token.borderRadius,
+            borderRadius: 0,
+            boxShadow: shadowColor,
           }}
           bodyStyle={{
             padding: isMobile ? token.paddingSM : token.padding,
@@ -185,6 +206,7 @@ export const QuestionItem: React.FC<QuestionItemProps> = ({
                   color: token.colorInfo,
                   fontSize: isMobile ? 13 : 14,
                   fontWeight: 600,
+                  fontFamily: "monospace",
                 }}
               >
                 Explanation
@@ -196,6 +218,7 @@ export const QuestionItem: React.FC<QuestionItemProps> = ({
                 lineHeight: 1.7,
                 fontSize: isMobile ? 13 : 14,
                 color: token.colorTextSecondary,
+                fontFamily: "monospace",
               }}
             >
               {question.explanation}

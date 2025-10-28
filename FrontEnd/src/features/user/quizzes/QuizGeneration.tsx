@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Steps, Card, Flex, Typography, Button, Form } from "antd";
+import { Steps, Card, Flex, Typography, Button, Form, theme } from "antd";
 import { Link } from "react-router-dom";
 import {
   ArrowLeftOutlined,
@@ -18,8 +18,15 @@ import useGenerateQuiz from "@/hooks/quizHook/useGenerateQuiz";
 import useGetAllNote from "@/hooks/noteHook/useGetAllNote";
 
 const { Title, Text } = Typography;
+const { useToken } = theme;
 
 const QuizGeneration: React.FC = () => {
+  const { token } = useToken();
+
+  // Theme constants
+  const borderColor = `2px solid ${token.colorPrimary}E0`;
+  const shadowColor = `4px 4px 0px ${token.colorPrimary}55`;
+
   const [current, setCurrent] = useState(0);
   const [form] = Form.useForm();
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false);
@@ -69,12 +76,11 @@ const QuizGeneration: React.FC = () => {
       const lastScrollTop = lastScrollTopRef.current;
       const delta = scrollTop - lastScrollTop;
 
-      // Hysteresis: only change state when scrolling past a certain delta
-      if (Math.abs(delta) < 10) return;
+      if (Math.abs(delta) < 5) return;
 
       const isScrollingDown = delta > 0;
 
-      if (isScrollingDown && scrollTop > headerHeight && !isHeaderCollapsed) {
+      if (isScrollingDown && scrollTop > 100 && !isHeaderCollapsed) {
         setIsHeaderCollapsed(true);
       } else if (!isScrollingDown && isHeaderCollapsed) {
         setIsHeaderCollapsed(false);
@@ -149,7 +155,7 @@ const QuizGeneration: React.FC = () => {
         height: "100%",
         overflow: "auto",
         position: "relative",
-        backgroundColor: "#fafafa",
+        backgroundColor: token.colorBgLayout,
       }}
     >
       {/* Sticky Header Overlay */}
@@ -161,9 +167,7 @@ const QuizGeneration: React.FC = () => {
           zIndex: 10,
           transform: isHeaderCollapsed ? `translateY(-100%)` : "translateY(0)",
           transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-          backgroundColor: "#ffffff",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-          borderRadius: isMobile ? "0 0 12px 12px" : "0 0 16px 16px",
+          backgroundColor: token.colorBgContainer,
           willChange: "transform",
         }}
       >
@@ -181,15 +185,26 @@ const QuizGeneration: React.FC = () => {
             }}
           >
             <div>
-              <Title level={3} style={{ margin: 0 }}>
+              <Title
+                level={3}
+                style={{ margin: 0, fontFamily: "monospace", fontWeight: 700 }}
+              >
                 Quiz Generation
               </Title>
-              <Text type="secondary">
+              <Text type="secondary" style={{ fontFamily: "monospace" }}>
                 Create a customized quiz from your notes to test your knowledge
               </Text>
             </div>
             <Link to="/user/quiz">
-              <Button icon={<ArrowLeftOutlined />} disabled={isLoading}>
+              <Button
+                icon={<ArrowLeftOutlined />}
+                disabled={isLoading}
+                style={{
+                  borderRadius: 0,
+                  fontFamily: "monospace",
+                  fontWeight: 600,
+                }}
+              >
                 Back to Quizzes
               </Button>
             </Link>
@@ -227,9 +242,6 @@ const QuizGeneration: React.FC = () => {
           style={{
             width: "100%",
             margin: "0 auto",
-            boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
-            borderRadius: isMobile ? 12 : 16,
-            background: "#ffffff",
           }}
           bodyStyle={{
             padding: 0,
@@ -243,7 +255,6 @@ const QuizGeneration: React.FC = () => {
             style={{
               flex: 1,
               overflowY: "auto",
-              padding: isMobile ? 16 : 32,
               paddingBottom: 0,
             }}
             className="quiz-generation-content"
@@ -254,19 +265,23 @@ const QuizGeneration: React.FC = () => {
           <Flex
             justify="flex-end"
             style={{
-              borderTop: "1px solid #f0f0f0",
+              borderTop: `1px solid ${token.colorBorder}`,
               padding: isMobile ? 16 : 24,
               position: "sticky",
               bottom: 0,
-              backgroundColor: "#ffffff",
+              backgroundColor: token.colorBgContainer,
               zIndex: 9,
-              boxShadow: "0 -4px 12px rgba(0,0,0,0.06)",
             }}
           >
             <div>
               {current > 0 && (
                 <Button
-                  style={{ marginRight: 12 }}
+                  style={{
+                    marginRight: 12,
+                    borderRadius: 0,
+                    fontFamily: "monospace",
+                    fontWeight: 600,
+                  }}
                   onClick={prev}
                   disabled={isLoading}
                   size="large"
@@ -280,7 +295,12 @@ const QuizGeneration: React.FC = () => {
                   onClick={next}
                   disabled={isLoading}
                   size="large"
-                  style={{ minWidth: 100 }}
+                  style={{
+                    minWidth: 100,
+                    borderRadius: 0,
+                    fontFamily: "monospace",
+                    fontWeight: 600,
+                  }}
                 >
                   Next
                 </Button>
@@ -292,7 +312,12 @@ const QuizGeneration: React.FC = () => {
                   loading={isLoading}
                   icon={isLoading ? <LoadingOutlined /> : undefined}
                   size="large"
-                  style={{ minWidth: 160 }}
+                  style={{
+                    minWidth: 160,
+                    borderRadius: 0,
+                    fontFamily: "monospace",
+                    fontWeight: 600,
+                  }}
                 >
                   {isLoading ? "Generating Quiz..." : "Generate Quiz"}
                 </Button>

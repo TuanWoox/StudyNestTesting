@@ -1,30 +1,19 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import {
-  Button,
-  Card,
-  Typography,
-  Space,
-  Dropdown,
-  Popconfirm,
-  Tag,
-  theme,
-} from "antd";
+import { Button, Card, Typography, Space, Popconfirm, theme, Grid } from "antd";
 import type { MenuProps } from "antd";
 import {
   DeleteOutlined,
   EyeOutlined,
-  CalendarOutlined,
-  FileTextOutlined,
   MoreOutlined,
   PlayCircleOutlined,
-  BookOutlined,
 } from "@ant-design/icons";
 import { QuizList } from "@/types/quiz/quiz";
 import { formatDMY } from "@/utils/date";
 
 const { Title, Text } = Typography;
 const { useToken } = theme;
+const { useBreakpoint } = Grid;
 
 interface QuizCardProps {
   quiz: QuizList;
@@ -46,386 +35,203 @@ const QuizCard: React.FC<QuizCardProps> = ({
   isDeleting,
 }) => {
   const { token } = useToken();
-  const isMobile = window.innerWidth < 576;
-  const isTablet = window.innerWidth < 768;
+  const screens = useBreakpoint();
 
-  const menuItems: MenuProps["items"] = [
-    {
-      key: "delete",
-      label: (
-        <Popconfirm
-          title="Delete this quiz?"
-          description="This action cannot be undone."
-          okText="Delete"
-          cancelText="Cancel"
-          okButtonProps={{
-            danger: true,
-            loading: deletingId === quiz.id && isDeleting,
-          }}
-          onConfirm={() => onDelete(quiz.id)}
-        >
-          <span>
-            <DeleteOutlined /> Delete
-          </span>
-        </Popconfirm>
-      ),
-      danger: true,
-    },
-  ];
+  // Theme constants
+  const borderColor = `2px solid ${token.colorPrimary}E0`;
+  const shadowColor = `4px 4px 0px ${token.colorPrimary}55`;
 
   return (
     <Card
       hoverable
+      onClick={(e) => {
+        // Prevent card click if clicking on buttons
+        const target = e.target as HTMLElement;
+        if (target.closest("button") || target.closest("a")) {
+          return;
+        }
+      }}
       style={{
-        borderRadius: isMobile ? token.borderRadius : token.borderRadiusLG,
-        overflow: "hidden",
         height: "100%",
-        position: "relative",
-        transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-        boxShadow: token.boxShadow,
+        display: "flex",
+        flexDirection: "column",
+        transition: "all 0.3s ease",
+        border: borderColor,
+        borderRadius: 0,
+        boxShadow: shadowColor,
+        backgroundColor: token.colorBgContainer,
       }}
       styles={{
         body: {
-          padding: isMobile ? 16 : isTablet ? 20 : 24,
           display: "flex",
           flexDirection: "column",
           height: "100%",
+          padding: screens.md ? "20px" : "16px",
         },
       }}
-      className="quiz-card"
+      onMouseEnter={(e) => {
+        e.currentTarget.style.boxShadow = `6px 6px 0px ${token.colorPrimary}55`;
+        e.currentTarget.style.transform = "translate(-2px, -4px)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.boxShadow = shadowColor;
+        e.currentTarget.style.transform = "translate(0, 0)";
+      }}
     >
-      {/* Solid Top Border */}
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: 4,
-          backgroundColor: token.colorPrimary,
-        }}
-      />
-
       {/* Card Header */}
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "flex-start",
-          marginBottom: isMobile ? 12 : 16,
-          marginTop: 8,
+          marginBottom: 16,
         }}
       >
-        <div
-          style={{
-            backgroundColor: token.colorPrimary,
-            borderRadius: isMobile ? token.borderRadiusSM : token.borderRadius,
-            padding: isMobile ? "6px 12px" : "8px 14px",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-          }}
-        >
-          <Text
-            strong
+        <div style={{ flex: 1, paddingRight: 8 }}>
+          <Title
+            level={5}
             style={{
-              color: token.colorTextLightSolid,
-              fontSize: isMobile ? 13 : 15,
-              fontWeight: 700,
+              margin: 0,
+              marginBottom: 8,
+              lineHeight: 1.4,
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+              fontFamily: "monospace",
+              fontWeight: 600,
             }}
           >
-            #{(page - 1) * pageSize + index + 1}
+            {quiz.title}
+          </Title>
+          <Text
+            type="secondary"
+            style={{
+              fontSize: 13,
+              display: "block",
+              marginBottom: 4,
+              fontFamily: "monospace",
+            }}
+          >
+            Source: {quiz.noteTitle}
           </Text>
-        </div>
-        <Dropdown menu={{ items: menuItems }} trigger={["click"]}>
-          <Button
-            type="text"
-            icon={<MoreOutlined />}
-            size={isMobile ? "small" : "middle"}
-            style={{
-              marginTop: -4,
-              borderRadius: "50%",
-              width: 32,
-              height: 32,
-            }}
-            className="quiz-more-btn"
-          />
-        </Dropdown>
-      </div>
-
-      {/* Quiz Title */}
-      <Link to={`/user/quiz/${quiz.id}`} style={{ textDecoration: "none" }}>
-        <Title
-          level={isMobile ? 5 : 4}
-          style={{
-            margin: `0 0 ${isMobile ? 16 : 20}px 0`,
-            fontSize: isMobile ? 16 : 18,
-            fontWeight: 700,
-            lineHeight: 1.4,
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            display: "-webkit-box",
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: "vertical",
-            minHeight: isMobile ? 44 : 50,
-            transition: "color 0.3s ease",
-          }}
-          className="quiz-title"
-        >
-          {quiz.title}
-        </Title>
-      </Link>
-
-      {/* Center Icon */}
-      <div
-        style={{
-          flex: 1,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          margin: isMobile ? "12px 0" : "16px 0 20px 0",
-        }}
-      >
-        <div
-          style={{
-            width: isMobile ? 70 : 90,
-            height: isMobile ? 70 : 90,
-            borderRadius: "50%",
-            backgroundColor: token.colorPrimaryBg,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            border: `2px solid ${token.colorPrimary}`,
-          }}
-        >
-          <FileTextOutlined
-            style={{
-              fontSize: isMobile ? 32 : 40,
-              color: token.colorPrimary,
-            }}
-          />
         </div>
       </div>
 
       {/* Quiz Info */}
-      <div
-        style={{
-          backgroundColor: token.colorFillTertiary,
-          borderRadius: isMobile ? token.borderRadiusSM : token.borderRadiusLG,
-          padding: isMobile ? "12px 14px" : "16px 18px",
-          marginBottom: isMobile ? 16 : 20,
-          border: `1px solid ${token.colorBorder}`,
-        }}
-      >
-        <Space
-          direction="vertical"
-          size={isMobile ? 10 : 12}
-          style={{ width: "100%" }}
-        >
+      <div style={{ flex: 1, marginBottom: 16 }}>
+        <Space direction="vertical" size={8} style={{ width: "100%" }}>
           <div
-            className="quiz-info-item"
             style={{
               display: "flex",
+              justifyContent: "space-between",
               alignItems: "center",
-              gap: isMobile ? 10 : 12,
             }}
           >
-            <div
-              style={{
-                width: isMobile ? 36 : 40,
-                height: isMobile ? 36 : 40,
-                borderRadius: isMobile
-                  ? token.borderRadiusSM
-                  : token.borderRadius,
-                backgroundColor: token.colorPrimaryBg,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <FileTextOutlined
-                style={{
-                  color: token.colorPrimary,
-                  fontSize: isMobile ? 16 : 18,
-                }}
-              />
-            </div>
-            <div style={{ flex: 1 }}>
-              <Text
-                type="secondary"
-                style={{
-                  fontSize: isMobile ? 11 : 12,
-                  display: "block",
-                  lineHeight: 1.3,
-                  fontWeight: 500,
-                }}
-              >
-                Questions
-              </Text>
-              <Text
-                strong
-                style={{
-                  fontSize: isMobile ? 16 : 18,
-                  fontWeight: 700,
-                }}
-              >
-                {quiz.totalQuestion}
-              </Text>
-            </div>
+            <Text type="secondary" style={{ fontFamily: "monospace" }}>
+              Questions:
+            </Text>
+            <Text strong style={{ fontSize: 16, fontFamily: "monospace" }}>
+              {quiz.totalQuestion}
+            </Text>
           </div>
-          {quiz.noteTitle && (
-            <div
-              className="quiz-info-item"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: isMobile ? 10 : 12,
-              }}
-            >
-              <div
-                style={{
-                  width: isMobile ? 36 : 40,
-                  height: isMobile ? 36 : 40,
-                  borderRadius: isMobile
-                    ? token.borderRadiusSM
-                    : token.borderRadius,
-                  backgroundColor: token.colorPrimaryBg,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <BookOutlined
-                  style={{
-                    color: token.colorPrimary,
-                    fontSize: isMobile ? 16 : 18,
-                  }}
-                />
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <Text
-                  type="secondary"
-                  style={{
-                    fontSize: isMobile ? 11 : 12,
-                    display: "block",
-                    lineHeight: 1.3,
-                    fontWeight: 500,
-                  }}
-                >
-                  Source Note
-                </Text>
-                <Text
-                  strong
-                  style={{
-                    fontSize: isMobile ? 13 : 14,
-                    fontWeight: 600,
-                    display: "block",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                  title={quiz.noteTitle}
-                >
-                  {quiz.noteTitle}
-                </Text>
-              </div>
-            </div>
-          )}
           <div
-            className="quiz-info-item"
             style={{
               display: "flex",
+              justifyContent: "space-between",
               alignItems: "center",
-              gap: isMobile ? 10 : 12,
             }}
           >
-            <div
-              style={{
-                width: isMobile ? 36 : 40,
-                height: isMobile ? 36 : 40,
-                borderRadius: isMobile
-                  ? token.borderRadiusSM
-                  : token.borderRadius,
-                backgroundColor: token.colorPrimaryBg,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <CalendarOutlined
-                style={{
-                  color: token.colorPrimary,
-                  fontSize: isMobile ? 16 : 18,
-                }}
-              />
-            </div>
-            <div style={{ flex: 1 }}>
-              <Text
-                type="secondary"
-                style={{
-                  fontSize: isMobile ? 11 : 12,
-                  display: "block",
-                  lineHeight: 1.3,
-                  fontWeight: 500,
-                }}
-              >
-                Created
-              </Text>
-              <Text
-                strong
-                style={{
-                  fontSize: isMobile ? 13 : 14,
-                  fontWeight: 600,
-                }}
-              >
-                {formatDMY(quiz.dateCreated)}
-              </Text>
-            </div>
+            <Text type="secondary" style={{ fontFamily: "monospace" }}>
+              Created:
+            </Text>
+            <Text strong style={{ fontSize: 14, fontFamily: "monospace" }}>
+              {formatDMY(quiz.dateCreated)}
+            </Text>
           </div>
         </Space>
       </div>
 
-      {/* Action Buttons */}
-      <Space size={isMobile ? 8 : 10} style={{ width: "100%" }}>
-        <Link to={`/user/quiz/${quiz.id}`} style={{ flex: 1 }}>
-          <Button
-            type="primary"
-            icon={<EyeOutlined />}
-            size="large"
+      {/* Actions */}
+      <div
+        style={{
+          paddingTop: 16,
+          borderTop: `1px solid ${token.colorPrimary}88`,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            gap: 8,
+            alignItems: "stretch",
+            flexWrap: "wrap",
+          }}
+        >
+          <Link to={`/user/quizAttempt/${quiz.id}`} style={{ flex: 1 }}>
+            <Button
+              type="primary"
+              icon={<PlayCircleOutlined />}
+              block
+              size="middle"
+              style={{
+                borderRadius: 0,
+                fontFamily: "monospace",
+                fontWeight: 600,
+              }}
+            >
+              {!screens.xs && "Take Quiz"}
+            </Button>
+          </Link>
+          <Link to={`/user/quiz/${quiz.id}`} style={{ flex: 1 }}>
+            <Button
+              icon={<EyeOutlined />}
+              block
+              size="middle"
+              style={{
+                borderRadius: 0,
+                fontFamily: "monospace",
+                fontWeight: 600,
+              }}
+            >
+              {!screens.xs && "Details"}
+            </Button>
+          </Link>
+          <div
             style={{
-              width: "100%",
-              borderRadius: isMobile
-                ? token.borderRadiusSM
-                : token.borderRadius,
-              height: isMobile ? 44 : 44,
-              fontWeight: 600,
-              fontSize: isMobile ? 14 : 15,
+              display: "flex",
+              alignItems: "center",
+              pointerEvents: "auto",
             }}
-            className="quiz-view-btn"
           >
-            View
-          </Button>
-        </Link>
-        <Link to={`/user/quizAttempt/${quiz.id}`} style={{ flex: 1 }}>
-          <Button
-            icon={<PlayCircleOutlined />}
-            size="large"
-            style={{
-              width: "100%",
-              borderRadius: isMobile
-                ? token.borderRadiusSM
-                : token.borderRadius,
-              height: isMobile ? 44 : 44,
-              fontWeight: 600,
-              fontSize: isMobile ? 14 : 15,
-              borderWidth: 2,
-            }}
-            className="quiz-start-btn"
-          >
-            Start
-          </Button>
-        </Link>
-      </Space>
+            <Button
+              danger
+              type="default"
+              icon={<DeleteOutlined />}
+              size="middle"
+              loading={deletingId === quiz.id && isDeleting}
+              disabled={isDeleting && deletingId !== quiz.id}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onDelete(quiz.id);
+              }}
+              style={{
+                borderRadius: 0,
+                fontFamily: "monospace",
+                fontWeight: 600,
+                minWidth: "44px",
+                height: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                pointerEvents: "auto",
+              }}
+              title="Delete quiz"
+            />
+          </div>
+        </div>
+      </div>
     </Card>
   );
 };
