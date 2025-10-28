@@ -1,16 +1,22 @@
-import { ClockCircleOutlined, SyncOutlined } from '@ant-design/icons';
-import { Card, Typography, Space, Alert, Spin } from 'antd';
+import { ClockCircleOutlined, SyncOutlined } from "@ant-design/icons";
+import { Card, Typography, Space, Alert, Spin, theme } from "antd";
 
-const { Title, Paragraph } = Typography;
+const { Title } = Typography;
 
-const QuizSnapshotNotReady = () => {
+const QuizSnapshotNotReady = ({ darkMode = false }) => {
+    const { token } = theme.useToken();
+
+    const primaryColor = token.colorPrimary;
+    const borderColor = `${primaryColor}E0`; // ~88% opacity
+    const shadowColor = `${primaryColor}55`; // ~33% opacity
+
     return (
-
-        <div className="mx-auto my-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="px-4 sm:px-6 lg:px-8">
             <Card
                 className="w-full shadow-xl"
                 style={{
-                    borderRadius: '16px',
+                    border: `1.5px solid ${borderColor}`,
+                    boxShadow: `4px 4px 0 ${shadowColor}`,
                 }}
             >
                 <Space
@@ -23,8 +29,8 @@ const QuizSnapshotNotReady = () => {
                             <SyncOutlined
                                 spin
                                 style={{
-                                    color: '#1890ff',
-                                    fontSize: '3rem',
+                                    color: primaryColor,
+                                    fontSize: "3rem",
                                 }}
                             />
                         }
@@ -38,7 +44,6 @@ const QuizSnapshotNotReady = () => {
                             style={{
                                 fontSize: 'clamp(1.5rem, 4vw, 3rem)',
                                 fontWeight: '600',
-                                color: '#1a1a1a',
                             }}
                         >
                             Quiz Snapshot In Progress
@@ -46,10 +51,10 @@ const QuizSnapshotNotReady = () => {
 
                         <span className="text-sm sm:text-base xl:text-2xl"
                             style={{
-                                color: '#666',
                                 maxWidth: '500px',
                                 margin: '0 auto 16px',
                                 lineHeight: 1.6,
+                                fontFamily: "'IBM Plex Mono', monospace",
                             }}
                         >
                             Your quiz snapshot is currently being generated. This process typically takes 1-2 minutes.
@@ -58,7 +63,7 @@ const QuizSnapshotNotReady = () => {
 
                     <Alert
                         message={
-                            <span className="text-sm sm:text-base xl:text-2xl font-semibold ">
+                            <span className="text-sm sm:text-base xl:text-2xl font-semibold">
                                 Processing Your Data
                             </span>
                         }
@@ -69,17 +74,28 @@ const QuizSnapshotNotReady = () => {
                         }
                         type="info"
                         showIcon
-                        icon={<ClockCircleOutlined className="text-lg sm:text-xl" />}
-                        className="text-left mx-2 sm:mx-auto"
+                        icon={
+                            <ClockCircleOutlined
+                                className="text-lg sm:text-xl"
+                                style={{ color: primaryColor }}
+                            />
+                        }
+                        className={`text-left mx-2 sm:mx-auto transition-all duration-200 ${darkMode
+                            ? "bg-blue-900/30 border-blue-500 text-blue-100"
+                            : "bg-blue-50 border-blue-500 text-blue-800"
+                            }`}
                         style={{
-                            padding: '12px 16px',
-                            borderRadius: '8px',
+                            padding: "12px 16px",
+                            borderLeftWidth: "4px",
+                            borderLeftColor: primaryColor,
+                            fontFamily: "'IBM Plex Mono', monospace",
                         }}
                     />
 
-                    <span className="text-sm sm:text-base xl:text-2xl !mt-4 !mb-0"
+                    <span
+                        className="text-sm sm:text-base xl:text-2xl !mt-4 !mb-0"
                         style={{
-                            color: '#666',
+                            fontFamily: "'Courier New', monospace",
                         }}
                     >
                         Thank you for your patience
@@ -87,7 +103,6 @@ const QuizSnapshotNotReady = () => {
                 </Space>
             </Card>
         </div>
-
     );
 };
 

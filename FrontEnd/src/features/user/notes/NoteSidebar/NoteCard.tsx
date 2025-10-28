@@ -1,122 +1,192 @@
-import React from 'react';
-import { Card, Tag as AntTag, Popconfirm, Tooltip, Button } from 'antd';
-import { DeleteOutlined } from '@ant-design/icons';
-import { Note } from '@/types/note/notes';
-import { getPlainTextFromEditorJs } from '@/utils/getPlainTextFromEditorJs';
+import React, { useState } from "react";
+import { Card, Tag as AntTag, Tooltip, Button, Modal, theme } from "antd";
+import { DeleteOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
+import { Note } from "@/types/note/notes";
+import { getPlainTextFromEditorJs } from "@/utils/getPlainTextFromEditorJs";
+import useDeleteNote from "@/hooks/noteHook/useDeleteNote";
+import ModalConfirm from "@/components/ModalConfirm";
+import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
+import { selectDarkMode } from "@/store/themeSlice";
 
 interface NoteCardProps {
     note: Note;
-    darkMode: boolean;
+    // darkMode: boolean;
     isSelected: boolean;
     onSelect: () => void;
-    onDelete: (id: string) => void;
     isDeleteAvailable: boolean;
 }
 
 const NoteCard: React.FC<NoteCardProps> = ({
     note,
-    darkMode,
+    // darkMode,
     isSelected,
     onSelect,
-    onDelete,
-    isDeleteAvailable = false
+    isDeleteAvailable = false,
 }) => {
-    // Lấy tags từ note.noteTags[].tag
-    const tags = note.noteTags?.map(nt => nt.tag) || [];
+    const darkMode = useReduxSelector(selectDarkMode);
+    const { token } = theme.useToken();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const { deleteNote, isLoading: deleting } = useDeleteNote();
+
+    const tags = note.noteTags?.map((nt) => nt.tag) || [];
+
+    // Theme colors
+    const primary = token.colorPrimary;
+    const borderColor = `${primary}E0`;
+    const shadowColor = `${primary}55`;
+    const hoverShadowColor = `${token.colorPrimary}88`; // hover sáng hơn
+    const backgroundColor = token.colorPrimaryBg;
+    const textColor = darkMode ? "#E5E7EB" : "#111827";
+
+    // Show confirmation modal
+    const showDeleteModal = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setIsModalOpen(true);
+    };
+
+    // Confirm delete
+    const handleConfirmDelete = () => {
+        try {
+            deleteNote(note.id, { onSuccess: () => setIsModalOpen(false) });
+        }
+        catch (error) {
+            console.error("Delete note failed:", error);
+        }
+    };
 
     return (
-        <Card
-            onClick={onSelect}
-            style={{
-                userSelect: "none",
-                backgroundColor: darkMode ? "#2D3748" : "#F7FAFC",
-                color: darkMode ? "#F7FAFC" : "#1A202C",
-                border: isSelected
-                    ? `3px solid ${darkMode ? "#4299E1" : "#3182CE"}`
-                    : `1px solid ${darkMode ? "#4A5568" : "#CBD5E0"}`,
-                cursor: "pointer",
-                borderRadius: "16px",
-                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                boxShadow: isSelected
-                    ? darkMode
-                        ? "0 8px 25px rgba(66, 153, 225, 0.4), 0 0 0 1px rgba(66, 153, 225, 0.1)"
-                        : "0 8px 25px rgba(49, 130, 206, 0.3), 0 0 0 1px rgba(49, 130, 206, 0.1)"
-                    : darkMode
-                        ? "0 4px 15px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1)"
-                        : "0 4px 15px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04)",
-                transform: isSelected ? "translateY(-2px)" : "translateY(0)",
-                width: "100%",              // chiếm 100% ô grid
-                margin: "0 auto",           // căn giữa khi lẻ cột
-                position: "relative"
-            }}
-            className={`hover:scale-[1.01] hover:-translate-y-1 ${darkMode ? "hover:bg-gray-600 hover:shadow-xl" : "hover:bg-white hover:shadow-xl"
-                }`}
-            styles={{
-                body: {
-                    padding: "18px",
-                },
-            }}
-        >
-            {/* 🗑️ Nút xóa ở góc trên phải */}
-            {isDeleteAvailable && (
-                <div className="absolute top-2 right-2 z-10" onClick={(e) => e.stopPropagation()}>
-                    <Popconfirm
-                        title="Delete this note?"
-                        description="Are you sure you want to delete this note permanently?"
-                        onConfirm={() => onDelete(note.id)}
-                        okText="Delete"
-                        cancelText="Cancel"
-                        okButtonProps={{ danger: true }}
-                    >
+        <>
+            {/* Delete confirmation modal */}
+            <ModalConfirm
+                open={isModalOpen}
+                title="Confirm Note Deletion"
+                content={
+                    <>
+                        Are you sure you want to{" "}
+                        <b style={{ color: "#DC2626" }}>permanently delete</b> this note?
+                        <br />
+                        This action cannot be undone.
+                    </>
+                }
+                okText={deleting ? "Deleting..." : "Delete"}
+                cancelText="Cancel"
+                // darkMode={darkMode}
+                danger
+                loading={deleting}
+                onOk={handleConfirmDelete}
+                onCancel={() => setIsModalOpen(false)}
+            />
+
+            {/* Note Card */}
+            <Card
+                onClick={onSelect}
+                style={{
+                    userSelect: "none",
+                    backgroundColor: darkMode ? "#1A1A1A" : "#FCFCFC",
+                    // color: darkMode ? "#EDEDED" : "#111",
+                    border: isSelected
+                        ? `2px solid ${borderColor}`
+                        : `1px solid ${borderColor}`,
+                    cursor: "pointer",
+                    borderRadius: "0px",
+                    fontFamily: "'Courier New', monospace",
+                    boxShadow: `4px 4px 0 ${shadowColor}`,
+                    transition: "all 0.25s ease",
+                    transform: isSelected ? "translateY(-2px)" : "translateY(0)",
+                    width: "100%",
+                    position: "relative",
+                }}
+                className={`${darkMode
+                    ? "hover:shadow-[6px_6px_0_rgba(255,255,255,0.3)]"
+                    : "hover:shadow-[6px_6px_0_rgba(0,0,0,0.15)]"
+                    } hover:-translate-y-[3px] hover:border-[2px]`}
+                styles={{
+                    body: { padding: "18px" },
+                }}
+            >
+                {/* 🗑️ Delete button */}
+                {isDeleteAvailable && (
+                    <div className="absolute top-2 right-2 z-10" onClick={showDeleteModal}>
                         <Tooltip title="Delete note">
                             <Button
                                 type="text"
                                 size="small"
                                 icon={<DeleteOutlined />}
                                 danger
+                                style={{
+                                    color: darkMode ? "#E57373" : "#C53030",
+                                }}
                             />
                         </Tooltip>
-                    </Popconfirm>
-                </div>
-            )}
-
-            <Tooltip title={note.title} placement="topLeft">
-                <h3 className="font-bold text-lg mb-3 line-clamp-1 cursor-pointer hover:text-blue-600 transition-colors">
-                    {note.title}
-                </h3>
-            </Tooltip>
-
-            <p className="text-sm mb-4 line-clamp-2">
-                {getPlainTextFromEditorJs(note.content) || "No content"}
-            </p>
-            <div className="flex items-center mb-3 px-2 py-1 rounded-lg">
-                <span className="text-sm mr-2">📁</span>
-                <span className="text-xs font-medium">
-                    {note?.folder?.folderName || "No Folder"}
-                </span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-                {tags.length > 0 ? (
-                    tags.map((tag) => (
-                        <AntTag key={tag.id} style={{
-                            backgroundColor: darkMode ? "#553C9A" : "#E9D8FD",
-                            color: darkMode ? "#F7FAFC" : "#553C9A",
-                            borderRadius: "12px",
-                            padding: "4px 10px",
-                            fontSize: "11px",
-                            fontWeight: 600,
-                            border: "none",
-                        }}>
-                            #{tag.name}
-                        </AntTag>
-                    ))
-                ) : (
-                    <span className="text-xs italic px-2 py-1 rounded">
-                        No tags
-                    </span>
+                    </div>
                 )}
-            </div>
-        </Card>
+
+                {/* Title */}
+                <Tooltip title={note.title} placement="topLeft">
+                    <h3
+                        className="font-bold text-lg mb-3 line-clamp-1 cursor-pointer"
+                        style={{
+                            color: borderColor,
+                            transition: "color 0.3s",
+                        }}
+                    >
+                        {note.title}
+                    </h3>
+                </Tooltip>
+
+                {/* Content preview */}
+                <p
+                    className="text-sm mb-4 line-clamp-2"
+                // style={{ color: darkMode ? "#CCC" : "#333" }}
+                >
+                    {getPlainTextFromEditorJs(note.content) || "No content"}
+                </p>
+
+                {/* Folder */}
+                <div
+                    className="flex items-center mb-3 px-2 py-1 rounded-md"
+                    style={{
+                        backgroundColor: darkMode ? "#2C2C2C" : "#F4F4F4",
+                        border: `1px dashed ${borderColor}`,
+                    }}
+                >
+                    <span className="text-sm mr-2">📁</span>
+                    <span className="text-xs font-medium">
+                        {note?.folder?.folderName || "No Folder"}
+                    </span>
+                </div>
+
+                {/* Tags */}
+                <div className="flex flex-wrap gap-2">
+                    {tags.length > 0 ? (
+                        tags.map((tag) => (
+                            <AntTag
+                                key={tag.id}
+                                style={{
+                                    backgroundColor: darkMode
+                                        ? `${primary}33`
+                                        : `${primary}22`,
+                                    color: borderColor,
+                                    borderRadius: "8px",
+                                    padding: "2px 8px",
+                                    fontSize: "12px",
+                                    fontWeight: 600,
+                                    border: `1px solid ${borderColor}`,
+                                    fontFamily: "'Courier New', monospace",
+                                }}
+                            >
+                                #{tag.name}
+                            </AntTag>
+                        ))
+                    ) : (
+                        <span className="text-xs italic px-2 py-1 rounded">
+                            No tags
+                        </span>
+                    )}
+                </div>
+            </Card>
+        </>
     );
 };
 

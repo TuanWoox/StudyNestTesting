@@ -1,11 +1,14 @@
-import React from "react";
-import { Button, Popconfirm } from "antd";
+import React, { useState } from "react";
+import { Button, theme } from "antd";
 import { SaveOutlined, CloseOutlined } from "@ant-design/icons";
+import ModalConfirm from "@/components/ModalConfirm";
+import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
+import { selectDarkMode } from "@/store/themeSlice";
 
 interface ActionButtonsProps {
     onSave: () => void;
     onClose: () => void;
-    darkMode: boolean;
+    // darkMode: boolean;
     isCreating?: boolean;
     isUpdating?: boolean;
     confirmBeforeClose?: boolean;
@@ -14,93 +17,120 @@ interface ActionButtonsProps {
 const ActionButtons: React.FC<ActionButtonsProps> = ({
     onSave,
     onClose,
-    darkMode,
+    // darkMode,
     isCreating = false,
     isUpdating = false,
-    confirmBeforeClose
+    confirmBeforeClose,
 }) => {
-    const commonStyle = {
-        display: "flex",
-        alignItems: "center",
-        gap: "6px",
-        padding: "10px 20px",
-        borderRadius: "8px",
-        fontSize: "15px",
-        fontWeight: 600,
-        transition: "all 0.3s ease",
-        boxShadow: darkMode ? "0 2px 6px rgba(0,0,0,0.4)" : "0 2px 6px rgba(0,0,0,0.1)",
-    } as React.CSSProperties;
+    const darkMode = useReduxSelector(selectDarkMode);
+    const { token } = theme.useToken();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const primary88 = `${token.colorPrimary}E0`;
+    const primary33 = `${token.colorPrimary}55`;
 
     const isLoading = isCreating || isUpdating;
 
-    return (
-        <div className="flex gap-3">
-            {/* Save button */}
-            <Button
-                type="text"
-                onClick={onSave}
-                className={`${darkMode ? "dark" : "light"}`}
-                style={{
-                    ...commonStyle,
-                    border: `1px solid ${darkMode ? "#3F3F46" : "#E5E7EB"}`,
-                    background: darkMode ? "#27272A" : "#FFFFFF",
-                    color: darkMode ? "#10B981" : "#059669",
-                }}
-                onMouseEnter={(e) => {
-                    e.currentTarget.style.background = darkMode ? "#1F2937" : "#F0FDF4";
-                    e.currentTarget.style.color = darkMode ? "#34D399" : "#047857";
-                }}
-                onMouseLeave={(e) => {
-                    e.currentTarget.style.background = darkMode ? "#27272A" : "#FFFFFF";
-                    e.currentTarget.style.color = darkMode ? "#10B981" : "#059669";
-                }}
-                icon={<SaveOutlined />}
-                loading={isLoading}
-            >
-                Save
-            </Button>
+    const baseStyle: React.CSSProperties = {
+        display: "flex",
+        alignItems: "center",
+        gap: "6px",
+        padding: "10px 22px",
+        fontSize: "15px",
+        fontWeight: 600,
+        fontFamily: "'Courier New', 'IBM Plex Mono', monospace",
+        transition: "all 0.3s ease",
+        boxShadow: `3px 3px 0 ${primary33}`,
+    };
 
-            {/* Close button */}
-            {confirmBeforeClose && !isLoading ? (
-                <Popconfirm
-                    title="Unsaved changes"
-                    description="You have unsaved changes. Are you sure you want to close without saving?"
-                    okText="Close without saving"
-                    cancelText="Cancel"
-                    placement="topRight"
-                    onConfirm={onClose}
-                >
-                    <Button
-                        type="text"
-                        style={{
-                            ...commonStyle,
-                            border: `1px solid ${darkMode ? "#3F3F46" : "#E5E7EB"}`,
-                            background: darkMode ? "#27272A" : "#FFFFFF",
-                            color: darkMode ? "#F97316" : "#EA580C",
-                        }}
-                        icon={<CloseOutlined />}
-                        disabled={isLoading}
-                    >
-                        Close
-                    </Button>
-                </Popconfirm>
-            ) : (
+    // 🔵 Hover effects
+    const handleEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.currentTarget.style.transform = "translateY(-2px)";
+        e.currentTarget.style.boxShadow = `5px 5px 0 ${primary33}`;
+        e.currentTarget.style.borderColor = token.colorPrimary;
+    };
+    const handleLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.currentTarget.style.transform = "translateY(0)";
+        e.currentTarget.style.boxShadow = `3px 3px 0 ${primary33}`;
+        e.currentTarget.style.borderColor = primary88;
+    };
+
+    // 🧡 Modal confirm before close
+    const showConfirmModal = () => setIsModalOpen(true);
+    const handleConfirmClose = () => {
+        setIsModalOpen(false);
+        onClose();
+    };
+
+    const borderColor = `${token.colorPrimary}E0`;
+    const shadowColor = `${token.colorPrimary}55`;
+    const hoverShadowColor = `${token.colorPrimary}88`;
+    const backgroundColor = token.colorPrimaryBg;
+    const textColor = darkMode ? "#E5E7EB" : "#111827";
+
+    return (
+        <>
+            {/* ⚠️ Close confirmation modal */}
+            <ModalConfirm
+                open={isModalOpen}
+                title="Unsaved Changes"
+                content={
+                    <>
+                        You have unsaved changes. <br />
+                        Are you sure you want to{" "}
+                        <b style={{ color: "#B45309" }}>close without saving</b>?
+                    </>
+                }
+                okText="Close without saving"
+                cancelText="Cancel"
+                // darkMode={darkMode}
+                onOk={handleConfirmClose}
+                onCancel={() => setIsModalOpen(false)}
+            />
+
+            {/* Action Buttons */}
+            <div className="flex gap-3">
+                {/* ✅ Save */}
                 <Button
                     type="text"
-                    onClick={onClose}
+                    onClick={onSave}
+                    icon={<SaveOutlined />}
+                    loading={isLoading}
                     style={{
-                        ...commonStyle,
-                        border: `1px solid ${darkMode ? "#3F3F46" : "#E5E7EB"}`,
-                        background: darkMode ? "#27272A" : "#FFFFFF",
+                        ...baseStyle,
+                        border: `1px solid ${primary88}`,
+                        backgroundColor: darkMode ? "#1e1e1e" : "#fafafa",
+                        color: token.colorPrimary,
+                    }}
+                    onMouseEnter={handleEnter}
+                    onMouseLeave={handleLeave}
+                >
+                    Save
+                </Button>
+
+                {/* 🧡 Close */}
+                <Button
+                    type="text"
+                    icon={<CloseOutlined />}
+                    onClick={
+                        confirmBeforeClose && !isLoading
+                            ? showConfirmModal
+                            : onClose
+                    }
+                    disabled={isLoading}
+                    style={{
+                        ...baseStyle,
+                        border: `1px solid ${primary88}`,
+                        backgroundColor: darkMode ? "#1e1e1e" : "#fafafa",
                         color: darkMode ? "#F97316" : "#EA580C",
                     }}
-                    icon={<CloseOutlined />}
-                    disabled={isLoading}
+                    onMouseEnter={handleEnter}
+                    onMouseLeave={handleLeave}
                 >
                     Close
                 </Button>
-            )}
-        </div>
+            </div>
+        </>
     );
 };
 

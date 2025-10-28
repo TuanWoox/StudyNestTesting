@@ -1,11 +1,33 @@
 import React, { useState } from 'react';
-import { Input, Button, Space, Tooltip, Collapse, Dropdown, Menu, Empty } from 'antd';
-import { SearchOutlined, PlusOutlined, FileTextOutlined, FolderOutlined, TagsOutlined, EditOutlined, DeleteOutlined, MoreOutlined } from '@ant-design/icons';
+import {
+    Input,
+    Button,
+    Space,
+    Tooltip,
+    Collapse,
+    Dropdown,
+    Menu,
+    Empty,
+    theme
+} from 'antd';
+import {
+    SearchOutlined,
+    PlusOutlined,
+    FileTextOutlined,
+    FolderOutlined,
+    TagsOutlined,
+    EditOutlined,
+    DeleteOutlined,
+    MoreOutlined,
+    FilterOutlined
+} from '@ant-design/icons';
 import NoteCard from './NoteCard';
 import { Note, Folder, Tag, NoteTag } from '@/types/note/notes';
+import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
+import { selectDarkMode } from "@/store/themeSlice";
 
 interface NoteSidebarProps {
-    darkMode: boolean;
+    // darkMode: boolean;
     notes: Note[];
     folders: Folder[];
     tags: Tag[];
@@ -15,13 +37,12 @@ interface NoteSidebarProps {
     setFolderModalMode: React.Dispatch<React.SetStateAction<"delete" | "create" | "update">>;
     setIsModalFolderVisible: React.Dispatch<React.SetStateAction<boolean>>;
     setSelectedFolder: React.Dispatch<React.SetStateAction<Folder | null>>;
-    handleDeleteNote: (id: string) => void;
 }
 
 type ViewMode = 'all' | 'folder' | 'tag';
 
 const NoteSidebar: React.FC<NoteSidebarProps> = ({
-    darkMode,
+    // darkMode,
     notes,
     folders,
     tags,
@@ -31,46 +52,46 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
     setFolderModalMode,
     setIsModalFolderVisible,
     setSelectedFolder,
-    handleDeleteNote,
 }) => {
+    const darkMode = useReduxSelector(selectDarkMode);
+    const { token } = theme.useToken();
     const [searchTerm, setSearchTerm] = useState('');
     const [viewMode, setViewMode] = useState<ViewMode>('all');
 
-    // Filter
     const filteredNotes = notes.filter((note) =>
         note.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
-
     const filteredFolders = folders.filter((folder) =>
         folder.folderName.toLowerCase().includes(searchTerm.toLowerCase())
     );
-
     const filteredTags = tags.filter((tag) =>
         tag.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Folder view: lấy notes từ folder.notes
+    // Retro tone helpers
+    const borderColor = `${token.colorPrimary}E0`; // 88% opacity
+    const shadowColor = `${token.colorPrimary}55`; // 33% opacity
+    const headerColor = token.colorText
+
+    // Folder view
     const folderItems = filteredFolders.map((folder) => {
         const menu = (
             <Menu
-                onClick={(e) => e.domEvent.stopPropagation()} // thêm dòng này để ngăn mở collapse khi click edit hay delete folder
-
+                onClick={(e) => e.domEvent.stopPropagation()}
                 items={[
                     {
                         key: 'create-note',
                         icon: <PlusOutlined />,
                         label: 'Create Note',
-                        onClick: () => {
-                            handleCreateNote(folder);
-                        },
+                        onClick: () => handleCreateNote(folder),
                     },
                     {
                         key: 'edit',
                         icon: <EditOutlined />,
                         label: 'Edit Folder',
                         onClick: () => {
-                            setSelectedFolder(folder);             // chọn folder hiện tại
-                            setFolderModalMode("update");
+                            setSelectedFolder(folder);
+                            setFolderModalMode('update');
                             setIsModalFolderVisible(true);
                         },
                     },
@@ -81,7 +102,7 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
                         label: 'Delete Folder',
                         onClick: () => {
                             setSelectedFolder(folder);
-                            setFolderModalMode("delete");
+                            setFolderModalMode('delete');
                             setIsModalFolderVisible(true);
                         },
                     },
@@ -92,20 +113,29 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
         return {
             key: folder.id,
             label: (
-                <div className="flex justify-between items-center w-full overflow-hidden">
-                    {/* Folder name */}
+                <div
+                    className="flex justify-between items-center w-full overflow-hidden"
+                    style={{
+                        fontFamily: '"Courier New", monospace',
+                        // color: darkMode ? '#E2E8F0' : '#1A202C',
+                    }}
+                >
                     <div className="flex items-center gap-2 min-w-0 overflow-hidden">
-                        <FolderOutlined className="flex-shrink-0" />
+                        <FolderOutlined />
                         <Tooltip title={folder.folderName} placement="topLeft">
-                            <span className="text-base font-semibold line-clamp-1 cursor-pointer hover:text-blue-600 transition-colors">
+                            <span
+                                className="font-semibold line-clamp-1 cursor-pointer transition-all"
+                            // style={{
+                            //     color: borderColor,
+                            // }}
+                            >
                                 {folder.folderName}
                             </span>
                         </Tooltip>
                     </div>
 
-                    {/* Notes count + menu */}
                     <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-                        <span style={{ fontSize: 12, color: '#999' }}>
+                        <span style={{ fontSize: 12, opacity: 0.7 }}>
                             {folder.notes?.length || 0} notes
                         </span>
                         <Dropdown overlay={menu} trigger={['click']}>
@@ -115,205 +145,259 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
                                 style={{
                                     border: 'none',
                                     background: 'transparent',
-                                    color: darkMode ? '#E2E8F0' : '#111827',
+                                    color: darkMode ? '#E2E8F0' : '#1A202C',
                                 }}
                                 onClick={(e) => e.stopPropagation()}
                             />
                         </Dropdown>
                     </div>
                 </div>
-
             ),
-            children: (folder.notes && folder.notes.length > 0) ? (
-                <div className="grid gap-4
-                    sm:grid-cols-1
-                    md:grid-cols-2
-                    lg:grid-cols-3
-                    xl:grid-cols-4">
+            children: folder.notes?.length ? (
+                <div
+                    className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                    style={{ fontFamily: '"Courier New", monospace' }}
+                >
                     {folder.notes.map((note) => (
                         <NoteCard
                             key={note.id}
                             note={note}
-                            darkMode={darkMode}
+                            // darkMode={darkMode}
                             isSelected={selectedNote?.id === note.id}
                             onSelect={() => handleOpenEditor(note)}
-                            onDelete={handleDeleteNote}
-                            isDeleteAvailable={true}
+                            isDeleteAvailable
                         />
                     ))}
                 </div>
             ) : (
-                <div className="text-center py-3 text-gray-500 italic text-sm select-none">
+                <div
+                    className="text-center py-3 italic text-sm select-none"
+                    style={{
+                        opacity: 0.7,
+                        fontFamily: '"Courier New", monospace'
+                    }}
+                >
                     No notes in this folder
                 </div>
             ),
             style: {
-                background: darkMode
-                    ? "linear-gradient(135deg, #1E293B, #334155)"
-                    : "linear-gradient(135deg, #F3F4F6, #E5E7EB)",
-                borderRadius: 8,
+                background: darkMode ? "linear-gradient(135deg, #1E293B, #334155)" : '#FDFBF8',
+                borderRadius: 0,
                 marginBottom: 8,
-                boxShadow: darkMode
-                    ? '0 1px 3px rgba(0,0,0,0.6)'
-                    : '0 1px 3px rgba(0,0,0,0.1)',
-                transition: 'all 0.3s ease'
-            }
+                border: `1px solid ${borderColor}`,
+                boxShadow: `3px 3px 0 ${shadowColor}`,
+                transition: 'all 0.3s ease',
+            },
         };
     });
 
-    // Tag view: lấy notes từ tag.noteTags[].note
+    // Tag view
     const tagItems = filteredTags.map((tag) => ({
         key: tag.id,
-        label: (<div className="flex justify-between items-center w-full">
-            <span style={{ fontWeight: 600, fontSize: 16 }}><TagsOutlined /> {tag.name}</span>
-            <span style={{ fontSize: 12, color: '#999' }}>{tag.noteTags?.length || 0} notes</span>
-        </div>),
-        children: (tag.noteTags && tag.noteTags.length > 0) ? (
-            <div className="grid gap-4
-                    sm:grid-cols-1
-                    md:grid-cols-2
-                    lg:grid-cols-3
-                    xl:grid-cols-4">
-                {tag.noteTags.map((noteTag: NoteTag) => (
+        label: (
+            <div
+                className="flex justify-between items-center w-full"
+                style={{
+                    fontFamily: '"Courier New", monospace',
+                    // color: darkMode ? '#E2E8F0' : '#1A202C',
+                }}
+            >
+                <span style={{ fontWeight: 600 }}>
+                    <TagsOutlined /> {tag.name}
+                </span>
+                <span style={{ fontSize: 12, opacity: 0.7 }}>
+                    {tag.noteTags?.length || 0} notes
+                </span>
+            </div>
+        ),
+        children: tag.noteTags?.length ? (
+            <div
+                className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                style={{ fontFamily: '"Courier New", monospace' }}
+            >
+                {tag.noteTags.map((noteTag: NoteTag) =>
                     noteTag.note ? (
                         <NoteCard
                             key={noteTag.note.id}
                             note={noteTag.note}
-                            darkMode={darkMode}
+                            // darkMode={darkMode}
                             isSelected={selectedNote?.id === noteTag.note.id}
                             onSelect={() => handleOpenEditor(noteTag.note!)}
-                            onDelete={handleDeleteNote}
-                            isDeleteAvailable={true}
+                            isDeleteAvailable
                         />
                     ) : null
-                ))}
+                )}
             </div>
         ) : (
-            <div className="text-center py-3 text-gray-500 italic text-sm select-none">
+            <div
+                className="text-center py-3 italic text-sm select-none"
+                style={{ opacity: 0.7 }}
+            >
                 No notes with this tag
             </div>
         ),
         style: {
-            background: darkMode ? "linear-gradient(135deg, #1E293B, #334155)" : "linear-gradient(135deg, #F3F4F6, #E5E7EB)",
-            borderRadius: 8,
+            background: darkMode ? "linear-gradient(135deg, #1E293B, #334155)" : '#FDFBF8',
+            borderRadius: 0,
             marginBottom: 8,
-            boxShadow: darkMode
-                ? '0 1px 3px rgba(0,0,0,0.6)'
-                : '0 1px 3px rgba(0,0,0,0.1)',
-            transition: 'all 0.3s ease'
+            border: `1px solid ${borderColor}`,
+            boxShadow: `3px 3px 0 ${shadowColor}`,
         },
     }));
 
     return (
-        <div className="w-full shrink-0 h-full overflow-y-auto  p-4 border-r"
+        <div
+            className="w-full shrink-0 h-full overflow-y-auto p-4 border-r"
             style={{
-                backgroundColor: darkMode ? "#0f0f0f" : "#FFFFFF",
-                borderColor: darkMode ? "#212121" : "#E5E7EB",
-                scrollbarWidth: "thin",
-            }}>
-            {/* Actions */}
-            <div className="flex justify-between items-center mb-4">
-                <Button type="primary" icon={<PlusOutlined />} onClick={() => handleCreateNote()}>New</Button>
-                <Space size="middle">
-                    <Tooltip
-                        title="All Notes"
-                        getPopupContainer={(trigger) => trigger.parentElement!} // tránh render tooltip ra ngoài gây layout shift
-                    >
-                        <Button
-                            icon={<FileTextOutlined />}
-                            onClick={() => setViewMode("all")}
-                            type={viewMode === "all" ? "primary" : "default"}
-                            style={{ display: "flex", alignItems: "center", justifyContent: "center" }} // giữ nút cố định kích thước
-                        />
-                    </Tooltip>
-
-                    <Tooltip
-                        title="Folder View"
-                        getPopupContainer={(trigger) => trigger.parentElement!}
-                    >
-                        <Button
-                            icon={<FolderOutlined />}
-                            onClick={() => setViewMode("folder")}
-                            type={viewMode === "folder" ? "primary" : "default"}
-                            style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
-                        />
-                    </Tooltip>
-
-                    <Tooltip
-                        title="Tag View"
-                        getPopupContainer={(trigger) => trigger.parentElement!} // quan trọng
-                        placement="top" // tránh tooltip làm nhảy layout phía dưới
-                    >
-                        <Button
-                            icon={<TagsOutlined />}
-                            onClick={() => setViewMode("tag")}
-                            type={viewMode === "tag" ? "primary" : "default"}
-                            style={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                            }}
-                        />
-                    </Tooltip>
-                </Space>
-            </div>
-            {/* Search */}
-            <Input
-                placeholder={
-                    viewMode === "all"
-                        ? "Search notes..."
-                        : viewMode === "folder"
-                            ? "Search folders..."
-                            : "Search tags..."
-                }
-                prefix={<SearchOutlined />}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                fontFamily: '"Courier New", monospace',
+                backgroundColor: darkMode ? '#0f0f0f' : '#FFFEFA',
+                borderColor: darkMode ? '#212121' : borderColor,
+                scrollbarWidth: "none"
+            }}
+        >
+            {/* Header - retro style */}
+            {/* Title */}
+            <div className="mb-3 flex justify-between items-center"
                 style={{
-                    marginBottom: "10px",
-                    backgroundColor: darkMode ? "#334155" : "#FFFFFF",
-                    color: darkMode ? "#E2E8F0" : "#111827",
-                    borderColor: darkMode ? "#475569" : "#D1D5DB",
+                    color: `${headerColor}`
+                }}>
+                <div>
+                    <h1 className="text-2xl font-bold leading-none">
+                        Note Management
+                    </h1>
+                    <p className="text-sm mt-1">
+                        Manage your notes
+                    </p>
+                </div>
+                <Button
+                    type="default"
+                    icon={<PlusOutlined />}
+                    onClick={() => handleCreateNote()}
+                    style={{
+                        fontWeight: 600,
+                        boxShadow: `3px 3px 0 ${shadowColor}`,
+                        border: `1px solid ${borderColor}`,
+                        fontFamily: '"Courier New", monospace',
+                        borderRadius: 0,
+                        fontSize: 20,
+                        lineHeight: 0.75
+                    }}
+                >
+                    New
+                </Button>
+            </div>
+            <div
+                className={`mb-6 p-5 rounded-none border transition-all duration-300`}
+                style={{
+                    border: `1px solid ${borderColor}`,
+                    boxShadow: `4px 4px 0 ${shadowColor}`,
+                    fontFamily: '"Courier New", monospace',
                 }}
-            />
-            {/* Notes / Folders / Tags */}
+            >
+                {/* Search Input */}
+                <div className='flex justify-between gap-4 mb-3'>
+                    <Input
+                        placeholder={
+                            viewMode === 'all'
+                                ? 'Search notes...'
+                                : viewMode === 'folder'
+                                    ? 'Search folders...'
+                                    : 'Search tags...'
+                        }
+                        prefix={<SearchOutlined />}
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        style={{
+                            border: `1px solid ${borderColor}`,
+                            boxShadow: `2px 2px 0 ${shadowColor}`,
+                            fontFamily: '"Courier New", monospace',
+                            fontSize: 15,
+                            borderRadius: "0px"
+                        }}
+                    />
+                    <Button
+                        type="default"
+                        icon={<FilterOutlined />}
+                        onClick={() => console.log("Filter button click")}
+                        style={{
+                            fontWeight: 600,
+                            boxShadow: `3px 3px 0 ${shadowColor}`,
+                            border: `1px solid ${borderColor}`,
+                            fontFamily: '"Courier New", monospace',
+                            borderRadius: 0,
+                            fontSize: 20,
+                            lineHeight: 0.75
+                        }}
+                    >
+                        Filter
+                    </Button>
+                </div>
+
+                {/* Filter buttons */}
+                <div className="flex flex-wrap gap-2">
+                    <Space size="middle">
+                        {[
+                            { icon: <FileTextOutlined />, mode: 'all', title: 'All Notes' },
+                            { icon: <FolderOutlined />, mode: 'folder', title: 'Folder View' },
+                            { icon: <TagsOutlined />, mode: 'tag', title: 'Tag View' },
+                        ].map(({ icon, mode, title }) => (
+                            <Tooltip key={mode} title={title} getPopupContainer={(trigger) => trigger.parentElement!}>
+                                <Button
+                                    icon={icon}
+                                    onClick={() => setViewMode(mode as ViewMode)}
+                                    type={viewMode === mode ? 'primary' : 'default'}
+                                    style={{
+                                        border: `1px solid ${borderColor}`,
+                                        boxShadow: `2px 2px 0 ${shadowColor}`,
+                                        transition: 'all 0.25s ease',
+                                        borderRadius: 0,
+                                    }}
+                                />
+                            </Tooltip>
+                        ))}
+                    </Space>
+                </div>
+            </div>
+
+
+            {/* Content */}
             <div>
-                {viewMode === "all" && (
+                {viewMode === 'all' && (
                     filteredNotes.length === 0 ? (
                         <Empty
                             description="No notes found. Create your first note!"
                             image={Empty.PRESENTED_IMAGE_SIMPLE}
-                            style={{
-                                display: "flex",
-                                flexDirection: "column",
-                                justifyContent: "center",
-                                alignItems: "center",
-                                minHeight: 200,
-                                marginTop: 40,
+                            style={{ marginTop: 40 }}
+                            styles={{
+                                description: {
+                                    fontFamily: '"Courier New", monospace'
+                                }
                             }}
                         >
                             <Button
                                 type="primary"
                                 icon={<PlusOutlined />}
                                 onClick={() => handleCreateNote()}
+                                style={{
+                                    fontFamily: '"Courier New", monospace',
+                                    boxShadow: `3px 3px 0 ${shadowColor}`,
+                                }}
                             >
                                 Create New Note
                             </Button>
                         </Empty>
                     ) : (
-                        <div className="grid gap-4
-                            sm:grid-cols-1
-                            md:grid-cols-2
-                            lg:grid-cols-3
-                            xl:grid-cols-4">
+                        <div
+                            className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                            style={{ fontFamily: '"Courier New", monospace' }}
+                        >
                             {filteredNotes.map((note) => (
                                 <NoteCard
                                     key={note.id}
                                     note={note}
-                                    darkMode={darkMode}
+                                    // darkMode={darkMode}
                                     isSelected={selectedNote?.id === note.id}
                                     onSelect={() => handleOpenEditor(note)}
-                                    onDelete={handleDeleteNote}
                                     isDeleteAvailable={true}
                                 />
                             ))}
@@ -324,7 +408,7 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
                 {viewMode === "folder" && (
                     <>
                         <div className="flex justify-between items-center mb-2">
-                            <h3 style={{ fontWeight: 625, fontSize: '18px' }}> <FolderOutlined /> Folders</h3>
+                            <h3 style={{ fontWeight: 625, fontSize: '18px', color: headerColor }}> <FolderOutlined /> Folders</h3>
                             <Button
                                 type="default"
                                 size="small"
@@ -334,18 +418,15 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
                                     setIsModalFolderVisible(true);
                                 }}
                                 style={{
-                                    background: darkMode ? "linear-gradient(135deg, #1E293B, #334155)" : "linear-gradient(135deg, #F3F4F6, #E5E7EB)",
-                                    border: "none",
-                                    color: darkMode ? "#F1F5F9" : "#111827",
+                                    background: darkMode ? "linear-gradient(135deg, #1E293B, #334155)" : '#FDFBF8',
+                                    border: `1px solid ${borderColor}`,
+                                    boxShadow: `3px 3px 0 ${shadowColor}`,
                                     fontWeight: 500,
-                                    borderRadius: 8,
+                                    borderRadius: 0,
                                     padding: "0 14px",
                                     display: "flex",
                                     alignItems: "center",
                                     gap: "6px",
-                                    boxShadow: darkMode
-                                        ? "0 1px 3px rgba(0,0,0,0.6)"
-                                        : "0 1px 3px rgba(0,0,0,0.1)",
                                     transition: "all 0.3s ease",
                                 }}
                                 onMouseEnter={(e) => {
@@ -357,7 +438,7 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
                                 onMouseLeave={(e) => {
                                     (e.currentTarget.style.background = darkMode
                                         ? "linear-gradient(135deg, #1E293B, #334155)"
-                                        : "linear-gradient(135deg, #F3F4F6, #E5E7EB)");
+                                        : "#FDFBF8");
                                     e.currentTarget.style.transform = "translateY(0)";
                                 }}
                             >
@@ -369,6 +450,11 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
                                 description="No notes in any folder"
                                 image={Empty.PRESENTED_IMAGE_SIMPLE}
                                 style={{ minHeight: 200, marginTop: 40 }}
+                                styles={{
+                                    description: {
+                                        fontFamily: '"Courier New", monospace'
+                                    }
+                                }}
                             >
                                 <Button
                                     type="primary"
@@ -395,13 +481,18 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
                 {viewMode === "tag" && (
                     <>
                         <div className="flex justify-between items-center mb-2">
-                            <h3 style={{ fontWeight: 625, fontSize: '18px' }}><TagsOutlined /> Tags</h3>
+                            <h3 style={{ fontWeight: 625, fontSize: '18px', color: headerColor }}><TagsOutlined /> Tags</h3>
                         </div>
                         {(filteredTags.length === 0 || filteredTags.every(t => !t.noteTags || t.noteTags.length === 0)) ? (
                             <Empty
                                 description="No notes with any tag"
                                 image={Empty.PRESENTED_IMAGE_SIMPLE}
                                 style={{ minHeight: 200, marginTop: 40 }}
+                                styles={{
+                                    description: {
+                                        fontFamily: '"Courier New", monospace'
+                                    }
+                                }}
                             >
                                 <Button
                                     type="primary"

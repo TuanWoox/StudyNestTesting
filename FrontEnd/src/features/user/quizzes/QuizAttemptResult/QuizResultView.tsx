@@ -6,7 +6,7 @@ import Spinner from "@/components/Spinner/Spinner";
 
 const QuizResultView = () => {
     const { id } = useParams<{ id: string }>();
-    const darkMode = useOutletContext<boolean>();
+    // const darkMode = useOutletContext<boolean>();
     const { data, isLoading } = useGetOneQuizAttemptById(id);
 
     if (isLoading) {
@@ -18,7 +18,7 @@ const QuizResultView = () => {
 
     return (
         <div
-            className={`w-full mx-auto p-8 overflow-y-auto ${darkMode ? "bg-[#0f0f0f] text-gray-100" : "bg-gray-50 text-gray-900"
+            className={`w-full mx-auto p-8 overflow-y-auto "
                 }`}
             style={{
                 scrollbarWidth: "none",

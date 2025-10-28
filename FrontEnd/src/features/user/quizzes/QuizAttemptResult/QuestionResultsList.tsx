@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { QuestionDTO } from "@/types/question/questionDTO";
 import { QuizAttemptAnswerDTO } from "@/types/quizAttemptAnswer/quizAttemptAnswerDTO";
-import { Row, Col, Pagination, Button } from "antd";
-import { useNavigate, useOutletContext } from "react-router-dom";
+import { Row, Col, Pagination, Button, theme } from "antd";
+import { useNavigate } from "react-router-dom";
 import QuestionResultCard from "./QuestionResultCard";
+import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
+import { selectDarkMode } from "@/store/themeSlice";
 
 interface QuestionResultsListProps {
     questions: QuestionDTO[] | undefined;
@@ -12,7 +14,9 @@ interface QuestionResultsListProps {
 }
 
 const QuestionResultsList = ({ questions, answers, quizId }: QuestionResultsListProps) => {
-    const darkMode = useOutletContext<boolean>();
+    const { token } = theme.useToken();
+    // const darkMode = useOutletContext<boolean>();
+    const darkMode = useReduxSelector(selectDarkMode);
     const [currentPage, setCurrentPage] = useState(1);
     const navigate = useNavigate();
     const pageSize = 4;
@@ -41,6 +45,9 @@ const QuestionResultsList = ({ questions, answers, quizId }: QuestionResultsList
         navigate(`/user/quiz/${quizId}`)
     };
 
+    const primaryColor = token.colorPrimary;
+    const borderColor = `${primaryColor}E0`; // 88% opacity
+    const shadowColor = `${primaryColor}55`; // 33% opacity
 
     return (
         <div className="mt-3">
@@ -55,7 +62,7 @@ const QuestionResultsList = ({ questions, answers, quizId }: QuestionResultsList
                                 question={question}
                                 answer={answer}
                                 index={startIndex + idx + 1}
-                                darkMode={darkMode}
+                            // darkMode={darkMode}
                             />
                         </Col>
                     );
@@ -63,12 +70,12 @@ const QuestionResultsList = ({ questions, answers, quizId }: QuestionResultsList
             </Row>
             <div className="w-full flex justify-between items-center mt-4">
                 <Button
-                    type="primary"
+                    type="default"
                     onClick={onClickBackToQuiz}
                     style={{
-                        backgroundColor: darkMode ? '#1f2937' : undefined, // dark gray for dark mode
-                        borderColor: darkMode ? '#1f2937' : undefined,
-                        color: darkMode ? '#ffffff' : undefined,
+                        fontWeight: 600,
+                        boxShadow: `3px 3px 0 ${shadowColor}`,
+                        border: `1px solid ${borderColor}`,
                     }}
                 >
                     Back to Quiz

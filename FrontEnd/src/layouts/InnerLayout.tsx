@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { ProLayout } from "@ant-design/pro-components";
 import { useNavigate, Outlet, Navigate } from "react-router-dom";
 import {
@@ -19,6 +18,7 @@ import logo from "@/assets/react.svg";
 import { ERole } from "@/utils/enums/ERole";
 import { adminMenus, userMenus } from "@/constants/menus";
 import { resetAuthState, selectRole } from "@/store/authSlice";
+import { toggleDarkMode, selectDarkMode } from "@/store/themeSlice";
 import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
 import { useReduxDispatch } from "@/hooks/reduxHook/useReduxDispatch";
 import { useQueryClient } from "@tanstack/react-query";
@@ -27,7 +27,7 @@ import RouteTracker from "@/components/RouteTracker/RouteTracker";
 const InnerLayout = () => {
   const navigate = useNavigate();
   const dispatch = useReduxDispatch();
-  const [darkMode, setDarkMode] = useState(false);
+  const darkMode = useReduxSelector(selectDarkMode);
   const role = useReduxSelector(selectRole);
   const queryClient = useQueryClient();
   if (!role) return <Navigate to="/login" replace />;
@@ -70,10 +70,15 @@ const InnerLayout = () => {
       theme={{
         algorithm: darkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
         token: {
-          colorPrimary: darkMode ? "#6366F1" : "#FBBF24",
-          borderRadius: 8,
+          fontFamily: "'Courier New', monospace",
+          colorPrimary: darkMode ? "#818CF8" : "#3b5bdb",
+          colorPrimaryBg: darkMode ? "#1A1A1A" : "#FCFCFC",
+          colorText: darkMode ? "#E5E7EB" : "#3b5bdb",
+          colorBorder: darkMode ? "#818CF8" : "#3b5bdb",
+          borderRadius: 0,
+          boxShadow: "3px 3px 0 #3b5bdb40",
           fontSize: 15,
-        },
+        }
       }}
     >
       <div
@@ -115,8 +120,8 @@ const InnerLayout = () => {
               </Button> */}
               {/* Toggle Dark Mode */}
               <button
-                onClick={() => setDarkMode(!darkMode)}
-                className={`relative flex items-center w-14 h-7 rounded-full transition-all duration-300 ${darkMode ? "bg-indigo-500" : "bg-amber-400"
+                onClick={() => dispatch(toggleDarkMode())} // <- dispatch toggle
+                className={`relative flex items-center w-14 h-7 rounded-full transition-all duration-300 ${darkMode ? "bg-indigo-500" : "bg-[#3b5bdb]"
                   }`}
               >
                 <span
@@ -126,7 +131,7 @@ const InnerLayout = () => {
                 <span className="absolute left-1.5 text-yellow-400">
                   <SunIcon className="w-4 h-4" />
                 </span>
-                <span className="absolute right-1.5 text-[#6366F1]">
+                <span className="absolute right-1.5 text-black">
                   <MoonIcon className="w-4 h-4" />
                 </span>
               </button>
@@ -137,7 +142,7 @@ const InnerLayout = () => {
                   size={40}
                   style={{
                     cursor: "pointer",
-                    backgroundColor: darkMode ? "#6366F1" : "#FBBF24",
+                    backgroundColor: darkMode ? "#6366F1" : "#3b5bdb",
                   }}
                   icon={<UserOutlined />}
                 />
@@ -148,7 +153,8 @@ const InnerLayout = () => {
           {/* quan trọng: min-h-0 + overflow-hidden để chặn tràn xuống dưới */}
           <div className="flex-1 flex min-h-0 overflow-hidden transition-colors duration-500">
             <RouteTracker></RouteTracker>
-            <Outlet context={darkMode} />
+            {/* <Outlet context={darkMode} /> */}
+            <Outlet />
           </div>
         </ProLayout>
       </div>
