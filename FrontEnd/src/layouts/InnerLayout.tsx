@@ -4,16 +4,9 @@ import { useNavigate, Outlet, Navigate } from "react-router-dom";
 import {
   UserOutlined,
   SettingOutlined,
-  LogoutOutlined
+  LogoutOutlined,
 } from "@ant-design/icons";
-import {
-  Avatar,
-  Dropdown,
-  Menu,
-  ConfigProvider,
-  Space,
-  theme
-} from "antd";
+import { Avatar, Dropdown, Menu, ConfigProvider, Space, theme } from "antd";
 import { SunIcon, MoonIcon } from "@heroicons/react/24/outline";
 import logo from "@/assets/react.svg";
 import { ERole } from "@/utils/enums/ERole";
@@ -58,7 +51,7 @@ const InnerLayout = () => {
             dispatch(resetAuthState());
             window.localStorage.removeItem("accessToken");
             queryClient.clear(); // <- This removes all cached queries
-            navigate('/login')
+            navigate("/login");
           },
         },
       ]}
@@ -70,15 +63,21 @@ const InnerLayout = () => {
       theme={{
         algorithm: darkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
         token: {
-          colorPrimary: darkMode ? "#6366F1" : "#FBBF24",
-          borderRadius: 8,
+          fontFamily: "'Courier New', monospace",
+          colorPrimary: darkMode ? "#818CF8" : "#3b5bdb",
+          colorPrimaryBg: darkMode ? "#1A1A1A" : "#FCFCFC",
+          colorText: darkMode ? "#E5E7EB" : "#3b5bdb",
+          colorBorder: darkMode ? "#818CF8" : "#3b5bdb",
+          borderRadius: 0,
+          boxShadow: "3px 3px 0 #3b5bdb40",
           fontSize: 15,
         },
       }}
     >
       <div
-        className={`transition-colors duration-500 ${darkMode ? "bg-[#0f0f0f] text-white" : "bg-gray-50 text-black"
-          }`}
+        className={`transition-colors duration-500 ${
+          darkMode ? "bg-[#0f0f0f] text-white" : "bg-gray-50 text-black"
+        }`}
       >
         <ProLayout
           title={layoutTitle}
@@ -116,17 +115,19 @@ const InnerLayout = () => {
               {/* Toggle Dark Mode */}
               <button
                 onClick={() => setDarkMode(!darkMode)}
-                className={`relative flex items-center w-14 h-7 rounded-full transition-all duration-300 ${darkMode ? "bg-indigo-500" : "bg-amber-400"
-                  }`}
+                className={`relative flex items-center w-14 h-7 rounded-full transition-all duration-300 ${
+                  darkMode ? "bg-indigo-500" : "bg-[#3b5bdb]"
+                }`}
               >
                 <span
-                  className={`absolute left-1 top-1 w-5 h-5 rounded-full bg-white shadow-md transform transition-all duration-300 ${darkMode ? "translate-x-7" : "translate-x-0"
-                    }`}
+                  className={`absolute left-1 top-1 w-5 h-5 rounded-full bg-white shadow-md transform transition-all duration-300 ${
+                    darkMode ? "translate-x-7" : "translate-x-0"
+                  }`}
                 ></span>
                 <span className="absolute left-1.5 text-yellow-400">
                   <SunIcon className="w-4 h-4" />
                 </span>
-                <span className="absolute right-1.5 text-[#6366F1]">
+                <span className="absolute right-1.5 text-black">
                   <MoonIcon className="w-4 h-4" />
                 </span>
               </button>
@@ -137,7 +138,7 @@ const InnerLayout = () => {
                   size={40}
                   style={{
                     cursor: "pointer",
-                    backgroundColor: darkMode ? "#6366F1" : "#FBBF24",
+                    backgroundColor: darkMode ? "#6366F1" : "#3b5bdb",
                   }}
                   icon={<UserOutlined />}
                 />

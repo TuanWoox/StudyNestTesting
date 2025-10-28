@@ -29,6 +29,10 @@ const QuizDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
 
+  // Theme constants
+  const borderColor = `2px solid ${token.colorPrimary}E0`;
+  const shadowColor = `4px 4px 0px ${token.colorPrimary}55`;
+
   const [isDirty, setIsDirty] = useState(false);
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);
@@ -102,8 +106,8 @@ const QuizDetailPage: React.FC = () => {
           width: "100%",
           overflow: "auto",
           margin: "0 auto",
-          boxShadow: token.boxShadowSecondary,
-          borderRadius: isMobile ? token.borderRadiusLG : token.borderRadiusLG,
+          border: borderColor,
+          borderRadius: 0,
         }}
         bodyStyle={{
           padding: isMobile ? 16 : 32,
@@ -124,8 +128,7 @@ const QuizDetailPage: React.FC = () => {
           width: "100%",
           overflow: "auto",
           margin: "0 auto",
-          boxShadow: token.boxShadowSecondary,
-          borderRadius: isMobile ? token.borderRadiusLG : token.borderRadiusLG,
+          borderRadius: 0,
         }}
         bodyStyle={{
           padding: isMobile ? 16 : 32,
@@ -146,7 +149,10 @@ const QuizDetailPage: React.FC = () => {
             />
           }
           description={
-            <Text type="danger" style={{ fontSize: isMobile ? 13 : 14 }}>
+            <Text
+              type="danger"
+              style={{ fontSize: isMobile ? 13 : 14, fontFamily: "monospace" }}
+            >
               {error?.message || "Failed to load quiz details"}
             </Text>
           }
@@ -155,6 +161,11 @@ const QuizDetailPage: React.FC = () => {
             onClick={handleReturnQuiz}
             type="primary"
             size={isMobile ? "middle" : "large"}
+            style={{
+              borderRadius: 0,
+              fontFamily: "monospace",
+              fontWeight: 600,
+            }}
           >
             Back to Quizzes
           </Button>
@@ -189,8 +200,6 @@ const QuizDetailPage: React.FC = () => {
           transform: isHeaderCollapsed ? `translateY(-100%)` : "translateY(0)",
           transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
           backgroundColor: token.colorBgContainer,
-          boxShadow: token.boxShadow,
-          borderRadius: `0 0 ${token.borderRadiusLG}px ${token.borderRadiusLG}px`,
           willChange: "transform",
         }}
       >
@@ -209,7 +218,10 @@ const QuizDetailPage: React.FC = () => {
           <Card
             style={{
               marginTop: isMobile ? token.marginSM : token.margin,
-              borderRadius: token.borderRadius,
+              border: borderColor,
+              borderRadius: 0,
+              boxShadow: shadowColor,
+              backgroundColor: token.colorBgContainer,
             }}
             bodyStyle={{
               padding: isMobile ? token.paddingSM : token.padding,
@@ -222,8 +234,9 @@ const QuizDetailPage: React.FC = () => {
                   style={{
                     fontSize: isMobile ? 13 : 14,
                     padding: isMobile ? "4px 10px" : "5px 12px",
-                    borderRadius: token.borderRadiusSM,
+                    borderRadius: 0,
                     fontWeight: 500,
+                    fontFamily: "monospace",
                   }}
                 >
                   {(quiz?.questions ?? []).length} Question
@@ -234,6 +247,7 @@ const QuizDetailPage: React.FC = () => {
                 type="secondary"
                 style={{
                   fontSize: isMobile ? 12 : 14,
+                  fontFamily: "monospace",
                 }}
               >
                 Created {quiz.dateCreated && formatDMY(quiz.dateCreated)}
@@ -249,8 +263,8 @@ const QuizDetailPage: React.FC = () => {
           style={{
             width: "100%",
             margin: "0 auto",
-            boxShadow: token.boxShadowSecondary,
             borderRadius: 0,
+            backgroundColor: token.colorBgContainer,
           }}
           bodyStyle={{
             padding: isMobile ? token.paddingSM : token.paddingLG,
@@ -272,7 +286,9 @@ const QuizDetailPage: React.FC = () => {
             <WarningOutlined
               style={{ color: token.colorWarning, fontSize: 20 }}
             />
-            <span style={{ fontWeight: 600, fontSize: 16 }}>
+            <span
+              style={{ fontWeight: 600, fontSize: 16, fontFamily: "monospace" }}
+            >
               Unsaved Changes
             </span>
           </Space>
@@ -285,24 +301,40 @@ const QuizDetailPage: React.FC = () => {
         okButtonProps={{
           danger: true,
           size: "large",
-          style: { fontWeight: 500 },
+          style: { fontWeight: 500, fontFamily: "monospace", borderRadius: 0 },
         }}
         cancelButtonProps={{
           size: "large",
+          style: { fontFamily: "monospace", borderRadius: 0 },
         }}
         centered
         width={isMobile ? 340 : 450}
+        styles={{
+          content: {
+            background: token.colorBgElevated,
+            border: borderColor,
+            boxShadow: shadowColor,
+            fontFamily: "monospace",
+          },
+          mask: {
+            backgroundColor: "rgba(0, 0, 0, 0.6)",
+          },
+        }}
       >
         <div style={{ paddingTop: token.paddingSM }}>
           <p
             style={{
               fontSize: isMobile ? 14 : 15,
               marginBottom: token.marginSM,
+              fontFamily: "monospace",
             }}
           >
             You have unsaved changes that will be lost.
           </p>
-          <Text type="secondary" style={{ fontSize: isMobile ? 14 : 15 }}>
+          <Text
+            type="secondary"
+            style={{ fontSize: isMobile ? 14 : 15, fontFamily: "monospace" }}
+          >
             Do you want to discard your changes or continue editing?
           </Text>
         </div>

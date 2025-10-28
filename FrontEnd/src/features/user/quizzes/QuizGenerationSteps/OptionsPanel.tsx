@@ -10,6 +10,7 @@ import {
   Slider,
   Divider,
   Select,
+  theme,
 } from "antd";
 import { GlobalOutlined, BulbOutlined } from "@ant-design/icons";
 import QuestionTypeCard from "../components/QuestionTypeCard";
@@ -17,34 +18,11 @@ import { SettingsSection } from "../components";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
+const { useToken } = theme;
 
 // --- Constants and Configuration ---
 const MAX_QUESTIONS = 20;
 const DEFAULT_TOTAL = 10;
-
-const QUESTION_TYPE_CONFIG = [
-  {
-    key: "mcq",
-    title: "Multiple Choice",
-    color: "#1890ff",
-    bg: "#f0f7ff",
-    border: "#e6f4ff",
-  },
-  {
-    key: "msq",
-    title: "Multi-Select",
-    color: "#722ed1",
-    bg: "#f9f0ff",
-    border: "#f9f0ff",
-  },
-  {
-    key: "tf",
-    title: "True/False",
-    color: "#52c41a",
-    bg: "#f6ffed",
-    border: "#f6ffed",
-  },
-];
 
 const LANGUAGES = [
   { value: "English", label: "🇬🇧 English" },
@@ -54,28 +32,60 @@ const LANGUAGES = [
   { value: "Japanese", label: "🇯🇵 Japanese" },
 ];
 
-const DIFFICULTY_OPTIONS = [
-  {
-    value: "easy",
-    label: "Easy",
-    desc: "Basic concepts & definitions",
-    color: "#52c41a",
-  },
-  {
-    value: "medium",
-    label: "Medium",
-    desc: "Application & analysis",
-    color: "#faad14",
-  },
-  {
-    value: "hard",
-    label: "Hard",
-    desc: "Complex problem solving",
-    color: "#f5222d",
-  },
-];
-
 export function OptionsPanel({ initial, setCreateQuiz }) {
+  const { token } = useToken();
+
+  // Theme constants
+  const borderColor = `2px solid ${token.colorPrimary}E0`;
+  const shadowColor = `4px 4px 0px ${token.colorPrimary}55`;
+
+  // Question type configuration with token colors
+  const QUESTION_TYPE_CONFIG = [
+    {
+      key: "mcq",
+      title: "Multiple Choice",
+      color: token.colorPrimary,
+      bg: token.colorPrimaryBg,
+      border: token.colorPrimaryBorder,
+    },
+    {
+      key: "msq",
+      title: "Multi-Select",
+      color: token.colorInfo,
+      bg: token.colorInfoBg,
+      border: token.colorInfoBorder,
+    },
+    {
+      key: "tf",
+      title: "True/False",
+      color: token.colorSuccess,
+      bg: token.colorSuccessBg,
+      border: token.colorSuccessBorder,
+    },
+  ];
+
+  // Difficulty options with token colors
+  const DIFFICULTY_OPTIONS = [
+    {
+      value: "easy",
+      label: "Easy",
+      desc: "Basic concepts & definitions",
+      color: token.colorSuccess,
+    },
+    {
+      value: "medium",
+      label: "Medium",
+      desc: "Application & analysis",
+      color: token.colorWarning,
+    },
+    {
+      value: "hard",
+      label: "Hard",
+      desc: "Complex problem solving",
+      color: token.colorError,
+    },
+  ];
+
   const initialTotal = initial.count_Mcq + initial.count_Msq + initial.count_Tf;
   const [totalQuestions, setTotalQuestions] = useState(
     initialTotal || DEFAULT_TOTAL
@@ -138,7 +148,7 @@ export function OptionsPanel({ initial, setCreateQuiz }) {
 
   return (
     <div style={{ margin: "0 auto" }}>
-      <Card style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+      <Card>
         <Space direction="vertical" size={28} style={{ width: "100%" }}>
           <SettingsSection
             title="Number of Questions"
@@ -150,7 +160,7 @@ export function OptionsPanel({ initial, setCreateQuiz }) {
                 value={totalQuestions}
                 onChange={setTotalQuestions}
                 size="large"
-                style={{ width: 100, fontSize: 20 }}
+                style={{ width: 100, fontSize: 20, fontFamily: "monospace" }}
               />
             }
           >
@@ -164,10 +174,19 @@ export function OptionsPanel({ initial, setCreateQuiz }) {
           </SettingsSection>
 
           <div>
-            <Title level={4}>Question Types</Title>
+            <Title
+              level={4}
+              style={{ fontFamily: "monospace", fontWeight: 700 }}
+            >
+              Question Types
+            </Title>
             <Text
               type="secondary"
-              style={{ display: "block", marginBottom: 16 }}
+              style={{
+                display: "block",
+                marginBottom: 16,
+                fontFamily: "monospace",
+              }}
             >
               Adjust the mix of question formats
             </Text>
@@ -198,7 +217,7 @@ export function OptionsPanel({ initial, setCreateQuiz }) {
           <SettingsSection icon={<GlobalOutlined />} title="Language">
             <Select
               size="large"
-              style={{ width: "100%" }}
+              style={{ width: "100%", fontFamily: "monospace" }}
               value={initial.language}
               onChange={(value) => handleStateChange("language", value)}
             >
@@ -224,20 +243,27 @@ export function OptionsPanel({ initial, setCreateQuiz }) {
                     hoverable
                     style={{
                       cursor: "pointer",
-                      borderRadius: 8,
+                      borderRadius: 0,
                       border:
                         initial.difficulty === opt.value
-                          ? `2px solid ${opt.color}`
-                          : "1px solid #d9d9d9",
+                          ? borderColor
+                          : `1px solid ${token.colorBorder}`,
+                      boxShadow:
+                        initial.difficulty === opt.value ? shadowColor : "none",
                     }}
                     onClick={() => handleStateChange("difficulty", opt.value)}
                   >
                     <Radio value={opt.value} style={{ width: "100%" }}>
                       <Space>
                         <div>
-                          <Text strong>{opt.label}</Text>
+                          <Text strong style={{ fontFamily: "monospace" }}>
+                            {opt.label}
+                          </Text>
                           <div>
-                            <Text type="secondary" style={{ fontSize: 13 }}>
+                            <Text
+                              type="secondary"
+                              style={{ fontSize: 13, fontFamily: "monospace" }}
+                            >
                               {opt.desc}
                             </Text>
                           </div>

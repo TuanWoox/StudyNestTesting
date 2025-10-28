@@ -10,6 +10,7 @@ import {
   Spin,
   Typography,
   Divider,
+  theme,
 } from "antd";
 import { SearchOutlined, FileOutlined } from "@ant-design/icons";
 import type { FormInstance } from "antd";
@@ -19,6 +20,7 @@ import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
 import { HeaderStep } from "../components";
 
 const { Title, Text } = Typography;
+const { useToken } = theme;
 
 interface SourcePanelProps {
   selectedNoteId?: string;
@@ -35,6 +37,12 @@ export const SourcePanel: React.FC<SourcePanelProps> = ({
   setQuery,
   setSelectedNoteId,
 }) => {
+  const { token } = useToken();
+
+  // Theme constants
+  const borderColor = `2px solid ${token.colorPrimary}E0`;
+  const shadowColor = `4px 4px 0px ${token.colorPrimary}55`;
+
   // Fetch notes from API
   const { data: notesData, isLoading } = useGetAllNote();
 
@@ -78,13 +86,22 @@ export const SourcePanel: React.FC<SourcePanelProps> = ({
 
   return (
     <div style={{ margin: "0 auto" }}>
-      <Card style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+      <Card>
         <Space direction="vertical" size={28} style={{ width: "100%" }}>
           <div>
-            <Title level={4}>Search Notes</Title>
+            <Title
+              level={4}
+              style={{ fontFamily: "monospace", fontWeight: 700 }}
+            >
+              Search Notes
+            </Title>
             <Text
               type="secondary"
-              style={{ display: "block", marginBottom: 16 }}
+              style={{
+                display: "block",
+                marginBottom: 16,
+                fontFamily: "monospace",
+              }}
             >
               Find notes by title or tag
             </Text>
@@ -95,7 +112,7 @@ export const SourcePanel: React.FC<SourcePanelProps> = ({
               prefix={<SearchOutlined />}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              style={{ width: "100%" }}
+              style={{ width: "100%", fontFamily: "monospace" }}
             />
           </div>
 
@@ -103,14 +120,24 @@ export const SourcePanel: React.FC<SourcePanelProps> = ({
 
           {/* Notes Grid Section */}
           <div>
-            <Title level={4}>Available Notes</Title>
+            <Title
+              level={4}
+              style={{ fontFamily: "monospace", fontWeight: 700 }}
+            >
+              Available Notes
+            </Title>
             <Text
               type="secondary"
-              style={{ display: "block", marginBottom: 16 }}
+              style={{
+                display: "block",
+                marginBottom: 16,
+                fontFamily: "monospace",
+              }}
             >
               {filteredNotes.length > 0
-                ? `${filteredNotes.length} note${filteredNotes.length !== 1 ? "s" : ""
-                } found`
+                ? `${filteredNotes.length} note${
+                    filteredNotes.length !== 1 ? "s" : ""
+                  } found`
                 : "No notes available"}
             </Text>
 
@@ -135,7 +162,7 @@ export const SourcePanel: React.FC<SourcePanelProps> = ({
                           setSelectedNoteId(note.id);
                           form.setFieldsValue({ noteId: note.id });
                         }}
-                        onDelete={() => { }}
+                        onDelete={() => {}}
                         isDeleteAvailable={false}
                       />
                     </Col>
