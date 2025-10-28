@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Typography, Flex, Button, Space, Input, message } from "antd";
+import { Typography, Flex, Button, Space, Input, message, theme } from "antd";
 import {
   SaveOutlined,
   CloseOutlined,
@@ -13,6 +13,7 @@ import useUpdateQuiz from "@/hooks/quizHook/useUpdateQuiz";
 import { validateQuizTitle } from "../utils/validation";
 
 const { Title } = Typography;
+const { useToken } = theme;
 
 interface QuizHeaderProps {
   quiz: any;
@@ -27,6 +28,12 @@ const QuizHeader: React.FC<QuizHeaderProps> = ({
   showConfirmDiscard,
   onTakeQuiz,
 }) => {
+  const { token } = useToken();
+
+  // Theme constants
+  const borderColor = `2px solid ${token.colorPrimary}E0`;
+  const shadowColor = `4px 4px 0px ${token.colorPrimary}55`;
+
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -106,6 +113,8 @@ const QuizHeader: React.FC<QuizHeaderProps> = ({
                 style={{
                   width: isMobile ? 200 : 400,
                   minWidth: 150,
+                  fontFamily: "monospace",
+                  borderRadius: 0,
                 }}
                 size="large"
                 autoFocus
@@ -118,6 +127,11 @@ const QuizHeader: React.FC<QuizHeaderProps> = ({
                 onClick={handleSaveTitle}
                 size="large"
                 loading={isUpdatingQuiz}
+                style={{
+                  fontFamily: "monospace",
+                  fontWeight: 600,
+                  borderRadius: 0,
+                }}
               >
                 {!isMobile && "Save"}
               </Button>
@@ -126,6 +140,11 @@ const QuizHeader: React.FC<QuizHeaderProps> = ({
                 onClick={handleCancelTitleEdit}
                 size="large"
                 disabled={isUpdatingQuiz}
+                style={{
+                  fontFamily: "monospace",
+                  fontWeight: 600,
+                  borderRadius: 0,
+                }}
               >
                 {!isMobile && "Cancel"}
               </Button>
@@ -140,6 +159,8 @@ const QuizHeader: React.FC<QuizHeaderProps> = ({
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   maxWidth: isMobile ? "200px" : "500px",
+                  fontFamily: "monospace",
+                  fontWeight: 700,
                 }}
                 title={quiz.title}
               >
@@ -149,7 +170,12 @@ const QuizHeader: React.FC<QuizHeaderProps> = ({
                 icon={<EditOutlined />}
                 onClick={handleEditTitle}
                 type="text"
-                style={{ color: "#1890ff" }}
+                style={{
+                  color: token.colorPrimary,
+                  fontFamily: "monospace",
+                  fontWeight: 600,
+                  borderRadius: 0,
+                }}
                 size={isMobile ? "small" : "middle"}
               >
                 {!isMobile && "Edit"}
@@ -164,7 +190,12 @@ const QuizHeader: React.FC<QuizHeaderProps> = ({
             icon={<FormOutlined />}
             onClick={onTakeQuiz}
             size={isMobile ? "middle" : "large"}
-            style={{ whiteSpace: "nowrap" }}
+            style={{
+              whiteSpace: "nowrap",
+              fontFamily: "monospace",
+              fontWeight: 600,
+              borderRadius: 0,
+            }}
           >
             {!isMobile && "Take Quiz"}
           </Button>
@@ -172,7 +203,12 @@ const QuizHeader: React.FC<QuizHeaderProps> = ({
             icon={<ArrowLeftOutlined />}
             onClick={handleReturnQuiz}
             size={isMobile ? "middle" : "large"}
-            style={{ whiteSpace: "nowrap" }}
+            style={{
+              whiteSpace: "nowrap",
+              fontFamily: "monospace",
+              fontWeight: 600,
+              borderRadius: 0,
+            }}
           >
             {!isMobile && "Back"}
           </Button>

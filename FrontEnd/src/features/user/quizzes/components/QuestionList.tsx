@@ -33,6 +33,11 @@ const QuestionList: React.FC<QuestionListProps> = ({
   showConfirmDiscard,
 }) => {
   const { token } = useToken();
+
+  // Theme constants
+  const borderColor = `2px solid ${token.colorPrimary}E0`;
+  const shadowColor = `4px 4px 0px ${token.colorPrimary}55`;
+
   const [editingQuestionId, setEditingQuestionId] = useState<string | null>(
     null
   );
@@ -128,49 +133,6 @@ const QuestionList: React.FC<QuestionListProps> = ({
     setIsAllExpanded(keysArray.length === questions.length);
   };
 
-  // Add custom styles for animations
-  useEffect(() => {
-    const style = document.createElement("style");
-    style.innerHTML = `
-      @keyframes slideIn {
-        from {
-          opacity: 0;
-          transform: translateY(20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-      
-      .question-item-card {
-        animation: slideIn 0.3s ease-out;
-      }
-      
-      .question-item-card:hover {
-        box-shadow: 0 4px 16px rgba(0,0,0,0.1) !important;
-        transform: translateY(-2px);
-      }
-      
-      .question-action-btn:hover {
-        background-color: rgba(24, 144, 255, 0.08) !important;
-      }
-      
-      .add-question-btn {
-        transition: all 0.3s ease;
-      }
-      
-      .add-question-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(24, 144, 255, 0.4) !important;
-      }
-    `;
-    document.head.appendChild(style);
-    return () => {
-      document.head.removeChild(style);
-    };
-  }, []);
-
   return (
     <>
       {/* Header Section */}
@@ -184,10 +146,16 @@ const QuestionList: React.FC<QuestionListProps> = ({
         gap={token.margin}
       >
         <Space direction="vertical" size={token.marginXXS}>
-          <Title level={4} style={{ margin: 0 }}>
+          <Title
+            level={4}
+            style={{ margin: 0, fontFamily: "monospace", fontWeight: 700 }}
+          >
             Questions
           </Title>
-          <Text type="secondary" style={{ fontSize: isMobile ? 12 : 14 }}>
+          <Text
+            type="secondary"
+            style={{ fontSize: isMobile ? 12 : 14, fontFamily: "monospace" }}
+          >
             {questions.length === 0
               ? "No questions yet"
               : `${questions.length} question${
@@ -201,8 +169,12 @@ const QuestionList: React.FC<QuestionListProps> = ({
               icon={isAllExpanded ? <UpOutlined /> : <DownOutlined />}
               onClick={handleToggleAllQuestions}
               style={{
-                borderRadius: token.borderRadiusSM,
-                fontWeight: 500,
+                borderRadius: 0,
+                height: isMobile ? 36 : 44,
+                paddingLeft: isMobile ? token.padding : token.paddingLG,
+                paddingRight: isMobile ? token.padding : token.paddingLG,
+                fontWeight: 600,
+                fontFamily: "monospace",
               }}
               size={isMobile ? "middle" : "large"}
             >
@@ -215,13 +187,13 @@ const QuestionList: React.FC<QuestionListProps> = ({
             onClick={handleStartAddQuestion}
             size={isMobile ? "middle" : "large"}
             style={{
-              borderRadius: token.borderRadiusSM,
+              borderRadius: 0,
               height: isMobile ? 36 : 44,
               paddingLeft: isMobile ? token.padding : token.paddingLG,
               paddingRight: isMobile ? token.padding : token.paddingLG,
-              fontWeight: 500,
+              fontWeight: 600,
+              fontFamily: "monospace",
             }}
-            className="add-question-btn"
           >
             {isMobile ? "Add" : "Add Question"}
           </Button>
@@ -238,14 +210,25 @@ const QuestionList: React.FC<QuestionListProps> = ({
       >
         {/* Add Question Form */}
         {isAddingQuestion && (
-          <div style={{ marginBottom: token.marginLG }}>
-            <QuestionForm
-              quizId={quizId}
-              onSave={handleCreateQuestion}
-              onCancel={handleCancelAddQuestion}
-              isLoading={isCreatingQuestion}
-              onDirtyChange={onDirtyChange}
-            />
+          <div style={{ paddingRight: 4 }}>
+            <div
+              style={{
+                marginBottom: token.margin,
+                backgroundColor: token.colorBgContainer,
+                borderRadius: 0,
+                border: borderColor,
+                boxShadow: shadowColor,
+                overflow: "hidden",
+              }}
+            >
+              <QuestionForm
+                quizId={quizId}
+                onSave={handleCreateQuestion}
+                onCancel={handleCancelAddQuestion}
+                isLoading={isCreatingQuestion}
+                onDirtyChange={onDirtyChange}
+              />
+            </div>
           </div>
         )}
 
@@ -259,6 +242,7 @@ const QuestionList: React.FC<QuestionListProps> = ({
               backgroundColor: "transparent",
               border: "none",
               alignItems: "center",
+              paddingRight: "4px",
             }}
             expandIconPosition="end"
             items={questions.map((question, index) => {
@@ -273,20 +257,15 @@ const QuestionList: React.FC<QuestionListProps> = ({
                         ? `${token.marginXXS}px 0`
                         : `${token.marginXS}px 0`,
                       fontSize: isMobile ? 14 : 15,
-                      fontWeight: 500,
+                      fontWeight: 600,
+                      fontFamily: "monospace",
                     }}
                   >
                     Question {index + 1}: {question.name}
                   </div>
                 ),
                 children: isEditing ? (
-                  <div
-                    style={{
-                      padding: isMobile
-                        ? `${token.marginSM}px 0`
-                        : `${token.margin}px 0`,
-                    }}
-                  >
+                  <div>
                     <QuestionForm
                       question={question}
                       quizId={quizId}
@@ -310,8 +289,9 @@ const QuestionList: React.FC<QuestionListProps> = ({
                 style: {
                   marginBottom: token.margin,
                   backgroundColor: token.colorBgContainer,
-                  borderRadius: token.borderRadiusLG,
-                  border: `1px solid ${token.colorBorder}`,
+                  borderRadius: 0,
+                  border: borderColor,
+                  boxShadow: shadowColor,
                   overflow: "hidden",
                 },
               };
@@ -327,10 +307,20 @@ const QuestionList: React.FC<QuestionListProps> = ({
               }
               description={
                 <Space direction="vertical" size={token.marginXS}>
-                  <Text strong style={{ fontSize: 16, color: token.colorText }}>
+                  <Text
+                    strong
+                    style={{
+                      fontSize: 16,
+                      color: token.colorText,
+                      fontFamily: "monospace",
+                    }}
+                  >
                     No Questions Yet
                   </Text>
-                  <Text type="secondary" style={{ fontSize: 14 }}>
+                  <Text
+                    type="secondary"
+                    style={{ fontSize: 14, fontFamily: "monospace" }}
+                  >
                     Click "Add Question" to create your first question
                   </Text>
                 </Space>
@@ -338,8 +328,9 @@ const QuestionList: React.FC<QuestionListProps> = ({
               style={{
                 padding: "60px 20px",
                 backgroundColor: token.colorBgLayout,
-                borderRadius: token.borderRadiusLG,
-                border: `2px dashed ${token.colorBorder}`,
+                borderRadius: 0,
+                border: borderColor,
+                boxShadow: shadowColor,
               }}
             >
               <Button
@@ -348,10 +339,12 @@ const QuestionList: React.FC<QuestionListProps> = ({
                 onClick={handleStartAddQuestion}
                 size="large"
                 style={{
-                  borderRadius: token.borderRadiusSM,
+                  borderRadius: 0,
                   height: 44,
                   paddingLeft: 32,
                   paddingRight: 32,
+                  fontFamily: "monospace",
+                  fontWeight: 600,
                 }}
               >
                 Add Your First Question

@@ -3,16 +3,9 @@ import { useNavigate, Outlet, Navigate } from "react-router-dom";
 import {
   UserOutlined,
   SettingOutlined,
-  LogoutOutlined
+  LogoutOutlined,
 } from "@ant-design/icons";
-import {
-  Avatar,
-  Dropdown,
-  Menu,
-  ConfigProvider,
-  Space,
-  theme
-} from "antd";
+import { Avatar, Dropdown, Menu, ConfigProvider, Space, theme } from "antd";
 import { SunIcon, MoonIcon } from "@heroicons/react/24/outline";
 import logo from "@/assets/react.svg";
 import { ERole } from "@/utils/enums/ERole";
@@ -58,7 +51,7 @@ const InnerLayout = () => {
             dispatch(resetAuthState());
             window.localStorage.removeItem("accessToken");
             queryClient.clear(); // <- This removes all cached queries
-            navigate('/login')
+            navigate("/login");
           },
         },
       ]}
@@ -75,6 +68,7 @@ const InnerLayout = () => {
           colorPrimaryBg: darkMode ? "#1A1A1A" : "#FCFCFC",
           colorText: darkMode ? "#E5E7EB" : "#3b5bdb",
           colorBorder: darkMode ? "#818CF8" : "#3b5bdb",
+          colorBgLayout: darkMode ? "#1A1A1A" : "#FCFCFC",
           borderRadius: 0,
           boxShadow: "3px 3px 0 #3b5bdb40",
           fontSize: 15,

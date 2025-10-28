@@ -10,6 +10,7 @@ import {
   Card,
   message,
   Typography,
+  theme,
 } from "antd";
 import { SaveOutlined, CloseOutlined } from "@ant-design/icons";
 import type { Question, Choice } from "@/types/quiz/quiz";
@@ -23,6 +24,7 @@ import {
 const { TextArea } = Input;
 const { Option } = Select;
 const { Text } = Typography;
+const { useToken } = theme;
 
 interface QuestionFormProps {
   question?: Question; // If editing existing question
@@ -41,6 +43,12 @@ export const QuestionForm: React.FC<QuestionFormProps> = ({
   isLoading = false,
   onDirtyChange,
 }) => {
+  const { token } = useToken();
+
+  // Theme constants
+  const borderColor = `2px solid ${token.colorPrimary}E0`;
+  const shadowColor = `4px 4px 0px ${token.colorPrimary}55`;
+
   const [form] = Form.useForm();
   const [questionType, setQuestionType] = useState<"MCQ" | "MSQ" | "TF">(
     question?.type || "MCQ"
@@ -169,12 +177,9 @@ export const QuestionForm: React.FC<QuestionFormProps> = ({
   return (
     <Card
       style={{
-        backgroundColor: "#f0f5ff",
-        border: "2px dashed #1890ff",
-        borderRadius: 12,
-        marginBottom: 16,
+        border: "none",
       }}
-      bodyStyle={{ padding: 20 }}
+      bodyStyle={{ padding: "12px" }}
     >
       <Form
         form={form}
@@ -188,7 +193,11 @@ export const QuestionForm: React.FC<QuestionFormProps> = ({
         {/* Question Name */}
         <Form.Item
           name="name"
-          label={<Text strong>Question Text</Text>}
+          label={
+            <Text strong style={{ fontFamily: "monospace" }}>
+              Question Text
+            </Text>
+          }
           rules={[
             { required: true, message: "Please enter question text" },
             {
@@ -203,32 +212,42 @@ export const QuestionForm: React.FC<QuestionFormProps> = ({
             maxLength={300}
             showCount
             disabled={isLoading}
+            style={{
+              fontFamily: "monospace",
+            }}
           />
         </Form.Item>
 
         {/* Question Type */}
-        <Form.Item name="type" label={<Text strong>Question Type</Text>}>
+        <Form.Item
+          name="type"
+          label={
+            <Text strong style={{ fontFamily: "monospace" }}>
+              Question Type
+            </Text>
+          }
+        >
           <Select
             value={questionType}
             onChange={handleTypeChange}
             disabled={isLoading}
             size="large"
+            style={{
+              fontFamily: "monospace",
+            }}
           >
             <Option value="MCQ">
               <Space>
-                <span>📝</span>
                 <span>Multiple Choice (MCQ)</span>
               </Space>
             </Option>
             <Option value="MSQ">
               <Space>
-                <span>☑️</span>
                 <span>Multi-Select (MSQ)</span>
               </Space>
             </Option>
             <Option value="TF">
               <Space>
-                <span>✓✗</span>
                 <span>True/False (TF)</span>
               </Space>
             </Option>
@@ -248,12 +267,19 @@ export const QuestionForm: React.FC<QuestionFormProps> = ({
         {/* Explanation */}
         <Form.Item
           name="explanation"
-          label={<Text strong>Explanation (Optional)</Text>}
+          label={
+            <Text strong style={{ fontFamily: "monospace" }}>
+              Explanation (Optional)
+            </Text>
+          }
         >
           <TextArea
             placeholder="Provide an explanation for the correct answer (maximum 200 words)..."
             autoSize={{ minRows: 2, maxRows: 4 }}
             disabled={isLoading}
+            style={{
+              fontFamily: "monospace",
+            }}
           />
         </Form.Item>
 
@@ -266,6 +292,11 @@ export const QuestionForm: React.FC<QuestionFormProps> = ({
               onClick={handleSubmit}
               loading={isLoading}
               size="large"
+              style={{
+                fontFamily: "monospace",
+                fontWeight: 600,
+                borderRadius: 0,
+              }}
             >
               {question ? "Update Question" : "Add Question"}
             </Button>
@@ -274,10 +305,18 @@ export const QuestionForm: React.FC<QuestionFormProps> = ({
               onClick={onCancel}
               disabled={isLoading}
               size="large"
+              style={{
+                fontFamily: "monospace",
+                fontWeight: 600,
+                borderRadius: 0,
+              }}
             >
               Cancel
             </Button>
-            <Text type="secondary" style={{ fontSize: 12, marginLeft: 8 }}>
+            <Text
+              type="secondary"
+              style={{ fontSize: 12, marginLeft: 8, fontFamily: "monospace" }}
+            >
               Press <kbd>Ctrl+S</kbd> to save • <kbd>Esc</kbd> to cancel
             </Text>
           </Space>

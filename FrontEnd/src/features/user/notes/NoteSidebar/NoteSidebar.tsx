@@ -8,6 +8,7 @@ import {
     Dropdown,
     Menu,
     Empty,
+    Typography,
     theme
 } from 'antd';
 import {
@@ -40,6 +41,8 @@ interface NoteSidebarProps {
 }
 
 type ViewMode = 'all' | 'folder' | 'tag';
+
+const { Title, Text } = Typography;
 
 const NoteSidebar: React.FC<NoteSidebarProps> = ({
     // darkMode,
@@ -247,10 +250,11 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
 
     return (
         <div
-            className="w-full shrink-0 h-full overflow-y-auto p-4 border-r"
+            className="w-full shrink-0 h-full overflow-y-auto px-6 pt-4 pb-5 border-r"
             style={{
                 fontFamily: '"Courier New", monospace',
-                backgroundColor: darkMode ? '#0f0f0f' : '#FFFEFA',
+                // backgroundColor: darkMode ? '#0f0f0f' : '#FFFEFA',
+                backgroundColor: token.colorBgLayout,
                 borderColor: darkMode ? '#212121' : borderColor,
                 scrollbarWidth: "none"
             }}
@@ -262,12 +266,27 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
                     color: `${headerColor}`
                 }}>
                 <div>
-                    <h1 className="text-2xl font-bold leading-none">
+                    <Title
+                        level={2}
+                        style={{
+                            margin: 0,
+                            fontWeight: 700,
+                            fontFamily: "monospace",
+                        }}
+                    >
                         Note Management
-                    </h1>
-                    <p className="text-sm mt-1">
+                    </Title>
+                    <Text
+                        type="secondary"
+                        style={{
+                            fontSize: 15,
+                            marginTop: 4,
+                            display: "block",
+                            fontFamily: "monospace",
+                        }}
+                    >
                         Manage your notes
-                    </p>
+                    </Text>
                 </div>
                 <Button
                     type="default"

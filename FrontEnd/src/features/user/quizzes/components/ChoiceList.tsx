@@ -1,9 +1,10 @@
 import React from "react";
-import { List, Space, Typography } from "antd";
+import { List, Space, Typography, theme } from "antd";
 import { CheckCircleFilled, CloseCircleOutlined } from "@ant-design/icons";
 import type { Choice } from "@/types/quiz/quiz";
 
 const { Text } = Typography;
+const { useToken } = theme;
 
 interface ChoiceListProps {
   type: "MCQ" | "MSQ" | "TF";
@@ -11,25 +12,23 @@ interface ChoiceListProps {
 }
 
 export const ChoiceList: React.FC<ChoiceListProps> = ({ type, choices }) => {
+  const { token } = useToken();
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
+  // Theme constants
+  const borderColor = `2px solid ${token.colorPrimary}E0`;
+  const shadowColor = `4px 4px 0px ${token.colorPrimary}55`;
+
   const getChoiceStyles = (isCorrect: boolean) => {
-    if (type === "MCQ" || type === "TF") {
-      return {
-        backgroundColor: isCorrect ? "#f6ffed" : "#fafafa",
-        borderLeft: isCorrect ? "4px solid #52c41a" : "4px solid #f0f0f0",
-        iconColor: "#52c41a",
-        hoverBg: isCorrect ? "#e6f7e0" : "#f5f5f5",
-      };
-    } else {
-      // MSQ
-      return {
-        backgroundColor: isCorrect ? "#f0f5ff" : "#fafafa",
-        borderLeft: isCorrect ? "4px solid #722ed1" : "4px solid #f0f0f0",
-        iconColor: "#722ed1",
-        hoverBg: isCorrect ? "#e6f0ff" : "#f5f5f5",
-      };
-    }
+    // Use consistent success colors for all correct answers regardless of type
+    return {
+      backgroundColor: isCorrect ? token.colorSuccessBg : token.colorFillAlter,
+      borderLeft: isCorrect
+        ? `4px solid ${token.colorSuccess}`
+        : `4px solid ${token.colorFillSecondary}`,
+      iconColor: token.colorSuccess,
+      hoverBg: isCorrect ? token.colorSuccessBgHover : token.colorFillTertiary,
+    };
   };
 
   return (
@@ -39,8 +38,10 @@ export const ChoiceList: React.FC<ChoiceListProps> = ({ type, choices }) => {
         bordered={false}
         dataSource={choices}
         style={{
-          borderRadius: isMobile ? 8 : 10,
+          borderRadius: 0,
           overflow: "hidden",
+          paddingRight: "4px",
+          paddingBottom: "4px",
         }}
         renderItem={(choice, index) => {
           const isCorrect = choice.isCorrect;
@@ -53,21 +54,17 @@ export const ChoiceList: React.FC<ChoiceListProps> = ({ type, choices }) => {
                 backgroundColor: styles.backgroundColor,
                 borderLeft: styles.borderLeft,
                 padding: isMobile ? "12px 14px" : "16px 18px",
-                transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
                 marginBottom:
                   index < choices.length - 1 ? (isMobile ? 8 : 10) : 0,
-                borderRadius: isMobile ? 8 : 10,
-                border: `1px solid ${
-                  isCorrect
-                    ? type === "MSQ"
-                      ? "#d6e4ff"
-                      : "#d9f7be"
-                    : "#f0f0f0"
-                }`,
+                borderRadius: 0,
+                border: isCorrect
+                  ? `2px solid ${token.colorSuccess}`
+                  : `1px solid ${token.colorBorder}`,
                 boxShadow: isCorrect
-                  ? `0 2px 8px ${styles.iconColor}15`
-                  : "0 1px 4px rgba(0,0,0,0.04)",
+                  ? `4px 4px 0px ${token.colorSuccess}55`
+                  : "none",
                 cursor: "default",
+                transition: "all 0.2s ease",
               }}
               className="choice-item"
             >
@@ -91,15 +88,17 @@ export const ChoiceList: React.FC<ChoiceListProps> = ({ type, choices }) => {
                       width: isMobile ? 18 : 20,
                       height: isMobile ? 18 : 20,
                       borderRadius: "50%",
-                      border: "2px solid #d9d9d9",
+                      border: `2px solid ${token.colorTextTertiary}`,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       fontSize: isMobile ? 10 : 11,
-                      color: "#8c8c8c",
+                      color: token.colorTextTertiary,
                       fontWeight: 600,
                       marginTop: 2,
-                      background: "#fff",
+                      background: token.colorBgContainer,
+                      fontFamily: "monospace",
+                      opacity: 0.7,
                     }}
                   >
                     {alphabetLabel}
@@ -111,7 +110,10 @@ export const ChoiceList: React.FC<ChoiceListProps> = ({ type, choices }) => {
                     fontWeight: isCorrect ? 500 : 400,
                     lineHeight: 1.7,
                     flex: 1,
-                    color: isCorrect ? "#262626" : "#595959",
+                    color: isCorrect
+                      ? token.colorText
+                      : token.colorTextSecondary,
+                    fontFamily: "monospace",
                   }}
                 >
                   {choice.text}
@@ -121,15 +123,6 @@ export const ChoiceList: React.FC<ChoiceListProps> = ({ type, choices }) => {
           );
         }}
       />
-
-      <style>
-        {`
-          .choice-item:hover {
-            transform: translateX(4px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
-          }
-        `}
-      </style>
     </div>
   );
 };
