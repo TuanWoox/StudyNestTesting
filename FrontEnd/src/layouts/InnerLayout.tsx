@@ -16,11 +16,13 @@ import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
 import { useReduxDispatch } from "@/hooks/reduxHook/useReduxDispatch";
 import { useQueryClient } from "@tanstack/react-query";
 import RouteTracker from "@/components/RouteTracker/RouteTracker";
+import { useEffect } from "react";
 
 const InnerLayout = () => {
   const navigate = useNavigate();
   const dispatch = useReduxDispatch();
   const darkMode = useReduxSelector(selectDarkMode);
+  const { token } = theme.useToken();
   const role = useReduxSelector(selectRole);
   const queryClient = useQueryClient();
   if (!role) return <Navigate to="/login" replace />;
@@ -58,6 +60,25 @@ const InnerLayout = () => {
     />
   );
 
+  // Cập nhật biến màu theo theme
+  useEffect(() => {
+    const root = document.documentElement;
+
+    if (darkMode) {
+      // Dark theme
+      root.style.setProperty("--sidebar-bg", "#1A1A1A");
+      root.style.setProperty("--menu-text", "#E5E7EB");
+      root.style.setProperty("--menu-active-bg", "#818CF8");
+      root.style.setProperty("--menu-active-shadow", "4px 4px 0 rgba(99,102,241,0.5)");
+    } else {
+      // Light theme (retro)
+      root.style.setProperty("--sidebar-bg", "#FCFCFC");
+      root.style.setProperty("--menu-text", "#3b5bdb");
+      root.style.setProperty("--menu-active-bg", "#3b5bdb");
+      root.style.setProperty("--menu-active-shadow", "4px 4px 0 rgba(59,91,219,0.5)");
+    }
+  }, [darkMode]);
+
   return (
     <ConfigProvider
       theme={{
@@ -92,7 +113,6 @@ const InnerLayout = () => {
           menuItemRender={(item, dom) => (
             <div
               onClick={() => navigate(item.path || "/")}
-              className="hover:opacity-70 transition"
             >
               {dom}
             </div>
