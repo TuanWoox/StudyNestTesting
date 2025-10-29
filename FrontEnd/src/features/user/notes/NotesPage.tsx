@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useOutletContext } from "react-router-dom";
 import { Note, Folder } from "@/types/note/notes";
 import { EStatus } from "@/utils/enums/EStatus";
 import useGetAllFolder from "@/hooks/folderHook/useGetAllFolder";
@@ -7,12 +6,14 @@ import useGetAllTag from "@/hooks/tagHook/useGetAllTag";
 import useGetAllNote from "@/hooks/noteHook/useGetAllNote";
 import NoteSidebar from "./NoteSidebar/NoteSidebar";
 import NoteEditor from "./NoteEditor/NoteEditor";
-import useDeleteNote from "@/hooks/noteHook/useDeleteNote";
 import ModalFolder from "./ModalFolder";
 import Spinner from "@/components/Spinner/Spinner";
+import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
+import { selectDarkMode } from "@/store/themeSlice";
 
 const NotesPage: React.FC = () => {
-    const darkMode = useOutletContext<boolean>();
+    // const darkMode = useOutletContext<boolean>();
+    const darkMode = useReduxSelector(selectDarkMode);
 
     const {
         data: noteData,
@@ -32,8 +33,6 @@ const NotesPage: React.FC = () => {
         isLoading: loadingFolders,
         isError: errorFolders,
     } = useGetAllFolder({ pageSize: -1, pageNumber: 0 });
-
-    const { deleteNote } = useDeleteNote();
 
     const folders = folderData?.data || []; // `data` là mảng thư mục trong PagedData
     const tags = tagData?.data || [];
@@ -66,14 +65,6 @@ const NotesPage: React.FC = () => {
         setIsEditorVisible(true);
     };
 
-    const handleDeleteNote = (id: string) => {
-        try {
-            deleteNote(id);
-        } catch (error) {
-            console.error("Delete note failed:", error);
-        }
-    };
-
     const handleOpenEditor = (note: Note) => {
         setSelectedNote(note);
         setIsEditorVisible(true);
@@ -90,7 +81,7 @@ const NotesPage: React.FC = () => {
                 }`}
         >
             <NoteSidebar
-                darkMode={darkMode}
+                // darkMode={darkMode}
                 notes={notes}
                 folders={folders} // dùng dữ liệu từ API
                 tags={tags}
@@ -99,14 +90,13 @@ const NotesPage: React.FC = () => {
                 handleCreateNote={handleCreateNote}
                 setFolderModalMode={setFolderModalMode}
                 setIsModalFolderVisible={setIsModalFolderVisible}
-                setSelectedFolder={setSelectedFolder}              // truyền thêm
-                handleDeleteNote={handleDeleteNote}
+                setSelectedFolder={setSelectedFolder}
             />
 
             <ModalFolder
                 visible={isModalFolderVisible}
                 mode={folderModalMode}
-                darkMode={darkMode}
+                // darkMode={darkMode}
                 onCancel={() => setIsModalFolderVisible(false)}
                 folder={selectedFolder}
                 setSelectedFolder={setSelectedFolder}
@@ -115,7 +105,7 @@ const NotesPage: React.FC = () => {
             <NoteEditor
                 visible={isEditorVisible}
                 onClose={handleCloseEditor}
-                darkMode={darkMode}
+                // darkMode={darkMode}
                 note={selectedNote}
                 folders={folders}
                 tags={tags}

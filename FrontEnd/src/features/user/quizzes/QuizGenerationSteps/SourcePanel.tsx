@@ -46,10 +46,6 @@ export const SourcePanel: React.FC<SourcePanelProps> = ({
   // Fetch notes from API
   const { data: notesData, isLoading } = useGetAllNote();
 
-  // Get dark mode setting from Redux
-  const { mode } = useReduxSelector((state) => state.theme);
-  const isDarkMode = mode === "dark";
-
   // Transform and filter notes based on search query
   const filteredNotes = useMemo(() => {
     if (!notesData?.data) return [];
@@ -135,9 +131,8 @@ export const SourcePanel: React.FC<SourcePanelProps> = ({
               }}
             >
               {filteredNotes.length > 0
-                ? `${filteredNotes.length} note${
-                    filteredNotes.length !== 1 ? "s" : ""
-                  } found`
+                ? `${filteredNotes.length} note${filteredNotes.length !== 1 ? "s" : ""
+                } found`
                 : "No notes available"}
             </Text>
 
@@ -156,13 +151,11 @@ export const SourcePanel: React.FC<SourcePanelProps> = ({
                     <Col xs={24} md={12} key={note.id}>
                       <NoteCard
                         note={note}
-                        darkMode={isDarkMode}
                         isSelected={isSelected}
                         onSelect={() => {
                           setSelectedNoteId(note.id);
                           form.setFieldsValue({ noteId: note.id });
                         }}
-                        onDelete={() => {}}
                         isDeleteAvailable={false}
                       />
                     </Col>

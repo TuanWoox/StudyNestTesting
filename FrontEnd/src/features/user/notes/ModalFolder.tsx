@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { Modal } from "antd";
+import { Modal, Input, theme } from "antd";
 import { Folder } from "@/types/note/notes";
 import useCreateFolder from "@/hooks/folderHook/useCreateFolder";
 import useUpdateFolder from "@/hooks/folderHook/useUpdateFolder";
 import useDeleteFolder from "@/hooks/folderHook/useDeleteFolder";
+import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
+import { selectDarkMode } from "@/store/themeSlice";
 
 type ModalMode = "create" | "update" | "delete";
 
 interface ModalFolderProps {
     visible: boolean;
     mode: ModalMode;
-    darkMode: boolean;
+    // darkMode: boolean;
     onCancel: () => void;
     folder?: Folder | null;
     setSelectedFolder?: React.Dispatch<React.SetStateAction<Folder | null>>;
@@ -19,24 +21,22 @@ interface ModalFolderProps {
 const ModalFolder: React.FC<ModalFolderProps> = ({
     visible,
     mode,
-    darkMode,
+    // darkMode,
     onCancel,
     folder,
     setSelectedFolder,
 }) => {
+    const darkMode = useReduxSelector(selectDarkMode);
+    const { token } = theme.useToken();
     const [folderName, setFolderName] = useState("");
 
     const { createFolder, isLoading: creating } = useCreateFolder();
     const { updateFolder, isLoading: updating } = useUpdateFolder();
     const { deleteFolder, isLoading: deleting } = useDeleteFolder();
 
-    // Khi mở modal update → tự động fill tên folder
     useEffect(() => {
-        if (mode === "update" && folder) {
-            setFolderName(folder.folderName || "");
-        } else if (mode === "create") {
-            setFolderName("");
-        }
+        if (mode === "update" && folder) setFolderName(folder.folderName || "");
+        else if (mode === "create") setFolderName("");
     }, [mode, folder]);
 
     const handleClose = () => {
@@ -75,14 +75,32 @@ const ModalFolder: React.FC<ModalFolderProps> = ({
 
     const isLoading = creating || updating || deleting;
 
+    // === Retro theme style tokens ===
+    const borderColor = `${token.colorPrimary}E0`; // 88%
+    const shadowColor = `${token.colorPrimary}55`; // 33%
+    const hoverShadowColor = `${token.colorPrimary}88`; // hover sáng hơn
+    const backgroundColor = darkMode ? "#1E1E1E" : "#FFFEFA";
+    const textColor = darkMode ? "#E5E7EB" : "#111827";
+
     return (
         <Modal
             open={visible}
-            title={titleMap[mode]}
+            title={
+                <span
+                    style={{
+                        fontFamily: '"Courier New", monospace',
+                        fontWeight: 700,
+                        color: borderColor,
+                        letterSpacing: 0.5,
+                    }}
+                >
+                    {titleMap[mode]}
+                </span>
+            }
             onCancel={handleClose}
             onOk={handleSubmit}
             okText={isLoading ? `${actionTextMap[mode]}ing...` : actionTextMap[mode]}
-            cancelText={"Cancel"}
+            cancelText="Cancel"
             okButtonProps={{
                 loading: isLoading,
                 danger: mode === "delete",
@@ -92,19 +110,32 @@ const ModalFolder: React.FC<ModalFolderProps> = ({
                             ? darkMode
                                 ? "#dc2626"
                                 : "#ef4444"
-                            : darkMode
-                                ? "#0ea5e9"
-                                : "#1677ff",
-                    border: "none",
+                            : borderColor,
+                    border: `1px solid ${borderColor}`,
+                    fontFamily: '"Courier New", monospace',
+                    fontWeight: 600,
+                    boxShadow: `3px 3px 0 ${shadowColor}`,
+                    transition: "all 0.2s ease",
                 },
+                className: `
+                    hover:-translate-y-[2px] hover:brightness-110 hover:shadow-[3px_3px_0_${hoverShadowColor}]
+                    active:translate-y-[1px] active:shadow-[1px_1px_0_${hoverShadowColor}]
+                `,
             }}
             cancelButtonProps={{
                 style: {
-                    color: darkMode ? "#d1d5db" : "#374151",
-                    backgroundColor: darkMode ? "#1f2937" : "#e5e7eb",
-                    border: "none",
+                    color: darkMode ? "#D1D5DB" : "#374151",
+                    backgroundColor: darkMode ? "#1F2937" : "#E5E7EB",
+                    border: `1px solid ${borderColor}`,
+                    fontFamily: '"Courier New", monospace',
+                    boxShadow: `3px 3px 0 ${shadowColor}`,
+                    transition: "all 0.2s ease",
                 },
-                disabled: isLoading
+                className: `
+                    hover:-translate-y-[2px] hover:brightness-105 hover:shadow-[3px_3px_0_${hoverShadowColor}]
+                    active:translate-y-[1px] active:shadow-[1px_1px_0_${hoverShadowColor}]
+                `,
+                disabled: isLoading,
             }}
             centered
             closable={false}
@@ -113,26 +144,57 @@ const ModalFolder: React.FC<ModalFolderProps> = ({
                 mask: {
                     backgroundColor: "rgba(0,0,0,0.5)",
                     backdropFilter: "blur(4px)",
-                }
+                },
+                content: {
+                    backgroundColor,
+                    border: `1px solid ${borderColor}`,
+                    boxShadow: `4px 4px 0 ${shadowColor}`,
+                    padding: 20,
+                    fontFamily: '"Courier New", monospace',
+                    color: textColor,
+                },
             }}
         >
             {mode === "delete" ? (
-                <p className="text-sm">
+                <p
+                    style={{
+                        fontFamily: '"Courier New", monospace',
+                        fontSize: 14,
+                        color: textColor,
+                        lineHeight: 1.6,
+                    }}
+                >
                     Are you sure you want to delete the folder{" "}
-                    <span className="font-semibold">{folder?.folderName}</span>? <br />
+                    <span
+                        style={{
+                            fontWeight: 700,
+                            color: borderColor,
+                        }}
+                    >
+                        {folder?.folderName}
+                    </span>
+                    ? <br />
                     This action{" "}
                     <span className="text-red-500 font-semibold">cannot be undone.</span>
                 </p>
             ) : (
-                <input
-                    type="text"
+                <Input
                     placeholder="Folder name"
                     value={folderName}
                     onChange={(e) => setFolderName(e.target.value)}
-                    className={`w-full px-4 py-2 rounded-lg border text-sm outline-none transition-all focus:ring-2 ${darkMode
-                        ? "bg-gray-800 border-gray-600 text-gray-100 placeholder-gray-400 focus:ring-sky-500 focus:border-sky-500"
-                        : "bg-gray-100 border-gray-300 text-gray-800 placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500"
-                        }`}
+                    onPressEnter={handleSubmit}
+                    style={{
+                        width: "100%",
+                        padding: "10px 12px",
+                        border: `1px solid ${borderColor}`,
+                        background: darkMode ? "#2D2D2D" : "#FFFDF8",
+                        color: textColor,
+                        fontFamily: '"Courier New", monospace',
+                        fontSize: 14,
+                        boxShadow: `2px 2px 0 ${shadowColor}`,
+                        transition: "all 0.2s ease",
+                    }}
+                    className="hover:-translate-y-0.5 hover:shadow-[3px_3px_0_rgba(0,0,0,0.2)]"
                 />
             )}
         </Modal>

@@ -26,7 +26,6 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
   const shadowColor = `4px 4px 0px ${token.colorPrimary}55`;
 
   const cap = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : "");
-  const darkMode = useReduxSelector((state) => state.theme.mode === "dark");
 
   const totalQuestions =
     (quizOptions?.count_Mcq || 0) +
@@ -57,10 +56,8 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
             {selectedNote ? (
               <NoteCard
                 note={selectedNote}
-                darkMode={darkMode}
                 isSelected={true}
-                onSelect={() => {}}
-                onDelete={() => {}}
+                onSelect={() => { }}
                 isDeleteAvailable={false}
               />
             ) : (

@@ -3,7 +3,7 @@ import { useReduxDispatch } from "@/hooks/reduxHook/useReduxDispatch";
 import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
 import { initState, nextQuestion, previousQuestion, selectQuizAttempt } from "@/store/quizAttemptSlice";
 import { useEffect } from "react";
-import { useOutletContext, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import QuestionCard from "./QuestionCard";
 import { QuizHeader } from "./QuizHeader";
 import { QuizProgress } from "./QuizProgress";
@@ -20,7 +20,6 @@ const QuizView: React.FC = () => {
     const dispatch = useReduxDispatch();
     const { submitAnswer, isLoading: isSubmitting } = useSubmitQuizAttempt();
     const { notificationConnection } = useQuizAttemptSnapshotHub();
-    const darkMode = useOutletContext<boolean>();
 
     const onPrevious = () => dispatch(previousQuestion());
     const onNext = () => dispatch(nextQuestion());

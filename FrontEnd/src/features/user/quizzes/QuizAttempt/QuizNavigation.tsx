@@ -1,7 +1,7 @@
 import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector"
 import { selectQuizNavigation } from "@/store/quizAttemptSlice"
 import { LeftOutlined, RightOutlined, SendOutlined } from "@ant-design/icons"
-import { Button, Grid } from "antd"
+import { Button, Grid, theme } from "antd"
 
 interface QuizNavigationProps {
     onPrevious: () => void
@@ -18,11 +18,17 @@ export function QuizNavigation({
     onSubmit,
     isSubmitting,
 }: QuizNavigationProps) {
+    const { token } = theme.useToken();
     const { isLastQuestion, isFirstQuestion, hasAnswer } = useReduxSelector(selectQuizNavigation);
     const screens = useBreakpoint();
 
     // responsive size: small nếu mobile, còn lại middle
     const buttonSize = screens.xs ? "small" : "middle"
+
+    // 🎨 Tông màu LearnHub Retro
+    const primaryColor = token.colorPrimary;
+    const borderColor = `${primaryColor}E0`; // 88% opacity
+    const shadowColor = `${primaryColor}55`; // 33% opacity
 
     return (
         <div className="flex items-center justify-between gap-4">
@@ -32,6 +38,10 @@ export function QuizNavigation({
                 type="default"
                 size={buttonSize}
                 icon={<LeftOutlined />}
+                style={{
+                    boxShadow: `3px 3px 0 ${shadowColor}`,
+                    border: `1px solid ${borderColor}`,
+                }}
             >
                 Prev
             </Button>
@@ -48,10 +58,14 @@ export function QuizNavigation({
                 <Button
                     onClick={onSubmit}
                     disabled={!hasAnswer || isSubmitting}
-                    type="primary"
+                    type="default"
                     size={buttonSize}
                     icon={<SendOutlined />}
                     loading={isSubmitting}
+                    style={{
+                        boxShadow: `3px 3px 0 ${shadowColor}`,
+                        border: `1px solid ${borderColor}`,
+                    }}
                 >
                     Submit Quiz
                 </Button>
@@ -59,9 +73,13 @@ export function QuizNavigation({
                 <Button
                     onClick={onNext}
                     disabled={!hasAnswer || isSubmitting}
-                    type="primary"
+                    type="default"
                     size={buttonSize}
                     icon={<RightOutlined />}
+                    style={{
+                        boxShadow: `3px 3px 0 ${shadowColor}`,
+                        border: `1px solid ${borderColor}`,
+                    }}
                 >
                     Next
                 </Button>

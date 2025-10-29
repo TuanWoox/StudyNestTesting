@@ -1,30 +1,84 @@
 import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
 import { selectQuizProgress } from "@/store/quizAttemptSlice";
 import { CheckCircleOutlined } from "@ant-design/icons";
-
+import { theme, Card } from "antd";
 
 export function QuizProgress() {
-    const { currentQuestionIndex: current, answeredCount: answeredCount,
-        progressPercentage: percentage, totalQuestions: total } = useReduxSelector(selectQuizProgress)
+    const { token } = theme.useToken();
+    const {
+        currentQuestionIndex: current,
+        answeredCount,
+        progressPercentage: percentage,
+        totalQuestions: total,
+    } = useReduxSelector(selectQuizProgress);
+
+    // 🎨 Màu chủ đạo (retro)
+    const primaryColor = token.colorPrimary;
+    const borderColor = `${primaryColor}E0`; // 88% opacity
+    const shadowColor = `${primaryColor}55`; // 33% opacity
+
     return (
-        <div className="mb-4 bg-surface-elevated rounded-xl p-4 border border-border shadow-md border-slate-300">
-            <div className="flex items-center justify-between">
+        <Card
+            bordered
+            style={{
+                fontFamily: '"Courier New", "IBM Plex Mono", monospace',
+                border: `1.5px solid ${borderColor}`,
+                boxShadow: `4px 4px 0 ${shadowColor}`,
+                transition: "all 0.25s ease",
+                marginBottom: "12px"
+            }}
+        >
+            {/* Header: progress summary */}
+            <div className="flex items-center justify-between mb-3">
                 <div>
-                    <p className="text-sm text-muted-foreground mb-1">Question Progress</p>
-                    <p className="text-2xl font-bold text-foreground">
-                        {current + 1} <span className="text-muted-foreground text-lg">/ {total}</span>
+                    <p
+                        style={{
+                            fontSize: "1rem",
+                            marginBottom: "0.25rem",
+                        }}
+                    >
+                        Question Progress
+                    </p>
+                    <p
+                        style={{
+                            fontSize: "1.6rem",
+                            fontWeight: 700,
+                            margin: 0,
+                        }}
+                    >
+                        {current + 1}{" "}
+                        <span
+                            style={{
+                                fontSize: "1rem",
+                                opacity: 0.75,
+                            }}
+                        >
+                            / {total}
+                        </span>
                     </p>
                 </div>
-                <div className="flex items-center gap-2 text-secondary">
-                    <CheckCircleOutlined className="w-5 h-5" />
-                    <span className="font-semibold">{answeredCount} answered</span>
+
+                <div
+                    className="flex items-center gap-2"
+                >
+                    <CheckCircleOutlined style={{ fontSize: 18 }} />
+                    <span style={{ fontWeight: 600 }}>{answeredCount} answered</span>
                 </div>
             </div>
 
-            <div className="relative w-full h-2 bg-surface rounded-full overflow-hidden mt-1">
+            {/* Progress bar retro style */}
+            <div
+                className="relative w-full h-2 rounded-full overflow-hidden mt-2"
+                style={{
+                    border: `1px solid ${borderColor}`,
+                }}
+            >
                 <div
-                    className="absolute top-0 left-0 h-full bg-gradient-to-r from-sky-300 to-indigo-500 transition-all duration-500 ease-out rounded-full"
-                    style={{ width: `${percentage}%` }}
+                    className="absolute top-0 left-0 h-full transition-all duration-500 ease-out rounded-full"
+                    style={{
+                        width: `${percentage}%`,
+                        background: `linear-gradient(90deg, ${primaryColor}AA, ${primaryColor})`,
+                    }}
                     role="progressbar"
                     aria-valuenow={percentage}
                     aria-valuemin={0}
@@ -33,7 +87,14 @@ export function QuizProgress() {
                 />
             </div>
 
-            <p className="text-xs text-muted-foreground mt-1 text-right">{Math.round(percentage)}% complete</p>
-        </div>
+            <p
+                className="text-sm text-right mt-1"
+                style={{
+                    fontFamily: '"Courier New", monospace',
+                }}
+            >
+                {Math.round(percentage)}% complete
+            </p>
+        </Card>
     );
 }

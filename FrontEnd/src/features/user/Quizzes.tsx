@@ -353,7 +353,7 @@ const Quizzes: React.FC = () => {
                   showTotal={
                     screens.md
                       ? (total, range) =>
-                          `${range[0]}-${range[1]} of ${total} quizzes`
+                        `${range[0]}-${range[1]} of ${total} quizzes`
                       : undefined
                   }
                   responsive
