@@ -1,5 +1,5 @@
 import useGetQuizDetail from "@/hooks/quizHook/useGetQuizDetail";
-import { Typography, Space, Divider, Button, theme, Card } from "antd";
+import { Typography, Space, Button, theme, Card } from "antd";
 import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { FileTextOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import React from "react";

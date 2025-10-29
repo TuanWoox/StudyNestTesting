@@ -22,7 +22,6 @@ const InnerLayout = () => {
   const navigate = useNavigate();
   const dispatch = useReduxDispatch();
   const darkMode = useReduxSelector(selectDarkMode);
-  const { token } = theme.useToken();
   const role = useReduxSelector(selectRole);
   const queryClient = useQueryClient();
   if (!role) return <Navigate to="/login" replace />;
