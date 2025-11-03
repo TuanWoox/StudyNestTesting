@@ -8,13 +8,15 @@ interface QuizAttemptState {
     quizId: string;
     questionId: string;
     quizAttemptSnapshot: string;
+    isNeeededToSubmit: boolean;
 }
 
 const initialState: QuizAttemptState = {
     createQuizAttemptAnswerList: [],
     quizId: "",
     questionId: "",
-    quizAttemptSnapshot: ""
+    quizAttemptSnapshot: "",
+    isNeeededToSubmit: false
 };
 
 const quizAttemptSlice = createSlice({
@@ -61,6 +63,9 @@ const quizAttemptSlice = createSlice({
             if (currentIndex !== undefined && currentIndex > 0) {
                 state.questionId = questions?.[currentIndex - 1]?.id ?? "";
             }
+        },
+        triggerSubmit: (state) => {
+            state.isNeeededToSubmit = true;
         },
         resetState: () => initialState,
     },
@@ -183,13 +188,17 @@ export const selectQuizCard = createSelector(
     }
 );
 
+export const selectIsNeededToSubmitQuiz = (state: RootState) => state.quizAttempt.isNeeededToSubmit
+
+
 export const {
     initState,
     addAnswer,
     nextQuestion,
     previousQuestion,
     resetState,
-    removeAnswer
+    removeAnswer,
+    triggerSubmit
 } = quizAttemptSlice.actions;
 
 export default quizAttemptSlice.reducer;

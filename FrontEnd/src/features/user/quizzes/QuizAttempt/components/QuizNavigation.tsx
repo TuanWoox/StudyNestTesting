@@ -1,26 +1,23 @@
+import { useSubmitQuizAttempt } from "@/hooks/quizAttempt/useSubmitQuizAttempt"
+import { useReduxDispatch } from "@/hooks/reduxHook/useReduxDispatch"
 import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector"
-import { selectQuizNavigation } from "@/store/quizAttemptSlice"
+import { nextQuestion, previousQuestion, selectIsNeededToSubmitQuiz, selectQuizAttempt, selectQuizNavigation } from "@/store/quizAttemptSlice"
 import { LeftOutlined, RightOutlined, SendOutlined } from "@ant-design/icons"
 import { Button, Grid, theme } from "antd"
-
-interface QuizNavigationProps {
-    onPrevious: () => void
-    onNext: () => void
-    onSubmit: () => void
-    isSubmitting: boolean
-}
+import { useCallback, useEffect } from "react"
 
 const { useBreakpoint } = Grid
 
-export function QuizNavigation({
-    onPrevious,
-    onNext,
-    onSubmit,
-    isSubmitting,
-}: QuizNavigationProps) {
+export function QuizNavigation() {
+    const dispatch = useReduxDispatch();
+    const quizAttempt = useReduxSelector(selectQuizAttempt);
     const { token } = theme.useToken();
     const { isLastQuestion, isFirstQuestion, hasAnswer } = useReduxSelector(selectQuizNavigation);
+    const { submitAnswer, isLoading: isSubmitting } = useSubmitQuizAttempt();
+    const isNeeededToSubmit = useReduxSelector(selectIsNeededToSubmitQuiz);
     const screens = useBreakpoint();
+
+
 
     // responsive size: small nếu mobile, còn lại middle
     const buttonSize = screens.xs ? "small" : "middle"
@@ -29,6 +26,22 @@ export function QuizNavigation({
     const primaryColor = token.colorPrimary;
     const borderColor = `${primaryColor}E0`; // 88% opacity
     const shadowColor = `${primaryColor}55`; // 33% opacity
+
+    const onPrevious = () => dispatch(previousQuestion());
+    const onNext = () => dispatch(nextQuestion());
+    const onSubmit = useCallback(() => {
+        submitAnswer({
+            quizId: quizAttempt.quizId,
+            submittedAnswer: quizAttempt.createQuizAttemptAnswerList,
+        });
+    }, [submitAnswer, quizAttempt.quizId, quizAttempt.createQuizAttemptAnswerList]);
+
+
+    useEffect(() => {
+        if (isNeeededToSubmit) {
+            onSubmit();
+        }
+    }, [isNeeededToSubmit, onSubmit]);
 
     return (
         <div className="flex items-center justify-between gap-4">
