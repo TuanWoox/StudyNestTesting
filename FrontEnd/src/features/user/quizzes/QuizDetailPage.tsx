@@ -349,7 +349,9 @@ const QuizDetailPage: React.FC = () => {
         onOpenChange={setIsQuizTimeLimitOpen}
         onConfirm={(time: number) => {
           //Set the time to local storage => so that we can take it out from other component
-          window.localStorage.setItem(id ?? "", time.toString());
+          if (id && typeof time === "number" && (time > 0 || time === -1)) {
+            window.localStorage.setItem(id, time.toString());
+          }
           navigate(`/user/quiz/quizAttempt/${id}`);
         }} />
     </div>

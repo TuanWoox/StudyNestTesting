@@ -37,7 +37,7 @@ const QuizView: React.FC = () => {
         refreshToLoadQuizSnapshot();
     }, [refreshToLoadQuizSnapshot])
 
-    //Init the quiz store, always init the new one everytime we start the quiz -> no need to store
+    //Init the quiz store, always init the new one every time we start the quiz -> no need to store
     useEffect(() => {
         dispatch(
             initState({

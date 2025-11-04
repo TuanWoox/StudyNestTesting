@@ -96,7 +96,7 @@ namespace StudyNest.Business.v1
                     result.Message = createdResult.Message ?? "Failed to create quiz attempt.";
                     return result;
                 }
-                // Only created AttemptAnswer when there is submittedAnswers
+                // Only create AttemptAnswer when there are submittedAnswers
                 if (submittedAnswers?.Count() > 0)
                 {
                     // Save all answers at once, not one by one

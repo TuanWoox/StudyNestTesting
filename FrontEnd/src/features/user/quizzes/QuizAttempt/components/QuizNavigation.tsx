@@ -17,7 +17,7 @@ export function QuizNavigation() {
     const isNeededToSubmit = useReduxSelector(selectIsNeededToSubmitQuiz);
     const screens = useBreakpoint();
 
-    // responsive size: small nếu mobile, còn lại middle
+    // responsive size: small if mobile, otherwise middle
     const buttonSize = screens.xs ? "small" : "middle"
 
     // 🎨 Tông màu LearnHub Retro
@@ -70,7 +70,7 @@ export function QuizNavigation() {
                         border: `1px solid ${borderColor}`,
                     }}
                 >
-                    Submit Quiz
+                    {isSubmitting ? "Submitting Quiz..." : "Submit Quiz"}
                 </Button>
             ) : (
                 <Button
@@ -84,7 +84,7 @@ export function QuizNavigation() {
                         border: `1px solid ${borderColor}`,
                     }}
                 >
-                    Next
+                    {isSubmitting ? "Submitting Quiz..." : "Next"}
                 </Button>
             )}
         </div>
