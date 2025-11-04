@@ -12,12 +12,10 @@ export function QuizNavigation() {
     const dispatch = useReduxDispatch();
     const quizAttempt = useReduxSelector(selectQuizAttempt);
     const { token } = theme.useToken();
-    const { isLastQuestion, isFirstQuestion, hasAnswer } = useReduxSelector(selectQuizNavigation);
+    const { isLastQuestion, isFirstQuestion } = useReduxSelector(selectQuizNavigation);
     const { submitAnswer, isLoading: isSubmitting } = useSubmitQuizAttempt();
     const isNeeededToSubmit = useReduxSelector(selectIsNeededToSubmitQuiz);
     const screens = useBreakpoint();
-
-
 
     // responsive size: small nếu mobile, còn lại middle
     const buttonSize = screens.xs ? "small" : "middle"
@@ -59,18 +57,10 @@ export function QuizNavigation() {
                 Prev
             </Button>
 
-            <div className="flex-1 flex justify-center">
-                {!hasAnswer && (
-                    <p className="text-sm text-muted-foreground italic">
-                        Select an answer to continue
-                    </p>
-                )}
-            </div>
-
             {isLastQuestion ? (
                 <Button
                     onClick={onSubmit}
-                    disabled={!hasAnswer || isSubmitting}
+                    disabled={isSubmitting}
                     type="default"
                     size={buttonSize}
                     icon={<SendOutlined />}
@@ -85,7 +75,7 @@ export function QuizNavigation() {
             ) : (
                 <Button
                     onClick={onNext}
-                    disabled={!hasAnswer || isSubmitting}
+                    disabled={isSubmitting}
                     type="default"
                     size={buttonSize}
                     icon={<RightOutlined />}
