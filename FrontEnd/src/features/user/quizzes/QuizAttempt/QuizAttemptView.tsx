@@ -45,7 +45,7 @@ const QuizView: React.FC = () => {
                 quizAttemptSnapshot: JSON.stringify(resultQuizSnapshot?.result),
                 createQuizAttemptAnswerList: [],
                 questionId: resultQuizSnapshot?.result?.quizQuestionsParsed?.[0]?.id ?? "",
-                isNeeededToSubmit: false
+                isNeededToSubmit: false
             })
         );
     }, [id, resultQuizSnapshot?.result, dispatch]);

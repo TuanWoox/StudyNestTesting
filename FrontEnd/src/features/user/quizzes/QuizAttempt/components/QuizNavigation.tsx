@@ -14,7 +14,7 @@ export function QuizNavigation() {
     const { token } = theme.useToken();
     const { isLastQuestion, isFirstQuestion } = useReduxSelector(selectQuizNavigation);
     const { submitAnswer, isLoading: isSubmitting } = useSubmitQuizAttempt();
-    const isNeeededToSubmit = useReduxSelector(selectIsNeededToSubmitQuiz);
+    const isNeededToSubmit = useReduxSelector(selectIsNeededToSubmitQuiz);
     const screens = useBreakpoint();
 
     // responsive size: small nếu mobile, còn lại middle
@@ -36,10 +36,10 @@ export function QuizNavigation() {
 
 
     useEffect(() => {
-        if (isNeeededToSubmit) {
+        if (isNeededToSubmit) {
             onSubmit();
         }
-    }, [isNeeededToSubmit, onSubmit]);
+    }, [isNeededToSubmit, onSubmit]);
 
     return (
         <div className="flex items-center justify-between gap-4">

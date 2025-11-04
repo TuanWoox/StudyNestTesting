@@ -97,7 +97,7 @@ namespace StudyNest.Business.v1
                     return result;
                 }
                 // Only created AttemptAnswer when there is submittedAnswers
-                if (submittedAnswers?.Count() > 1)
+                if (submittedAnswers?.Count() > 0)
                 {
                     // Save all answers at once, not one by one
                     await _quizAttemptAnswerBusiness.CreateQuizAttemptAnswer(createdResult.Result.Id, submittedAnswers);

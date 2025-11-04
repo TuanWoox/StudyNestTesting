@@ -79,7 +79,7 @@ const QuizTimerCount = () => {
                                 letterSpacing: 0.5,
                             }}
                         >
-                            {timeLeft <= 0 ? "Time`s Up" : "Time Left"}
+                            {timeLeft <= 0 ? "Time's Up" : "Time Left"}
                         </Text>
                         <div>
                             <Text

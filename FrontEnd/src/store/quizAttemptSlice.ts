@@ -8,7 +8,7 @@ interface QuizAttemptState {
     quizId: string;
     questionId: string;
     quizAttemptSnapshot: string;
-    isNeeededToSubmit: boolean;
+    isNeededToSubmit: boolean;
 }
 
 const initialState: QuizAttemptState = {
@@ -16,7 +16,7 @@ const initialState: QuizAttemptState = {
     quizId: "",
     questionId: "",
     quizAttemptSnapshot: "",
-    isNeeededToSubmit: false
+    isNeededToSubmit: false
 };
 
 const quizAttemptSlice = createSlice({
@@ -65,7 +65,7 @@ const quizAttemptSlice = createSlice({
             }
         },
         triggerSubmit: (state) => {
-            state.isNeeededToSubmit = true;
+            state.isNeededToSubmit = true;
         },
         resetState: () => initialState,
     },
@@ -188,7 +188,7 @@ export const selectQuizCard = createSelector(
     }
 );
 
-export const selectIsNeededToSubmitQuiz = (state: RootState) => state.quizAttempt.isNeeededToSubmit
+export const selectIsNeededToSubmitQuiz = (state: RootState) => state.quizAttempt.isNeededToSubmit;
 
 
 export const {
