@@ -5,12 +5,17 @@ import { useQuery } from "@tanstack/react-query"
 
 export const useGetOneForAttempting = (quizId: string | undefined, options?: { enabled?: boolean }) => {
     const enabled = options?.enabled ?? !!quizId;
+
     return useQuery<ReturnResult<QuizAttemptSnapshotDTO>>({
         queryKey: ["quizAttemptSnapshot", quizId],
         queryFn: () => quizAttemptSnapshotService.getOneByIdForAttempting(quizId as string),
         enabled,
-        staleTime: 0,
+        // keep data and prevent auto-refetch
+        staleTime: Infinity,
         gcTime: 10 * 60 * 1000,
         retry: 1,
-    })
-}
+        refetchOnMount: false,
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
+    });
+};

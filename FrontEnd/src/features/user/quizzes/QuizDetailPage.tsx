@@ -19,6 +19,7 @@ import { useUnsavedChanges } from "@/hooks/common/useUnsavedChanges";
 import { formatDMY } from "@/utils/date";
 import QuizHeader from "./components/QuizHeader";
 import QuestionList from "./components/QuestionList";
+import { QuizTimeLimitModal } from "@/components/QuizTimeLimit/QuizTimeLimit";
 
 const { Text } = Typography;
 const { useToken } = theme;
@@ -35,6 +36,7 @@ const QuizDetailPage: React.FC = () => {
 
   const [isDirty, setIsDirty] = useState(false);
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false);
+  const [isQuizTimeLimitOpen, setIsQuizTimeLimitOpen] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
@@ -98,6 +100,8 @@ const QuizDetailPage: React.FC = () => {
       navigate(`/user/quiz`);
     });
   };
+
+
 
   if (isPending) {
     return (
@@ -175,7 +179,7 @@ const QuizDetailPage: React.FC = () => {
   }
 
   const onTakeQuiz = () => {
-    navigate(`/user/quiz/quizAttempt/${id}`);
+    setIsQuizTimeLimitOpen(true);
   };
 
   // Quiz data successfully loaded
@@ -339,6 +343,17 @@ const QuizDetailPage: React.FC = () => {
           </Text>
         </div>
       </Modal>
+      {/* Used To Ask User To Choose Time To Do The Quiz */}
+      <QuizTimeLimitModal
+        open={isQuizTimeLimitOpen}
+        onOpenChange={setIsQuizTimeLimitOpen}
+        onConfirm={(time: number) => {
+          //Set the time to local storage => so that we can take it out from other component
+          if (id && typeof time === "number" && (time > 0 || time === -1)) {
+            window.localStorage.setItem(id, time.toString());
+          }
+          navigate(`/user/quiz/quizAttempt/${id}`);
+        }} />
     </div>
   );
 };

@@ -1,19 +1,18 @@
 import useGetOneQuizAttemptById from "@/hooks/quizAttempt/useGetOneQuizAttemptById";
-import {useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import ResultHeader from "./components/ResultHeader";
 import QuestionResultsList from "./components/QuestionResultsList";
-import Spinner from "@/components/Spinner/Spinner";
+import QuizContentViewSkeleton from "@/components/QuizContentViewSkeleton/QuizContentViewSkeleton";
 
 const QuizResultView = () => {
     const { id } = useParams<{ id: string }>();
-    // const darkMode = useOutletContext<boolean>();
     const { data, isLoading } = useGetOneQuizAttemptById(id);
 
     if (isLoading) {
-        return <Spinner />;
+        return <QuizContentViewSkeleton />;
     }
 
-    const totalQuestions = data?.quizAttemptAnswers?.length ?? 0;
+    const totalQuestions = data?.quizAttemptSnapshot.quizQuestionsParsed?.length ?? 0;
     const correctAnswers = data?.quizAttemptAnswers?.filter(x => x?.isCorrect)?.length ?? 0;
 
     return (

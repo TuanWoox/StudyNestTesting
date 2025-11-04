@@ -96,14 +96,13 @@ namespace StudyNest.Business.v1
                     result.Message = createdResult.Message ?? "Failed to create quiz attempt.";
                     return result;
                 }
-                // Check if submitted answers exist
-                if (submittedAnswers == null || !submittedAnswers.Any())
+                // Only create AttemptAnswer when there are submittedAnswers
+                if (submittedAnswers?.Count() > 0)
                 {
-                    result.Message = "No answers were submitted.";
-                    return result;
+                    // Save all answers at once, not one by one
+                    await _quizAttemptAnswerBusiness.CreateQuizAttemptAnswer(createdResult.Result.Id, submittedAnswers);
                 }
-                // Save all answers at once, not one by one
-                await _quizAttemptAnswerBusiness.CreateQuizAttemptAnswer(createdResult.Result.Id,submittedAnswers);
+              
                 // NOW query the existing attempt with all answers included
                 var existingAttempt = await _dbContext.QuizAttempts.Where(x => x.Id == createdResult.Result.Id && x.UserId == _userContext.UserId)
                                                                 .Include(x => x.QuizAttemptSnapshot)

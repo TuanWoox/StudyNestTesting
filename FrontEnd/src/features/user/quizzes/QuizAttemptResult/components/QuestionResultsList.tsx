@@ -42,6 +42,7 @@ const QuestionResultsList = ({ questions, answers, quizId }: QuestionResultsList
     const paginatedQuestions = questions.slice(startIndex, endIndex);
 
     const onClickBackToQuiz = () => {
+        if (quizId) window.localStorage.removeItem(quizId);
         navigate(`/user/quiz/${quizId}`)
     };
 
@@ -54,7 +55,6 @@ const QuestionResultsList = ({ questions, answers, quizId }: QuestionResultsList
             <Row gutter={[16, 16]}>
                 {paginatedQuestions.map((question, idx) => {
                     const answer = getAnswerForQuestion(question.id);
-                    if (!answer) return null;
 
                     return (
                         <Col xs={24} lg={12} key={question.id}>
