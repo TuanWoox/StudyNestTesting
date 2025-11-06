@@ -224,11 +224,11 @@
 import React, { useState, useEffect } from "react";
 import { Modal, theme } from "antd";
 import { Note, Folder, Tag, CreateNoteDTO, UpdateNoteDTO } from "@/types/note/notes";
-import TitleInput from "./TitleInput";
-import ActionButtons from "./ActionButtons";
-import FolderSelect from "./FolderSelect";
-import TagSelect from "./TagSelect";
-import EditorWrapper from "./EditorWrapper";
+import TitleInput from "./components/TitleInput";
+import ActionButtons from "./components/ActionButtons";
+import FolderSelect from "./components/FolderSelect";
+import TagSelect from "./components/TagSelect";
+import EditorWrapper from "./components/EditorWrapper";
 import useCreateNote from "@/hooks/noteHook/useCreateNote";
 import useCreateFolder from "@/hooks/folderHook/useCreateFolder";
 import useUpdateNote from "@/hooks/noteHook/useUpdateNote";

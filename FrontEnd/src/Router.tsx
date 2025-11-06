@@ -8,7 +8,7 @@ import Login from "./features/auth/Login";
 import Register from "./features/auth/Register";
 
 // User features
-import NotesPage from "./features/user/notes/NotesPage";
+import NotesPage from "./features/user/notes/Notes/NotesPage";
 import Quizzes from "./features/user/Quizzes";
 import Analytics from "./features/user/Analytics";
 import Feedback from "./features/user/Feedback";
@@ -21,13 +21,14 @@ import QuizGeneration from "./features/user/quizzes/QuizGeneration";
 import QuizDetailPage from "./features/user/quizzes/QuizDetailPage";
 import QuizView from "./features/user/quizzes/QuizAttempt/QuizView";
 import QuizResultView from "./features/user/quizzes/QuizAttemptResult/QuizResultView";
+import { LandingPage } from "./features/guest/HomePage/HomePage";
 
 export const router = createBrowserRouter([
   {
     path: "/",
     element: <CenterLayout />,
     children: [
-      { index: true, element: <Navigate to="/login" /> },
+      { index: true, element: <Navigate to="/homepage" /> },
       { path: "login", element: <Login /> },
       { path: "register", element: <Register /> },
     ],
@@ -57,4 +58,7 @@ export const router = createBrowserRouter([
       { path: "feedback", element: <AdminFeedback /> },
     ],
   },
+  {
+    path: "/homepage", element: <LandingPage />,
+  }
 ]);

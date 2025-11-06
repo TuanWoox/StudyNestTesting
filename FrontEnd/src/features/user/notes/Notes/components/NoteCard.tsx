@@ -4,7 +4,7 @@ import { DeleteOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import { Note } from "@/types/note/notes";
 import { getPlainTextFromEditorJs } from "@/utils/getPlainTextFromEditorJs";
 import useDeleteNote from "@/hooks/noteHook/useDeleteNote";
-import ModalConfirm from "@/components/ModalConfirm";
+import ModalConfirm from "@/components/ModalConfirm/ModalConfirm";
 import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
 import { selectDarkMode } from "@/store/themeSlice";
 
@@ -82,6 +82,7 @@ const NoteCard: React.FC<NoteCardProps> = ({
             <Card
                 onClick={onSelect}
                 style={{
+                    height: "100%",
                     userSelect: "none",
                     backgroundColor: darkMode ? "#1A1A1A" : "#FCFCFC",
                     // color: darkMode ? "#EDEDED" : "#111",
@@ -91,16 +92,18 @@ const NoteCard: React.FC<NoteCardProps> = ({
                     cursor: "pointer",
                     borderRadius: "0px",
                     fontFamily: "'Courier New', monospace",
-                    boxShadow: `4px 4px 0 ${shadowColor}`,
+                    boxShadow:
+                        isSelected ? `6px 6px 0 ${shadowColor}` :
+                            `4px 4px 0 ${shadowColor}`,
                     transition: "all 0.25s ease",
-                    transform: isSelected ? "translateY(-2px)" : "translateY(0)",
+                    transform: isSelected ? "translateY(-6px)" : "translateY(0)",
                     width: "100%",
                     position: "relative",
                 }}
                 className={`${darkMode
                     ? "hover:shadow-[6px_6px_0_rgba(255,255,255,0.3)]"
                     : "hover:shadow-[6px_6px_0_rgba(0,0,0,0.15)]"
-                    } hover:-translate-y-[3px] hover:border-[2px]`}
+                    } hover:-translate-y-[3px]`}
                 styles={{
                     body: { padding: "18px" },
                 }}
