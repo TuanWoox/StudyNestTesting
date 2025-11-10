@@ -17,6 +17,7 @@ import { useReduxDispatch } from "@/hooks/reduxHook/useReduxDispatch";
 import { useQueryClient } from "@tanstack/react-query";
 import RouteTracker from "@/components/RouteTracker/RouteTracker";
 import { useEffect } from "react";
+import QuizJobBell from "@/components/QuizJobBell";
 
 const InnerLayout = () => {
   const navigate = useNavigate();
@@ -126,12 +127,9 @@ const InnerLayout = () => {
             overflow: "hidden",
           }}
           rightContentRender={() => (
+            <>
+            <QuizJobBell />
             <Space>
-              {/* <Button
-                className="rotate-center"
-                icon={<HourglassOutlined />}>
-              </Button> */}
-              {/* Toggle Dark Mode */}
               <button
                 onClick={() => dispatch(toggleDarkMode())} // <- dispatch toggle
                 className={`relative flex items-center w-14 h-7 rounded-full transition-all duration-300 ${darkMode ? "bg-indigo-500" : "bg-[#3b5bdb]"
@@ -161,6 +159,7 @@ const InnerLayout = () => {
                 />
               </Dropdown>
             </Space>
+          </>
           )}
         >
           {/* quan trọng: min-h-0 + overflow-hidden để chặn tràn xuống dưới */}

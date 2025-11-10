@@ -101,6 +101,7 @@ namespace StudyNest
             {
                 endpoints.MapControllers();
                 endpoints.MapHub<Business.Hubs.QuizAttemptSnapshotHub>("/hub/quiz-attempt-snapshot");
+                endpoints.MapHub<Business.Hubs.QuizCreateHub>("/hub/quiz-create");
             });
 
 
