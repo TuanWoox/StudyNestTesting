@@ -23,7 +23,7 @@ namespace StudyNest.Business.v1
         }
         public Task<ReturnResult<List<QuizJobDTO>>> GetProcessingQuizJob()
         {
-            var rs = new ReturnResult<List<QuizJobDTO>>()
+            var rs = new ReturnResult<List<QuizJobDTO>>
             {
                 Result = new List<QuizJobDTO>(),
                 Message = ""
@@ -32,31 +32,32 @@ namespace StudyNest.Business.v1
             try
             {
                 const int take = 100;
+                var now = DateTime.UtcNow;
                 var connection = JobStorage.Current.GetConnection();
 
-                var processing = _api.ProcessingJobs(0, take);
-                foreach (var kv in processing)
-                {
-                    var dto = kv.Value;
-                    if (ContainsUser(dto, _userContext.UserId))
+                var processingJobs = _api.ProcessingJobs(0, take)
+                    .Where(kv => ContainsUser(kv.Value, _userContext.UserId))
+                    .Select(kv =>
                     {
+                        var dto = kv.Value;
                         var noteTitle = connection.GetJobParameter(kv.Key, "NoteTitle") ?? "Unknown Note";
                         var timestamp = connection.GetJobParameter(kv.Key, "Timestamp");
                         var customJobId = connection.GetJobParameter(kv.Key, "CustomJobId") ?? kv.Key;
-                        
-                        rs.Result.Add(new QuizJobDTO
+
+                        var startedAt = dto.StartedAt ?? now;
+
+                        return new QuizJobDTO
                         {
                             JobId = customJobId,
                             UserId = _userContext.UserId,
                             NoteTitle = noteTitle,
                             Status = "processing",
-                            Timestamp = timestamp ?? (dto.StartedAt ?? DateTime.UtcNow).ToString("o"),
-                            CreatedAt = dto.StartedAt ?? DateTime.UtcNow
-                        });
-                    }
-                }
+                            Timestamp = timestamp ?? startedAt.ToString("o"),
+                            CreatedAt = startedAt
+                        };
+                    });
 
-                rs.Result = _api.Queues()
+                var enqueuedJobs = _api.Queues()
                     .SelectMany(q => _api.EnqueuedJobs(q.Name, 0, take))
                     .Where(kv => ContainsUser(kv.Value, _userContext.UserId))
                     .Select(kv =>
@@ -66,22 +67,26 @@ namespace StudyNest.Business.v1
                         var timestamp = connection.GetJobParameter(kv.Key, "Timestamp");
                         var customJobId = connection.GetJobParameter(kv.Key, "CustomJobId") ?? kv.Key;
 
+                        var enqueuedAt = dto.EnqueuedAt ?? now;
+
                         return new QuizJobDTO
                         {
                             JobId = customJobId,
                             UserId = _userContext.UserId,
                             NoteTitle = noteTitle,
                             Status = "processing",
-                            Timestamp = timestamp ?? (dto.EnqueuedAt ?? DateTime.UtcNow).ToString("o"),
-                            CreatedAt = dto.EnqueuedAt ?? DateTime.UtcNow
+                            Timestamp = timestamp ?? enqueuedAt.ToString("o"),
+                            CreatedAt = enqueuedAt
                         };
-                    })
+                    });
+
+                rs.Result = processingJobs
+                    .Concat(enqueuedJobs)
                     .GroupBy(j => j.JobId)
                     .Select(g => g.First())
                     .OrderByDescending(j => j.CreatedAt)
                     .Take(10)
                     .ToList();
-
             }
             catch (Exception ex)
             {
@@ -92,6 +97,7 @@ namespace StudyNest.Business.v1
 
             return Task.FromResult(rs);
         }
+
 
         public Task<ReturnResult<List<QuizJobDTO>>> GetRecentQuizJob(long sinceEpochMs)
         {

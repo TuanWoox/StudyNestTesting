@@ -71,7 +71,7 @@ export const QuizJobProvider = ({
   useEffect(() => {
     const cachedJobs = loadJobsFromCache();
     if (cachedJobs.length > 0) {
-      console.log(`💾 Loaded ${cachedJobs.length} jobs from cache (instant)`);
+      console.log(`Loaded ${cachedJobs.length} jobs from cache (instant)`);
       cachedJobs.forEach((job) => {
         dispatch(addJob(job));
       });
@@ -92,7 +92,7 @@ export const QuizJobProvider = ({
 
   useEffect(() => {
     if (processingJobs && processingJobs.length > 0) {
-      console.log(`� Fetched ${processingJobs.length} fresh jobs from API`);
+      console.log(`Fetched ${processingJobs.length} fresh jobs from API`);
       processingJobs.forEach((job) => {
         dispatch(addJob(job));
       });
@@ -101,7 +101,7 @@ export const QuizJobProvider = ({
 
   useEffect(() => {
     if (recentJobs && recentJobs.length > 0) {
-      console.log(`📥 Syncing ${recentJobs.length} recent jobs to Redux`);
+      console.log(`Syncing ${recentJobs.length} recent jobs to Redux`);
       recentJobs.forEach((job) => {
         if (job.status !== "processing") {
           dispatch(updateJob({ jobId: job.jobId, updates: job }));
@@ -150,20 +150,20 @@ export const QuizJobProvider = ({
     (connection as any).keepAliveIntervalInMilliseconds = 10_000;
 
     connection.onreconnecting(() => {
-      console.log("⚠️ SignalR reconnecting...");
+      console.log("SignalR reconnecting...");
       setConnectionStatus("reconnecting");
       setLastDisconnectTime(Date.now());
     });
 
     connection.onreconnected(async () => {
-      console.log("✅ SignalR reconnected, syncing missed updates...");
+      console.log("SignalR reconnected, syncing missed updates...");
       setConnectionStatus("connected");
 
       await refetchRecent();
     });
 
     connection.onclose(() => {
-      console.log("❌ SignalR connection closed");
+      console.log("SignalR connection closed");
       setConnectionStatus("disconnected");
     });
 
@@ -229,10 +229,10 @@ export const QuizJobProvider = ({
         await connection.start();
         connRef.current = connection;
         setConnectionStatus("connected");
-        console.log("✅ QuizJob SignalR connected");
+        console.log("QuizJob SignalR connected");
 
       } catch (err) {
-        console.error("❌ QuizJob SignalR start error:", err);
+        console.error("QuizJob SignalR start error:", err);
         setConnectionStatus("disconnected");
         if (!stopped) setTimeout(start, 2000);
       }

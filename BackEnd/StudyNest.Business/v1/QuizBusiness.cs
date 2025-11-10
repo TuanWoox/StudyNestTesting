@@ -4,9 +4,6 @@ using Hangfire.Server;
 using Hangfire.Storage;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.VisualBasic;
 using StudyNest.Business.Hubs;
 using StudyNest.Business.Repository;
 using StudyNest.Common.DbEntities.Entities;
@@ -17,16 +14,6 @@ using StudyNest.Common.Models.Paging;
 using StudyNest.Common.Utils.Extensions;
 using StudyNest.Common.Utils.Helper;
 using StudyNest.Data;
-using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Globalization;
-using System.Linq;
-using System.Net.Http;
-using System.Security.Policy;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace StudyNest.Business.v1
 {
