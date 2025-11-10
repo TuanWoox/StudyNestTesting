@@ -48,7 +48,7 @@ const QuizTimerCount = () => {
             .toString()
             .padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
 
-    const isWarning = timeLeft <= 60 && timeLeft > 0
+    const isWarning = timeLeft <= 60 && timeLeft > 0;
     if (timeLeft === -1) return null;
 
     return (

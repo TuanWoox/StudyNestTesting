@@ -52,7 +52,7 @@ const QuestionBoard: React.FC<QuestionBoardProps> = ({ isSubmitting, onSubmit })
             }}
         >
             {/* Header */}
-            <div className="p-4 bflex-shrink-0">
+            <div className="p-4 flex-shrink-0">
                 <Title
                     level={4}
                     className="mb-0 leading-tight"
@@ -100,14 +100,14 @@ const QuestionBoard: React.FC<QuestionBoardProps> = ({ isSubmitting, onSubmit })
 
                         const cursorClass = isSubmitting ? "cursor-not-allowed" : "cursor-pointer";
 
-                        const hoverClassess = isSubmitting ? "" : isAnswered ? "hover:bg-green-200" : "hover:border-blue-400";
+                        const hoverClasses = isSubmitting ? "" : isAnswered ? "hover:bg-green-200" : "hover:border-blue-400";
 
                         return (
                             <Tooltip title={`Question ${index + 1}`} key={index}>
                                 <button
                                     disabled={isSubmitting}
                                     onClick={() => handleQuestionSelect(question?.id)}
-                                    className={`${baseClasses} ${stateClasses} ${disabledClasses} ${cursorClass} ${hoverClassess} `}
+                                    className={`${baseClasses} ${stateClasses} ${disabledClasses} ${cursorClass} ${hoverClasses} `}
                                 >
                                     {index + 1}
                                 </button>
@@ -124,11 +124,11 @@ const QuestionBoard: React.FC<QuestionBoardProps> = ({ isSubmitting, onSubmit })
                     </div>
                     <div className="flex items-center gap-2">
                         <div className="w-5 h-5 rounded border-2 border-green-500 bg-green-100" />
-                        <p className="text-muted-foregroun">Answered</p>
+                        <p className="text-muted-foreground">Answered</p>
                     </div>
                     <div className="flex items-center gap-2">
                         <div className="w-5 h-5 rounded border-2 border-gray-300 bg-white" />
-                        <p className="text-muted-foregrou">Unanswered</p>
+                        <p className="text-muted-foreground">Unanswered</p>
                     </div>
                 </div>
             </div>

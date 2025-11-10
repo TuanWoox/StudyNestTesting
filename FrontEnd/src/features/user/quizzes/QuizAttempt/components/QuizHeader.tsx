@@ -12,12 +12,12 @@ import useIsMobile from "@/hooks/common/useIsMobile";
 
 const { Title, Text } = Typography;
 
-interface QuziHeaderProps {
+interface QuizHeaderProps {
     isBoardViewOpen: boolean,
     toggleBoardView: () => void;
 }
 
-const QuizHeader: React.FC<QuziHeaderProps> = ({ isBoardViewOpen, toggleBoardView }) => {
+const QuizHeader: React.FC<QuizHeaderProps> = ({ isBoardViewOpen, toggleBoardView }) => {
     const { primaryColor, borderColor, shadowColor } = useAntDesignTheme()
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
