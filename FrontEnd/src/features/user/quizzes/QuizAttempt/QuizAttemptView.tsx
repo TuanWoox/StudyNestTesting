@@ -1,100 +1,161 @@
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
+import { Drawer } from "antd";
 
 import { useGetOneForAttempting } from "@/hooks/quizAttemptSnapshotHook/useGetOneForAttempting";
 import { useReduxDispatch } from "@/hooks/reduxHook/useReduxDispatch";
-import { initState } from "@/store/quizAttemptSlice";
+import { initState, selectQuizAttempt } from "@/store/quizAttemptSlice";
 import { useQuizAttemptSnapshotHub } from "@/context/QuizSnapshotHubContext/QuizAttemptSnapshotHubContextValue";
 
-import { ErrorDisplay } from "@/components/ErrorDisplay/ErrorDisplay";
-import QuestionCard from "./components/QuestionCard";
-import { QuizHeader } from "./components/QuizHeader";
-import { QuizProgress } from "./components/QuizProgress";
-import { QuizNavigation } from "./components/QuizNavigation";
+import ErrorDisplay from "@/components/ErrorDisplay/ErrorDisplay";
 import QuizSnapshotNotReady from "./components/QuizSnapshotNotReady";
 import QuizContentViewSkeleton from "@/components/QuizContentViewSkeleton/QuizContentViewSkeleton";
+import QuizProgress from "./components/QuizProgress";
+import QuestionCard from "./components/QuestionCard";
+import QuizNavigation from "./components/QuizNavigation";
+import QuizHeader from "./components/QuizHeader";
+import QuestionBoard from "./components/QuestionBoard";
+import useAntDesignTheme from "@/hooks/common/useAntDesignTheme";
+import useIsMobile from "@/hooks/common/useIsMobile";
+import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
+import { useSubmitQuizAttempt } from "@/hooks/quizAttempt/useSubmitQuizAttempt";
 
 const QuizView: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const dispatch = useReduxDispatch();
     const { notificationConnection } = useQuizAttemptSnapshotHub();
-
     const {
         data: resultQuizSnapshot,
-        isLoading: isQuizSnapshotLoading,
-        isRefetching: isQuizSnapshotRefetching,
-        refetch: refreshToLoadQuizSnapshot,
-        error: quizSnapshotError,
+        isLoading,
+        isRefetching,
+        refetch,
+        error,
     } = useGetOneForAttempting(id, { enabled: false });
 
     const quizSnapshotLoading = useMemo(
-        () => isQuizSnapshotLoading || isQuizSnapshotRefetching,
-        [isQuizSnapshotLoading, isQuizSnapshotRefetching]
+        () => isLoading || isRefetching,
+        [isLoading, isRefetching]
     );
+    const { borderColor } = useAntDesignTheme();
+    const { isMobile } = useIsMobile();
+    const quizAttempt = useReduxSelector(selectQuizAttempt);
+    const { submitAnswer, isLoading: isSubmitting } = useSubmitQuizAttempt();
+    const [isBoardViewOpen, setIsBoardViewOpen] = useState<boolean>(true);
+    const onSubmit = useCallback(() => {
+        submitAnswer({
+            quizId: quizAttempt.quizId,
+            submittedAnswer: quizAttempt.createQuizAttemptAnswerList,
+        });
+    }, [submitAnswer, quizAttempt.quizId, quizAttempt.createQuizAttemptAnswerList]);
 
-    // Fetch the data only when the component mounts
+    // Close board view on mobile, open on desktop
     useEffect(() => {
-        refreshToLoadQuizSnapshot();
-    }, [refreshToLoadQuizSnapshot])
+        setIsBoardViewOpen(!isMobile);
+    }, [isMobile]);
 
-    //Init the quiz store, always init the new one every time we start the quiz -> no need to store
+    // Fetch quiz snapshot on mount
     useEffect(() => {
+        refetch();
+    }, [refetch]);
+
+    // Initialize quiz state
+    useEffect(() => {
+        if (!resultQuizSnapshot?.result) return;
+
         dispatch(
             initState({
                 quizId: id as string,
                 quizAttemptSnapshot: JSON.stringify(resultQuizSnapshot?.result),
                 createQuizAttemptAnswerList: [],
-                questionId: resultQuizSnapshot?.result?.quizQuestionsParsed?.[0]?.id ?? "",
-                isNeededToSubmit: false
+                questionId:
+                    resultQuizSnapshot?.result?.quizQuestionsParsed?.[0]?.id ?? "",
+                isNeededToSubmit: false,
             })
         );
     }, [id, resultQuizSnapshot?.result, dispatch]);
 
-    //Init The SignalR
+    // SignalR: reload snapshot when triggered
     useEffect(() => {
         const handleReload = ({ quizId }: { quizId: string }) => {
-            if (id === quizId) {
-                refreshToLoadQuizSnapshot();
-            }
+            if (id === quizId) refetch();
         };
-
         notificationConnection?.on("ReloadQuizAttemptSnapshot", handleReload);
-
         return () => {
             notificationConnection?.off("ReloadQuizAttemptSnapshot", handleReload);
         };
-    }, [id, notificationConnection, refreshToLoadQuizSnapshot])
+    }, [id, notificationConnection, refetch]);
 
-    // Loading state
-    if (quizSnapshotLoading) return <QuizContentViewSkeleton />
 
-    // No data available
-    if (!resultQuizSnapshot?.result && !resultQuizSnapshot?.message) return <QuizSnapshotNotReady />
-
-    // Error state
-    if (resultQuizSnapshot.message || quizSnapshotError) {
+    if (quizSnapshotLoading) return <QuizContentViewSkeleton />;
+    if (!resultQuizSnapshot?.result && !resultQuizSnapshot?.message)
+        return <QuizSnapshotNotReady />;
+    if (resultQuizSnapshot.message || error)
         return (
             <ErrorDisplay
                 title="Unable to load quiz"
                 message={
                     resultQuizSnapshot.message ||
-                    quizSnapshotError?.message ||
+                    error?.message ||
                     "An unexpected error occurred while fetching quiz data."
                 }
             />
         );
-    }
 
-    // Success state
     return (
-        <div
-            className="w-full lg:max-w-5xl mx-auto p-4 overflow-y-auto"
-            style={{ scrollbarWidth: "none" }}
-        >
-            <QuizHeader />
-            <QuizProgress />
-            <QuestionCard />
-            <QuizNavigation />
+        <div className="w-full mx-auto p-4 mb-2 overflow-y-auto no-scrollbar">
+
+            {/* Sequential view => Center the question card and max width is 5xl */}
+            <div
+                className={`flex flex-row gap-3 h-full 
+                ${isBoardViewOpen ? "" : "justify-center"} 
+                ${isMobile ? "overflow-y-auto no-scrollbar" : ""}`}
+            >
+                {/* Main content */}
+                <div className={`${isBoardViewOpen && !isMobile ? "flex-1" : "w-full max-w-5xl"} `}>
+                    <QuizHeader
+                        isBoardViewOpen={isBoardViewOpen}
+                        toggleBoardView={() => setIsBoardViewOpen((prev) => !prev)}
+                    />
+
+                    {!isBoardViewOpen && !isMobile && <QuizProgress />}
+                    <QuestionCard />
+                    <QuizNavigation
+                        isSubmitting={isSubmitting}
+                        onSubmit={onSubmit}
+                    />
+                </div>
+
+                {/* Desktop: Question Board Sidebar */}
+                {isBoardViewOpen && !isMobile && (
+                    <div className="w-80 flex-shrink-0">
+                        <QuestionBoard
+                            isSubmitting={isSubmitting}
+                            onSubmit={onSubmit}
+                        />
+                    </div>
+                )}
+            </div>
+
+            {/* Mobile: Question Board Drawer */}
+            <Drawer
+                title="Question Board"
+                placement="right"
+                onClose={() => setIsBoardViewOpen(false)}
+                open={isBoardViewOpen && isMobile}
+                width="90%"
+                styles={{
+                    header: {
+                        fontFamily: '"Courier New", "IBM Plex Mono", monospace',
+                        borderBottom: `1.5px solid ${borderColor}`,
+                    },
+                    body: { padding: 0 },
+                }}
+            >
+                <QuestionBoard
+                    isSubmitting={isSubmitting}
+                    onSubmit={onSubmit}
+                />
+            </Drawer>
         </div>
     );
 };

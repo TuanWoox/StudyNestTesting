@@ -1,12 +1,13 @@
+import useAntDesignTheme from "@/hooks/common/useAntDesignTheme";
 import { CheckCircleOutlined, CheckSquareOutlined, SwapOutlined } from "@ant-design/icons";
-import { theme } from "antd";
 
 interface QuestionTypeBadgeProps {
     type: string;
 }
 
 export function QuestionTypeBadge({ type }: QuestionTypeBadgeProps) {
-    const { token } = theme.useToken();
+    const { shadowColor, borderColor } = useAntDesignTheme();
+
     const config = {
         "mcq": {
             label: "Single Choice",
@@ -26,11 +27,6 @@ export function QuestionTypeBadge({ type }: QuestionTypeBadgeProps) {
     };
 
     const { label, icon: Icon, color } = config[type];
-
-    // 🎨 Tông màu LearnHub Retro
-    const primaryColor = token.colorPrimary;
-    const borderColor = `${primaryColor}E0`; // 88% opacity
-    const shadowColor = `${primaryColor}55`; // 33% opacity
 
     return (
         <span className={`inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium border ${color}`}

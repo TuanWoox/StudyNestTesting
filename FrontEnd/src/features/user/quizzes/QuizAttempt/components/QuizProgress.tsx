@@ -1,10 +1,11 @@
+import useAntDesignTheme from "@/hooks/common/useAntDesignTheme";
 import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
 import { selectQuizProgress } from "@/store/quizAttemptSlice";
 import { CheckCircleOutlined } from "@ant-design/icons";
-import { theme, Card } from "antd";
+import { Card } from "antd";
 
-export function QuizProgress() {
-    const { token } = theme.useToken();
+function QuizProgress() {
+    const { primaryColor, borderColor, shadowColor } = useAntDesignTheme();
     const {
         currentQuestionIndex: current,
         answeredCount,
@@ -12,10 +13,6 @@ export function QuizProgress() {
         totalQuestions: total,
     } = useReduxSelector(selectQuizProgress);
 
-    // 🎨 Màu chủ đạo (retro)
-    const primaryColor = token.colorPrimary;
-    const borderColor = `${primaryColor}E0`; // 88% opacity
-    const shadowColor = `${primaryColor}55`; // 33% opacity
 
     return (
         <Card
@@ -98,3 +95,5 @@ export function QuizProgress() {
         </Card>
     );
 }
+
+export default QuizProgress;
