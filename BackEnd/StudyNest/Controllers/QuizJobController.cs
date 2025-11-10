@@ -1,0 +1,58 @@
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.VisualBasic;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Query.Expressions.Internal;
+using StudyNest.Business.v1;
+using StudyNest.Common.DbEntities.Entities;
+using StudyNest.Common.Interfaces;
+using StudyNest.Common.Models.DTOs.CoreDTO;
+using StudyNest.Common.Models.DTOs.EntityDTO.Quizzes;
+using StudyNest.Common.Models.Paging;
+using StudyNest.Common.Utils.Extensions;
+using System.Threading.Tasks;
+
+namespace StudyNest.Controllers
+{
+    [Route("api/v{version:apiVersion}/[controller]")]
+    [ApiController]
+    [Authorize]
+    public class QuizJobController : ControllerBase
+    {
+        private readonly IQuizJobBusiness _quizJobBusiness;
+
+        public QuizJobController(IQuizJobBusiness quizJobBusiness)
+        {
+            this._quizJobBusiness = quizJobBusiness;
+        }
+
+        [HttpGet("processing")]
+        public async Task<ActionResult<IActionResult>> GetProcessing()
+        {
+            var rs = new ReturnResult<List<QuizJobDTO>> ();
+            try
+            {
+                rs = await _quizJobBusiness.GetProcessingQuizJob();
+            }
+            catch (Exception ex)
+            {
+                StudyNestLogger.Instance.Error(ex);
+            }
+            return Ok(rs);
+        }
+        [HttpGet("recent")]
+        public async Task<ActionResult<IActionResult>> GetRecent(long sinceEpochMs)
+        {
+            var rs = new ReturnResult<List<QuizJobDTO>>();
+            try
+            {
+                rs = await _quizJobBusiness.GetRecentQuizJob(sinceEpochMs);
+            }
+            catch (Exception ex)
+            {
+                StudyNestLogger.Instance.Error(ex);
+            }
+            return Ok(rs);
+        }
+    }
+}
