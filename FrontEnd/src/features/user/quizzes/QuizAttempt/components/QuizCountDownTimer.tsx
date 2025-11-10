@@ -1,4 +1,4 @@
-import { Card, Typography, theme } from "antd";
+import { Card, Typography } from "antd";
 import {
     ClockCircleOutlined,
     ExclamationCircleOutlined,
@@ -7,15 +7,15 @@ import { useEffect, useState, useRef } from "react";
 import { useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
 import { triggerSubmit } from "@/store/quizAttemptSlice";
+import useAntDesignTheme from "@/hooks/common/useAntDesignTheme";
 
 const { Text } = Typography;
 
 const QuizTimerCount = () => {
+    const { borderColor, shadowColor, token } = useAntDesignTheme();
     const { id } = useParams<{ id: string }>();
     const dispatch = useDispatch();
-    const { token } = theme.useToken();
     const submitTriggeredRef = useRef(false);
-
     const [timeLeft, setTimeLeft] = useState(() => {
         if (!id) return -1;
         const saved = window.localStorage.getItem(id);
@@ -49,12 +49,6 @@ const QuizTimerCount = () => {
             .padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
 
     const isWarning = timeLeft <= 60 && timeLeft > 0;
-
-    // 🎨 Tông màu LearnHub Retro
-    const primaryColor = token.colorPrimary;
-    const borderColor = `${primaryColor}E0`; // 88% opacity
-    const shadowColor = `${primaryColor}55`; // 33% opacit
-
     if (timeLeft === -1) return null;
 
     return (

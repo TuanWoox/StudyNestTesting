@@ -1,23 +1,30 @@
 import useGetQuizDetail from "@/hooks/quizHook/useGetQuizDetail";
-import { Typography, Space, Button, theme, Card } from "antd";
+import { Typography, Space, Button, Card } from "antd";
 import { useNavigate, useParams } from "react-router-dom";
-import { FileTextOutlined, ArrowLeftOutlined } from "@ant-design/icons";
+import { FileTextOutlined, ArrowLeftOutlined, UnorderedListOutlined, AppstoreOutlined } from "@ant-design/icons";
 import React, { useState } from "react";
 import QuizTimerCount from "./QuizCountDownTimer";
 import ModalConfirm from "@/components/ModalConfirm/ModalConfirm";
 import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
 import { selectQuizProgress } from "@/store/quizAttemptSlice";
+import useAntDesignTheme from "@/hooks/common/useAntDesignTheme";
+import useIsMobile from "@/hooks/common/useIsMobile";
 
 const { Title, Text } = Typography;
 
-export const QuizHeader: React.FC = () => {
-    const { token } = theme.useToken();
+interface QuizHeaderProps {
+    isBoardViewOpen: boolean,
+    toggleBoardView: () => void;
+}
+
+const QuizHeader: React.FC<QuizHeaderProps> = ({ isBoardViewOpen, toggleBoardView }) => {
+    const { primaryColor, borderColor, shadowColor } = useAntDesignTheme()
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const { data } = useGetQuizDetail(id);
     const [isModalConfirmOpen, setIsModalConfirmOpen] = useState(false);
     const { answeredCount } = useReduxSelector(selectQuizProgress);
-    // const darkMode = useOutletContext<boolean>();
+    const { isMobile } = useIsMobile();
 
     const onClickBackToQuizList = () => {
         if (answeredCount) {
@@ -28,10 +35,7 @@ export const QuizHeader: React.FC = () => {
         }
     };
 
-    // Tone màu retro
-    const primaryColor = token.colorPrimary;
-    const borderColor = `${primaryColor}E0`; // 88% opacity
-    const shadowColor = `${primaryColor}55`; // 33% opacity
+    const buttonSize = isMobile ? "small" : "middle"
 
     return (
         <>
@@ -46,9 +50,10 @@ export const QuizHeader: React.FC = () => {
                 }}
             >
                 {/* Back Button */}
-                <div className="flex items-center justify-start mb-3">
+                <div className="flex items-center justify-between mb-3">
                     <Button
                         type="default"
+                        size={buttonSize}
                         icon={<ArrowLeftOutlined />}
                         onClick={onClickBackToQuizList}
                         style={{
@@ -61,6 +66,23 @@ export const QuizHeader: React.FC = () => {
                     >
                         Back to Quiz
                     </Button>
+
+                    <Button
+                        type="default"
+                        size={buttonSize}
+                        icon={isBoardViewOpen ? <UnorderedListOutlined /> : <AppstoreOutlined />}
+                        onClick={toggleBoardView}
+                        style={{
+                            fontWeight: 600,
+                            boxShadow: `3px 3px 0 ${shadowColor}`,
+                            border: `1px solid ${borderColor}`,
+                            fontFamily: '"Courier New", monospace',
+                            borderRadius: 0,
+                        }}
+                    >
+                        {isBoardViewOpen ? "Sequential View" : "Board View"}
+                    </Button>
+
                 </div>
 
                 {/* Quiz Title & Description */}
@@ -121,3 +143,5 @@ export const QuizHeader: React.FC = () => {
         </>
     );
 };
+
+export default QuizHeader;

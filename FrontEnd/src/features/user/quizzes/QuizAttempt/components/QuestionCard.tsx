@@ -5,19 +5,15 @@ import TrueFalseQuestion from "./QuestionType/TrueFalseQuestion";
 import { QuestionTypeBadge } from "./QuestionTypeBadge";
 import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
 import { selectQuizCard } from "@/store/quizAttemptSlice";
-import { Card, theme } from "antd";
+import { Card } from "antd";
 import React from "react";
+import useAntDesignTheme from "@/hooks/common/useAntDesignTheme";
 
 const QuestionCard: React.FC = () => {
-    const { token } = theme.useToken();
     const { currentQuestion: question, currentAnswer: answer } = useReduxSelector(selectQuizCard);
+    const { borderColor, shadowColor } = useAntDesignTheme();
 
     if (!question) return <Spinner />;
-
-    // 🎨 Tông màu LearnHub Retro
-    const primaryColor = token.colorPrimary;
-    const borderColor = `${primaryColor}E0`; // 88% opacity
-    const shadowColor = `${primaryColor}55`; // 33% opacity
 
     return (
         <Card
@@ -27,6 +23,7 @@ const QuestionCard: React.FC = () => {
                 boxShadow: `4px 4px 0 ${shadowColor}`,
                 transition: "all 0.25s ease",
                 marginBottom: "16px",
+                width: "100%"
             }}
         >
             {/* Header */}

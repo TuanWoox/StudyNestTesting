@@ -1,14 +1,11 @@
+import useAntDesignTheme from "@/hooks/common/useAntDesignTheme";
 import { ClockCircleOutlined, SyncOutlined } from "@ant-design/icons";
-import { Card, Typography, Space, Alert, Spin, theme } from "antd";
+import { Card, Typography, Space, Alert, Spin } from "antd";
 
 const { Title } = Typography;
 
 const QuizSnapshotNotReady = ({ darkMode = false }) => {
-    const { token } = theme.useToken();
-
-    const primaryColor = token.colorPrimary;
-    const borderColor = `${primaryColor}E0`; // ~88% opacity
-    const shadowColor = `${primaryColor}55`; // ~33% opacity
+    const { primaryColor, borderColor, shadowColor } = useAntDesignTheme();
 
     return (
         <div className="w-full lg:max-w-9/10 mx-auto p-4">

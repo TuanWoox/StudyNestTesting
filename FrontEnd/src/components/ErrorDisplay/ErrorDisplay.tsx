@@ -9,7 +9,7 @@ interface ErrorDisplayProps {
     icon?: boolean
 }
 
-export function ErrorDisplay({
+function ErrorDisplay({
     message,
     title = "Error",
     variant = "default",
@@ -94,3 +94,5 @@ export function ErrorDisplay({
         </section>
     )
 }
+
+export default ErrorDisplay;
