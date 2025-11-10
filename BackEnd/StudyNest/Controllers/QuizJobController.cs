@@ -1,16 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualBasic;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Query.Expressions.Internal;
-using StudyNest.Business.v1;
-using StudyNest.Common.DbEntities.Entities;
 using StudyNest.Common.Interfaces;
 using StudyNest.Common.Models.DTOs.CoreDTO;
 using StudyNest.Common.Models.DTOs.EntityDTO.Quizzes;
-using StudyNest.Common.Models.Paging;
 using StudyNest.Common.Utils.Extensions;
-using System.Threading.Tasks;
 
 namespace StudyNest.Controllers
 {

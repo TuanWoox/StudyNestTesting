@@ -56,37 +56,32 @@ namespace StudyNest.Business.v1
                     }
                 }
 
-                foreach (var q in _api.Queues())
-                {
-                    var enqueued = _api.EnqueuedJobs(q.Name, 0, take);
-                    foreach (var kv in enqueued)
+                rs.Result = _api.Queues()
+                    .SelectMany(q => _api.EnqueuedJobs(q.Name, 0, take))
+                    .Where(kv => ContainsUser(kv.Value, _userContext.UserId))
+                    .Select(kv =>
                     {
                         var dto = kv.Value;
-                        if (ContainsUser(dto, _userContext.UserId))
+                        var noteTitle = connection.GetJobParameter(kv.Key, "NoteTitle") ?? "Unknown Note";
+                        var timestamp = connection.GetJobParameter(kv.Key, "Timestamp");
+                        var customJobId = connection.GetJobParameter(kv.Key, "CustomJobId") ?? kv.Key;
+
+                        return new QuizJobDTO
                         {
-                            var noteTitle = connection.GetJobParameter(kv.Key, "NoteTitle") ?? "Unknown Note";
-                            var timestamp = connection.GetJobParameter(kv.Key, "Timestamp");
-                            var customJobId = connection.GetJobParameter(kv.Key, "CustomJobId") ?? kv.Key;
-                            
-                            rs.Result.Add(new QuizJobDTO
-                            {
-                                JobId = customJobId,
-                                UserId = _userContext.UserId,
-                                NoteTitle = noteTitle,
-                                Status = "processing",
-                                Timestamp = timestamp ?? (dto.EnqueuedAt ?? DateTime.UtcNow).ToString("o"),
-                                CreatedAt = dto.EnqueuedAt ?? DateTime.UtcNow
-                            });
-                        }
-                    }
-                }
-                
-                rs.Result = rs.Result
+                            JobId = customJobId,
+                            UserId = _userContext.UserId,
+                            NoteTitle = noteTitle,
+                            Status = "processing",
+                            Timestamp = timestamp ?? (dto.EnqueuedAt ?? DateTime.UtcNow).ToString("o"),
+                            CreatedAt = dto.EnqueuedAt ?? DateTime.UtcNow
+                        };
+                    })
                     .GroupBy(j => j.JobId)
                     .Select(g => g.First())
                     .OrderByDescending(j => j.CreatedAt)
                     .Take(10)
                     .ToList();
+
             }
             catch (Exception ex)
             {

@@ -23,7 +23,6 @@ interface ProviderProps {
 const API_BASE = import.meta.env.VITE_API_URL_BASIC;
 const STORAGE_KEY = "studynest_quiz_jobs_cache";
 
-// ✅ Utility functions for localStorage cache
 const saveJobsToCache = (jobs: QuizJob[]) => {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(jobs));
@@ -48,14 +47,6 @@ const loadJobsFromCache = (): QuizJob[] => {
   }
 };
 
-const clearJobsCache = () => {
-  try {
-    localStorage.removeItem(STORAGE_KEY);
-  } catch (error) {
-    console.error("Failed to clear jobs cache:", error);
-  }
-};
-
 export const QuizJobProvider = ({
   children,
   hubUrl,
@@ -77,7 +68,6 @@ export const QuizJobProvider = ({
   );
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  // ✅ Step 1: Load từ localStorage ngay khi mount (instant display)
   useEffect(() => {
     const cachedJobs = loadJobsFromCache();
     if (cachedJobs.length > 0) {
@@ -89,20 +79,17 @@ export const QuizJobProvider = ({
     setIsInitialLoad(false);
   }, [dispatch]);
 
-  // ✅ Step 2: Fetch từ API để có fresh data (enabled ngay, không đợi SignalR)
-  const { data: processingJobs, isLoading: isLoadingProcessing } =
+  const { data: processingJobs} =
     useGetProcessingJobs({
-      enabled: !isInitialLoad, // Fetch ngay sau khi load cache
+      enabled: !isInitialLoad,
       refetchInterval: false,
     });
 
-  // ✅ Hook 2: Fetch recent jobs when reconnecting (to sync missed updates)
   const { data: recentJobs, refetch: refetchRecent } = useGetRecentJobs({
     enabled: false, // Only fetch manually on reconnect
     sinceEpochMs: lastDisconnectTime ?? Date.now(),
   });
 
-  // ✅ Step 3: Sync processing jobs từ API to Redux (merge with cache)
   useEffect(() => {
     if (processingJobs && processingJobs.length > 0) {
       console.log(`� Fetched ${processingJobs.length} fresh jobs from API`);
@@ -112,7 +99,6 @@ export const QuizJobProvider = ({
     }
   }, [processingJobs, dispatch]);
 
-  // ✅ Sync recent jobs to Redux
   useEffect(() => {
     if (recentJobs && recentJobs.length > 0) {
       console.log(`📥 Syncing ${recentJobs.length} recent jobs to Redux`);
@@ -126,7 +112,6 @@ export const QuizJobProvider = ({
     }
   }, [recentJobs, dispatch]);
 
-  // ✅ Step 4: Auto-save Redux state to localStorage whenever it changes
   useEffect(() => {
     if (!isInitialLoad && jobs.length > 0) {
       saveJobsToCache(jobs);
@@ -174,7 +159,6 @@ export const QuizJobProvider = ({
       console.log("✅ SignalR reconnected, syncing missed updates...");
       setConnectionStatus("connected");
 
-      // ✅ Refetch recent jobs to sync missed updates
       await refetchRecent();
     });
 
@@ -247,7 +231,6 @@ export const QuizJobProvider = ({
         setConnectionStatus("connected");
         console.log("✅ QuizJob SignalR connected");
 
-        // ✅ Initial sync will be triggered by useEffect when connectionStatus changes
       } catch (err) {
         console.error("❌ QuizJob SignalR start error:", err);
         setConnectionStatus("disconnected");
@@ -266,7 +249,6 @@ export const QuizJobProvider = ({
     };
   }, [dispatch, hubUrl, getAccessToken]);
 
-  // Auto-cleanup mỗi 30s
   useEffect(() => {
     const id = setInterval(() => {
       dispatch(cleanupOldJobs());
