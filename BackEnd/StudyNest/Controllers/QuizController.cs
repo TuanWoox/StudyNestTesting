@@ -57,10 +57,10 @@ namespace StudyNest.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateQuiz(CreateQuizDTO model)
         {
-            var rs = new ReturnResult<object>();
+            var rs = new ReturnResult<CreateQuizJobResponseDTO>();
             try
             {
-                rs = await _quizBusiness.GenerateAsync(model);
+                rs = await _quizBusiness.EnqueueGenerateAsync(model);
             }
             catch (Exception ex)
             {
