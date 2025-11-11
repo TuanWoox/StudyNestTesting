@@ -20,7 +20,7 @@ namespace StudyNest.Controllers
         }
 
         [HttpGet("processing")]
-        public async Task<ActionResult<IActionResult>> GetProcessing()
+        public async Task<IActionResult> GetProcessing()
         {
             var rs = new ReturnResult<List<QuizJobDTO>> ();
             try
@@ -34,7 +34,7 @@ namespace StudyNest.Controllers
             return Ok(rs);
         }
         [HttpGet("recent")]
-        public async Task<ActionResult<IActionResult>> GetRecent(long sinceEpochMs)
+        public async Task<IActionResult> GetRecent(long sinceEpochMs)
         {
             var rs = new ReturnResult<List<QuizJobDTO>>();
             try
