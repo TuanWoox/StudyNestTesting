@@ -9,17 +9,17 @@ import Register from "./features/auth/Register";
 
 // User features
 import NotesPage from "./features/user/notes/Notes/NotesPage";
-import Quizzes from "./features/user/Quizzes";
+import Quizzes from "./features/user/quizzes/Quizzes/Quizzes";
 import Analytics from "./features/user/Analytics";
 import Feedback from "./features/user/Feedback";
 
 // Admin features
 import Dashboard from "./features/admin/Dashboard";
 import ManageUser from "./features/admin/ManageUser";
-import AdminFeedback from "./features/admin/ManageFeedback";;
-import QuizGeneration from "./features/user/quizzes/QuizGeneration";
-import QuizDetailPage from "./features/user/quizzes/QuizDetailPage";
-import QuizView from "./features/user/quizzes/QuizAttempt/QuizView";
+import AdminFeedback from "./features/admin/ManageFeedback";
+import QuizGeneration from "./features/user/quizzes/QuizGeneration/QuizGeneration";
+import QuizDetailPage from "./features/user/quizzes/QuizDetailPage/QuizDetailPage";
+import QuizView from "./features/user/quizzes/QuizAttempt/QuizAttemptView";
 import QuizResultView from "./features/user/quizzes/QuizAttemptResult/QuizResultView";
 import { LandingPage } from "./features/guest/HomePage/HomePage";
 
@@ -42,8 +42,8 @@ export const router = createBrowserRouter([
       { path: "quiz", element: <Quizzes /> },
       { path: "quiz/generate", element: <QuizGeneration /> },
       { path: "quiz/:id", element: <QuizDetailPage /> },
-      { path: "quizAttempt/:id", element: <QuizView /> },
-      { path: "quizAttemptResult/:id", element: <QuizResultView /> },
+      { path: "quiz/quizAttempt/:id", element: <QuizView /> },
+      { path: "quiz/quizAttemptResult/:id", element: <QuizResultView /> },
       { path: "analytics", element: <Analytics /> },
       { path: "feedback", element: <Feedback /> },
     ],

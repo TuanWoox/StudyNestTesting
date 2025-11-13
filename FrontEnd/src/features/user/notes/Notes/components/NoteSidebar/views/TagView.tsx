@@ -36,8 +36,6 @@ const TagView: React.FC<Props> = ({
     const borderColor = `${token.colorPrimary}E0`;
     const shadowColor = `${token.colorPrimary}55`;
 
-    // const filteredTags = tags.filter((t) => t.name.toLowerCase().includes(searchTerm.toLowerCase()));
-
     const items = tags.map((tag) => ({
         key: tag.id,
         label: (

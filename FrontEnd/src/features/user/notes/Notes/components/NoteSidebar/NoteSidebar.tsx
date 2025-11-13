@@ -96,10 +96,6 @@ const NoteSidebar: React.FC<NoteSidebarProps> = ({
     const darkMode = useReduxSelector(selectDarkMode);
     const { token } = theme.useToken();
 
-    // const filteredNotes = notes.filter((note) =>
-    //     note.title.toLowerCase().includes(searchTerm.toLowerCase())
-    // );
-
     const borderColor = `${token.colorPrimary}E0`; // 88% opacity
 
     return (

@@ -4,7 +4,6 @@ import { PlusOutlined } from "@ant-design/icons";
 import NoteCard from "@/features/user/notes/Notes/components/NoteCard";
 import { Folder, Note } from "@/types/note/notes";
 
-
 interface Props {
     notes: Note[];
     selectedNote: Note | null;

@@ -62,11 +62,6 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
         onClose();
     };
 
-    const borderColor = `${token.colorPrimary}E0`;
-    const shadowColor = `${token.colorPrimary}55`;
-    const hoverShadowColor = `${token.colorPrimary}88`;
-    const backgroundColor = token.colorPrimaryBg;
-    const textColor = darkMode ? "#E5E7EB" : "#111827";
 
     return (
         <>

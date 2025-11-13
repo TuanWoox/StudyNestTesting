@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Card, Tag as AntTag, Tooltip, Button, Modal, theme } from "antd";
-import { DeleteOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
+import { Card, Tag as AntTag, Tooltip, Button, theme } from "antd";
+import { DeleteOutlined } from "@ant-design/icons";
 import { Note } from "@/types/note/notes";
 import { getPlainTextFromEditorJs } from "@/utils/getPlainTextFromEditorJs";
 import useDeleteNote from "@/hooks/noteHook/useDeleteNote";
@@ -35,9 +35,6 @@ const NoteCard: React.FC<NoteCardProps> = ({
     const primary = token.colorPrimary;
     const borderColor = `${primary}E0`;
     const shadowColor = `${primary}55`;
-    const hoverShadowColor = `${token.colorPrimary}88`; // hover sáng hơn
-    const backgroundColor = token.colorPrimaryBg;
-    const textColor = darkMode ? "#E5E7EB" : "#111827";
 
     // Show confirmation modal
     const showDeleteModal = (e: React.MouseEvent) => {

@@ -7,7 +7,6 @@ import useGetAllNote from "@/hooks/noteHook/useGetAllNote";
 import NoteSidebar from "./components/NoteSidebar/NoteSidebar";
 import NoteEditor from "../NoteEditor/NoteEditor";
 import ModalFolder from "./components/ModalFolder";
-import Spinner from "@/components/Spinner/Spinner";
 import NoteFilterModal from "./components/NoteFilterModal";
 import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
 import { selectDarkMode } from "@/store/themeSlice";
@@ -34,46 +33,13 @@ const NotesPage: React.FC = () => {
     const debouncedSearchFolder = useDebounce(searchFolder, 500);
     const debouncedSearchTag = useDebounce(searchTag, 500);
 
-    // const [filterFolderId, setFilterFolderId] = useState<string | null>(null);
-    // const [filterTagIds, setFilterTagIds] = useState<string[]>([]);
     const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-
+    // Filter Note
     const [createdFilterRange, setCreatedFilterRange] = useState<[Dayjs | null, Dayjs | null]>([null, null]);
     const [modifiedFilterRange, setModifiedFilterRange] = useState<[Dayjs | null, Dayjs | null]>([null, null]);
-
-    // Thêm sort (nếu muốn sau này có menu chọn sort)
+    // Sort Note
     const [sortField, setSortField] = useState<"dateCreated" | "dateModified" | "title">("dateCreated");
     const [sortDir, setSortDir] = useState<SortOrderType>(SortOrderType.DESC);
-
-    // const {
-    //     data: noteData,
-    //     isLoading: loadingNotes,
-    //     isError: errorNotes,
-    // } = useGetAllNote({ pageSize: pageSize, pageNumber: page - 1, searchTerm: debouncedSearchNote });
-
-    // const {
-    //     data: noteData,
-    //     isLoading: loadingNotes,
-    //     isError: errorNotes,
-    // } = useGetAllNote({
-    //     pageSize: pageSize,
-    //     pageNumber: page - 1,
-    //     searchTerm: debouncedSearchNote,
-    //     folderId: filterFolderId ?? undefined,
-    //     tagIds: filterTagIds.length ? filterTagIds : undefined,
-    // });
-
-    // const {
-    //     data: noteData,
-    //     isLoading: loadingNotes,
-    //     isError: errorNotes,
-    // } = useGetAllNote({
-    //     pageSize,
-    //     pageNumber: page - 1,
-    //     searchTerm: debouncedSearchNote,
-    //     sortField,
-    //     sortDir,
-    // });
 
     const {
         data: noteData,
@@ -85,7 +51,7 @@ const NotesPage: React.FC = () => {
         searchTerm: debouncedSearchNote,
         sortField,
         sortDir,
-        createdRange: createdFilterRange, // state lưu range từ NoteFilterModal
+        createdRange: createdFilterRange,
         modifiedRange: modifiedFilterRange,
     });
 
@@ -95,7 +61,6 @@ const NotesPage: React.FC = () => {
         isError: errorTags,
     } = useGetAllTag({ pageSize: tagPageSize, pageNumber: tagPage - 1, searchTerm: debouncedSearchTag });
 
-    // Gọi API lấy folders có phân trang
     const {
         data: folderData,
         isLoading: loadingFolders,
@@ -137,9 +102,6 @@ const NotesPage: React.FC = () => {
 
     const [isEditorVisible, setIsEditorVisible] = useState(false);
 
-
-    // if (loadingNotes || loadingFolders || loadingTags)
-    //     return <Spinner></Spinner>;
     if (errorNotes || errorFolders || errorTags) return <div className="p-4 text-red-500">Failed to load folders.</div>;
 
     const handleCreateNote = (folder?: Folder) => {
@@ -218,34 +180,7 @@ const NotesPage: React.FC = () => {
                 onOpenFilter={() => setIsFilterModalOpen(true)}
             />
 
-            {/* Filter modal placed at page level so it has folders/tags data */}
-            {/* <NoteFilterModal
-                open={isFilterModalOpen}
-                folders={folders}
-                tags={tags}
-                defaultFolderId={filterFolderId}
-                defaultTagIds={filterTagIds}
-                onCancel={() => setIsFilterModalOpen(false)}
-                onApply={({ folderId, tagIds }) => {
-                    setFilterFolderId(folderId ?? null);
-                    setFilterTagIds(tagIds ?? []);
-                    setPage(1); // reset to first page
-                    setIsFilterModalOpen(false);
-                }}
-            /> */}
-            {/* <NoteFilterModal
-                open={isFilterModalOpen}
-                defaultSortBy={sortField}
-                defaultSortOrder={sortDir}
-                onCancel={() => setIsFilterModalOpen(false)}
-                onApply={({ sortBy, sortOrder }) => {
-                    // cập nhật state sort của NotesPage
-                    setSortField((sortBy as "dateCreated" | "dateModified" | "title") ?? "dateCreated");
-                    setSortDir((sortOrder as SortOrderType) ?? SortOrderType.DESC);
-                    setPage(1); // reset về trang đầu tiên khi thay đổi sort
-                    setIsFilterModalOpen(false);
-                }}
-            /> */}
+            {/* Filter modal */}
             <NoteFilterModal
                 open={isFilterModalOpen}
                 defaultSortBy={sortField}

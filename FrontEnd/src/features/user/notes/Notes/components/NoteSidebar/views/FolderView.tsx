@@ -42,8 +42,6 @@ const FolderView: React.FC<Props> = ({
     const borderColor = `${token.colorPrimary}E0`;
     const shadowColor = `${token.colorPrimary}55`;
 
-    // const filteredFolders = folders.filter((f) => f.folderName.toLowerCase().includes(searchTerm.toLowerCase()));
-
     const items = folders.map((folder) => {
         const menu = (
             <Menu
