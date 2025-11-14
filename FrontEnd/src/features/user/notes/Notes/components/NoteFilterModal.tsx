@@ -6,14 +6,10 @@ import {
     SortDescendingOutlined,
     CalendarOutlined,
 } from "@ant-design/icons";
-import dayjs, { Dayjs } from "dayjs";
+import { Dayjs } from "dayjs";
+import { disabledFuture, getDisabledStartDate, getDisabledEndDate } from "@/utils/datePickerDisableHelpers";
 
 const { useBreakpoint } = Grid;
-
-const disabledDate = (current?: Dayjs) => {
-    if (!current) return false;
-    return current.isAfter(dayjs(), "day"); // không chọn ngày tương lai
-};
 
 interface Props {
     open: boolean;
@@ -58,6 +54,13 @@ const NoteFilterModal: React.FC<Props> = ({
     const borderColor = `${token.colorPrimary}55`;
     const shadowColor = `${token.colorPrimary}55`;
     const backgroundColor = token.colorBgElevated;
+
+    // --- range helpers ---
+    const disabledCreatedStartDate = getDisabledStartDate(createdRange);
+    const disabledCreatedEndDate = getDisabledEndDate(createdRange);
+
+    const disabledModifiedStartDate = getDisabledStartDate(modifiedRange);
+    const disabledModifiedEndDate = getDisabledEndDate(modifiedRange);
 
     return (
         <Modal
@@ -158,36 +161,40 @@ const NoteFilterModal: React.FC<Props> = ({
                         <CalendarOutlined /> Filter by Date Created
                     </Divider>
                     {screens.md ? (
-                        // Desktop: RangePicker
+                        // Desktop: RangePicker (keep existing behavior)
                         <DatePicker.RangePicker
                             value={createdRange}
-                            disabledDate={disabledDate}
+                            disabledDate={disabledFuture}
                             size={pickerSize}
-                            onChange={(values) => setCreatedRange((values as [Dayjs | null, Dayjs | null]) ?? [null, null])}
+                            onChange={(values) =>
+                                setCreatedRange((values as [Dayjs | null, Dayjs | null]) ?? [null, null])
+                            }
                             style={{ width: "100%", boxShadow: `2px 2px 0 ${shadowColor}` }}
                             format="YYYY-MM-DD"
                             allowClear
                         />
                     ) : (
-                        // Mobile: two DatePickers
+                        // Mobile: two DatePickers with safeguards
                         <Space direction="vertical" style={{ width: "100%" }}>
                             <DatePicker
                                 placeholder="Start Date"
                                 value={createdRange[0]}
-                                disabledDate={disabledDate}
+                                disabledDate={disabledCreatedStartDate}
                                 size={pickerSize}
                                 onChange={(d) => setCreatedRange([d, createdRange[1]])}
                                 style={{ width: "100%", boxShadow: `2px 2px 0 ${shadowColor}` }}
                                 format="YYYY-MM-DD"
+                                allowClear
                             />
                             <DatePicker
                                 placeholder="End Date"
                                 value={createdRange[1]}
-                                disabledDate={disabledDate}
+                                disabledDate={disabledCreatedEndDate}
                                 size={pickerSize}
                                 onChange={(d) => setCreatedRange([createdRange[0], d])}
                                 style={{ width: "100%", boxShadow: `2px 2px 0 ${shadowColor}` }}
                                 format="YYYY-MM-DD"
+                                allowClear
                             />
                         </Space>
                     )}
@@ -208,9 +215,11 @@ const NoteFilterModal: React.FC<Props> = ({
                     {screens.md ? (
                         <DatePicker.RangePicker
                             value={modifiedRange}
-                            disabledDate={disabledDate}
+                            disabledDate={disabledFuture}
                             size={pickerSize}
-                            onChange={(values) => setModifiedRange((values as [Dayjs | null, Dayjs | null]) ?? [null, null])}
+                            onChange={(values) =>
+                                setModifiedRange((values as [Dayjs | null, Dayjs | null]) ?? [null, null])
+                            }
                             style={{ width: "100%", boxShadow: `2px 2px 0 ${shadowColor}` }}
                             format="YYYY-MM-DD"
                             allowClear
@@ -220,20 +229,22 @@ const NoteFilterModal: React.FC<Props> = ({
                             <DatePicker
                                 placeholder="Start Date"
                                 value={modifiedRange[0]}
-                                disabledDate={disabledDate}
+                                disabledDate={disabledModifiedStartDate}
                                 size={pickerSize}
                                 onChange={(d) => setModifiedRange([d, modifiedRange[1]])}
                                 style={{ width: "100%", boxShadow: `2px 2px 0 ${shadowColor}` }}
                                 format="YYYY-MM-DD"
+                                allowClear
                             />
                             <DatePicker
                                 placeholder="End Date"
                                 value={modifiedRange[1]}
-                                disabledDate={disabledDate}
+                                disabledDate={disabledModifiedEndDate}
                                 size={pickerSize}
                                 onChange={(d) => setModifiedRange([modifiedRange[0], d])}
                                 style={{ width: "100%", boxShadow: `2px 2px 0 ${shadowColor}` }}
                                 format="YYYY-MM-DD"
+                                allowClear
                             />
                         </Space>
                     )}

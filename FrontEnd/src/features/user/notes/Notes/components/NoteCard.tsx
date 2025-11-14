@@ -7,6 +7,7 @@ import useDeleteNote from "@/hooks/noteHook/useDeleteNote";
 import ModalConfirm from "@/components/ModalConfirm/ModalConfirm";
 import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
 import { selectDarkMode } from "@/store/themeSlice";
+import { formatDMY } from "@/utils/date";
 
 interface NoteCardProps {
     note: Note;
@@ -158,7 +159,7 @@ const NoteCard: React.FC<NoteCardProps> = ({
                 </div>
 
                 {/* Tags */}
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 mb-3">
                     {tags.length > 0 ? (
                         tags.map((tag) => (
                             <AntTag
@@ -184,6 +185,29 @@ const NoteCard: React.FC<NoteCardProps> = ({
                             No tags
                         </span>
                     )}
+                </div>
+
+                {/* Dates */}
+                <div
+                    className="text-xs"
+                    style={{ fontStyle: "italic" }}
+                >
+                    <div className="flex gap-1 justify-end">
+                        <div className="opacity-90">
+                            Created:
+                        </div>
+                        <div style={{ fontWeight: 700 }}>
+                            {note.dateCreated ? formatDMY(note.dateCreated) : "N/A"}
+                        </div>
+                    </div>
+                    <div className="flex gap-1 justify-end">
+                        <div className="opacity-90">
+                            Modified:
+                        </div>
+                        <div style={{ fontWeight: 700 }}>
+                            {note.dateModified ? formatDMY(note.dateModified) : "N/A"}
+                        </div>
+                    </div>
                 </div>
             </Card>
         </>
