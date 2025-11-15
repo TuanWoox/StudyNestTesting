@@ -6,6 +6,7 @@ import {
   LogoutOutlined,
 } from "@ant-design/icons";
 import { Avatar, Dropdown, Menu, ConfigProvider, Space, theme } from "antd";
+import enUS from "antd/locale/en_US";
 import { SunIcon, MoonIcon } from "@heroicons/react/24/outline";
 import logo from "@/assets/react.svg";
 import { ERole } from "@/utils/enums/ERole";
@@ -95,6 +96,7 @@ const InnerLayout = () => {
           fontSize: 15,
         }
       }}
+      locale={enUS}
     >
       <div
         className={`transition-colors duration-500 ${darkMode ? "bg-[#0f0f0f] text-white" : "bg-gray-50 text-black"
