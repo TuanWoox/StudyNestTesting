@@ -3,7 +3,7 @@ import { Card, Typography, Space, Row, Col, Divider, theme } from "antd";
 import { EyeOutlined } from "@ant-design/icons";
 import { Note } from "@/types/note/notes";
 import type { CreateQuizDTO } from "@/types/quiz/createQuizDTO";
-import NoteCard from "@/features/user/notes/NoteSidebar/NoteCard";
+import NoteCard from "@/features/user/notes/Notes/components/NoteCard";
 import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
 import { HeaderStep } from "../components";
 

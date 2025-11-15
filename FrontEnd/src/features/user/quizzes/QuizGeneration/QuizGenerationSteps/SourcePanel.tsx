@@ -15,7 +15,7 @@ import {
 import { SearchOutlined, FileOutlined } from "@ant-design/icons";
 import type { FormInstance } from "antd";
 import useGetAllNote from "@/hooks/noteHook/useGetAllNote";
-import NoteCard from "@/features/user/notes/NoteSidebar/NoteCard";
+import NoteCard from "@/features/user/notes/Notes/components/NoteCard";
 import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
 import { HeaderStep } from "../components";
 
