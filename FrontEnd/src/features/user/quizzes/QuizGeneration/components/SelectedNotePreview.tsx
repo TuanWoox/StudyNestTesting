@@ -1,7 +1,7 @@
 import React from "react";
 import { Card, Typography, theme } from "antd";
 import { Note } from "@/types/note/notes";
-import NoteCard from "@/features/user/notes/NoteSidebar/NoteCard";
+import NoteCard from "@/features/user/notes/Notes/components/NoteCard";
 
 const { Title, Text } = Typography;
 const { useToken } = theme;
