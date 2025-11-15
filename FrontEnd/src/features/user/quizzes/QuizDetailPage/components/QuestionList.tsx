@@ -1,23 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { Flex, Button, Typography, Empty, Space, Collapse, theme } from "antd";
-import {
-  PlusOutlined,
-  InboxOutlined,
-  UpOutlined,
-  DownOutlined,
-} from "@ant-design/icons";
+import { Collapse, theme } from "antd";
 
 const { useToken } = theme;
 import { QuestionForm } from "./QuestionForm";
 import { QuestionItem } from "./QuestionItem";
+import { QuestionListHeader } from "./QuestionListHeader";
+import { QuestionListEmpty } from "./QuestionListEmpty";
 import useUpdateQuestion from "@/hooks/questionHook/useUpdateQuestion";
 import useCreateQuestion from "@/hooks/questionHook/useCreateQuestion";
 import useDeleteQuestion from "@/hooks/questionHook/useDeleteQuestion";
 import type { Question } from "@/types/quiz/quiz";
 import type { CreateQuestionDTO } from "@/types/question/createQuestionDTO";
 import type { UpdateQuestionDTO } from "@/types/question/updateQuestionDTO";
-
-const { Title, Text } = Typography;
 
 interface QuestionListProps {
   quizId: string;
@@ -136,69 +130,12 @@ const QuestionList: React.FC<QuestionListProps> = ({
   return (
     <>
       {/* Header Section */}
-      <Flex
-        justify="space-between"
-        align="center"
-        style={{
-          marginBottom: token.marginLG,
-        }}
-        wrap="wrap"
-        gap={token.margin}
-      >
-        <Space direction="vertical" size={token.marginXXS}>
-          <Title
-            level={4}
-            style={{ margin: 0, fontFamily: "monospace", fontWeight: 700 }}
-          >
-            Questions
-          </Title>
-          <Text
-            type="secondary"
-            style={{ fontSize: isMobile ? 12 : 14, fontFamily: "monospace" }}
-          >
-            {questions.length === 0
-              ? "No questions yet"
-              : `${questions.length} question${
-                  questions.length > 1 ? "s" : ""
-                }`}
-          </Text>
-        </Space>
-        <Space wrap>
-          {questions.length > 0 && (
-            <Button
-              icon={isAllExpanded ? <UpOutlined /> : <DownOutlined />}
-              onClick={handleToggleAllQuestions}
-              style={{
-                borderRadius: 0,
-                height: isMobile ? 36 : 44,
-                paddingLeft: isMobile ? token.padding : token.paddingLG,
-                paddingRight: isMobile ? token.padding : token.paddingLG,
-                fontWeight: 600,
-                fontFamily: "monospace",
-              }}
-              size={isMobile ? "middle" : "large"}
-            >
-              {isAllExpanded ? "Collapse All" : "Expand All"}
-            </Button>
-          )}
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={handleStartAddQuestion}
-            size={isMobile ? "middle" : "large"}
-            style={{
-              borderRadius: 0,
-              height: isMobile ? 36 : 44,
-              paddingLeft: isMobile ? token.padding : token.paddingLG,
-              paddingRight: isMobile ? token.padding : token.paddingLG,
-              fontWeight: 600,
-              fontFamily: "monospace",
-            }}
-          >
-            {isMobile ? "Add" : "Add Question"}
-          </Button>
-        </Space>
-      </Flex>
+      <QuestionListHeader
+        questionCount={questions.length}
+        isAllExpanded={isAllExpanded}
+        onToggleAll={handleToggleAllQuestions}
+        onAddQuestion={handleStartAddQuestion}
+      />
 
       {/* Content Section */}
       <div
@@ -299,57 +236,7 @@ const QuestionList: React.FC<QuestionListProps> = ({
           />
         ) : (
           !isAddingQuestion && (
-            <Empty
-              image={
-                <InboxOutlined
-                  style={{ fontSize: 64, color: token.colorTextDisabled }}
-                />
-              }
-              description={
-                <Space direction="vertical" size={token.marginXS}>
-                  <Text
-                    strong
-                    style={{
-                      fontSize: 16,
-                      color: token.colorText,
-                      fontFamily: "monospace",
-                    }}
-                  >
-                    No Questions Yet
-                  </Text>
-                  <Text
-                    type="secondary"
-                    style={{ fontSize: 14, fontFamily: "monospace" }}
-                  >
-                    Click "Add Question" to create your first question
-                  </Text>
-                </Space>
-              }
-              style={{
-                padding: "60px 20px",
-                backgroundColor: token.colorBgLayout,
-                borderRadius: 0,
-                border: borderColor,
-                boxShadow: shadowColor,
-              }}
-            >
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={handleStartAddQuestion}
-                size="large"
-                style={{
-                  borderRadius: 0,
-                  height: 44,
-                  paddingLeft: 32,
-                  paddingRight: 32,
-                  fontFamily: "monospace",
-                  fontWeight: 600,
-                }}
-              >
-                Add Your First Question
-              </Button>
-            </Empty>
+            <QuestionListEmpty onAddQuestion={handleStartAddQuestion} />
           )
         )}
       </div>

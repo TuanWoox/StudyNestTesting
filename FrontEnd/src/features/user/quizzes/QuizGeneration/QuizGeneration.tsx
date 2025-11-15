@@ -1,42 +1,44 @@
-import React, { useState, useRef, useEffect } from "react";
-import { Steps, Card, Flex, Typography, Button, Form, theme } from "antd";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Card, Form, theme } from "antd";
 import {
-  ArrowLeftOutlined,
   FileOutlined,
   SettingOutlined,
   EyeOutlined,
-  LoadingOutlined,
 } from "@ant-design/icons";
 
 import { SourcePanel } from "./QuizGenerationSteps/SourcePanel";
 import { OptionsPanel } from "./QuizGenerationSteps/OptionsPanel";
 import { ReviewPanel } from "./QuizGenerationSteps/ReviewPanel";
+import {
+  QuizGenerationHeader,
+  QuizGenerationStepsNav,
+  QuizGenerationActions,
+} from "./components";
 
 import type { CreateQuizDTO } from "@/types/quiz/createQuizDTO";
 import useGenerateQuiz from "@/hooks/quizHook/useGenerateQuiz";
 import useGetAllNote from "@/hooks/noteHook/useGetAllNote";
+import { useCollapsibleHeader } from "@/hooks/common/useCollapsibleHeader";
 
-const { Title, Text } = Typography;
 const { useToken } = theme;
 
 const QuizGeneration: React.FC = () => {
   const { token } = useToken();
 
-  // Theme constants
-  const borderColor = `2px solid ${token.colorPrimary}E0`;
-  const shadowColor = `4px 4px 0px ${token.colorPrimary}55`;
-
   const [current, setCurrent] = useState(0);
   const [form] = Form.useForm();
-  const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false);
-  const [headerHeight, setHeaderHeight] = useState(0);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const headerRef = useRef<HTMLDivElement>(null);
-  const lastScrollTopRef = useRef(0);
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
   const { generateQuiz, isLoading } = useGenerateQuiz();
+
+  // Collapsible header hook
+  const { isHeaderCollapsed, scrollContainerRef, headerRef } =
+    useCollapsibleHeader({
+      dependencies: [current, isMobile],
+      scrollThreshold: 5,
+      collapseThreshold: 100,
+    });
+
   // Quiz options state
   const [createQuiz, setCreateQuiz] = useState<CreateQuizDTO>({
     noteId: "",
@@ -58,42 +60,6 @@ const QuizGeneration: React.FC = () => {
   const selectedNote = notesData?.data?.find(
     (note) => note.id === selectedNoteId
   );
-
-  // Measure header height on mount and resize
-  useEffect(() => {
-    if (headerRef.current) {
-      setHeaderHeight(headerRef.current.offsetHeight);
-    }
-  }, [current, isMobile]); // Re-measure when step changes or mobile view changes
-
-  // Handle scroll to collapse/expand header
-  useEffect(() => {
-    const scrollContainer = scrollContainerRef.current;
-    if (!scrollContainer) return;
-
-    const handleScroll = () => {
-      const scrollTop = scrollContainer.scrollTop;
-      const lastScrollTop = lastScrollTopRef.current;
-      const delta = scrollTop - lastScrollTop;
-
-      if (Math.abs(delta) < 5) return;
-
-      const isScrollingDown = delta > 0;
-
-      if (isScrollingDown && scrollTop > 100 && !isHeaderCollapsed) {
-        setIsHeaderCollapsed(true);
-      } else if (!isScrollingDown && isHeaderCollapsed) {
-        setIsHeaderCollapsed(false);
-      }
-
-      lastScrollTopRef.current = scrollTop <= 0 ? 0 : scrollTop;
-    };
-
-    scrollContainer.addEventListener("scroll", handleScroll, { passive: true });
-    return () => {
-      scrollContainer.removeEventListener("scroll", handleScroll);
-    };
-  }, [isHeaderCollapsed, headerHeight]);
 
   // Navigation
   const next = async () => {
@@ -176,63 +142,9 @@ const QuizGeneration: React.FC = () => {
             padding: isMobile ? 16 : 32,
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: 24,
-            }}
-          >
-            <div>
-              <Title
-                level={3}
-                style={{ margin: 0, fontFamily: "monospace", fontWeight: 700 }}
-              >
-                Quiz Generation
-              </Title>
-              <Text type="secondary" style={{ fontFamily: "monospace" }}>
-                Create a customized quiz from your notes to test your knowledge
-              </Text>
-            </div>
-            <Link to="/user/quiz">
-              <Button
-                icon={<ArrowLeftOutlined />}
-                disabled={isLoading}
-                style={{
-                  borderRadius: 0,
-                  fontFamily: "monospace",
-                  fontWeight: 600,
-                }}
-              >
-                Back to Quizzes
-              </Button>
-            </Link>
-          </div>
+          <QuizGenerationHeader isLoading={isLoading} isMobile={isMobile} />
 
-          <Steps
-            current={current}
-            responsive={false}
-            size="small"
-            type="navigation"
-            className="custom-steps"
-          >
-            {steps.map((item, index) => (
-              <Steps.Step
-                key={item.title}
-                title={item.title}
-                icon={item.icon}
-                status={
-                  current === index
-                    ? "process"
-                    : current > index
-                    ? "finish"
-                    : "wait"
-                }
-                disabled={isLoading}
-              />
-            ))}
-          </Steps>
+          <QuizGenerationStepsNav current={current} isLoading={isLoading} />
         </div>
       </div>
 
@@ -262,68 +174,15 @@ const QuizGeneration: React.FC = () => {
             <div style={{ margin: "0 auto" }}>{steps[current].content}</div>
           </div>
 
-          <Flex
-            justify="flex-end"
-            style={{
-              borderTop: `1px solid ${token.colorBorder}`,
-              padding: isMobile ? 16 : 24,
-              position: "sticky",
-              bottom: 0,
-              backgroundColor: token.colorBgContainer,
-              zIndex: 9,
-            }}
-          >
-            <div>
-              {current > 0 && (
-                <Button
-                  style={{
-                    marginRight: 12,
-                    borderRadius: 0,
-                    fontFamily: "monospace",
-                    fontWeight: 600,
-                  }}
-                  onClick={prev}
-                  disabled={isLoading}
-                  size="large"
-                >
-                  Previous
-                </Button>
-              )}
-              {current < steps.length - 1 && (
-                <Button
-                  type="primary"
-                  onClick={next}
-                  disabled={isLoading}
-                  size="large"
-                  style={{
-                    minWidth: 100,
-                    borderRadius: 0,
-                    fontFamily: "monospace",
-                    fontWeight: 600,
-                  }}
-                >
-                  Next
-                </Button>
-              )}
-              {current === steps.length - 1 && (
-                <Button
-                  type="primary"
-                  onClick={handleGenerateQuiz}
-                  loading={isLoading}
-                  icon={isLoading ? <LoadingOutlined /> : undefined}
-                  size="large"
-                  style={{
-                    minWidth: 160,
-                    borderRadius: 0,
-                    fontFamily: "monospace",
-                    fontWeight: 600,
-                  }}
-                >
-                  {isLoading ? "Generating Quiz..." : "Generate Quiz"}
-                </Button>
-              )}
-            </div>
-          </Flex>
+          <QuizGenerationActions
+            current={current}
+            totalSteps={steps.length}
+            isLoading={isLoading}
+            isMobile={isMobile}
+            onPrev={prev}
+            onNext={next}
+            onGenerate={handleGenerateQuiz}
+          />
         </Card>
       </div>
     </div>

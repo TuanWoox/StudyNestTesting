@@ -1,26 +1,10 @@
 import React, { useEffect, useMemo } from "react";
-import {
-  Card,
-  Form,
-  Input,
-  Empty,
-  Row,
-  Col,
-  Space,
-  Spin,
-  Typography,
-  Divider,
-  theme,
-} from "antd";
-import { SearchOutlined, FileOutlined } from "@ant-design/icons";
+import { Card, Space, Typography, Divider } from "antd";
 import type { FormInstance } from "antd";
 import useGetAllNote from "@/hooks/noteHook/useGetAllNote";
-import NoteCard from "@/features/user/notes/NoteSidebar/NoteCard";
-import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
-import { HeaderStep } from "../components";
+import { NoteSearchBar, NoteGrid } from "../components";
 
 const { Title, Text } = Typography;
-const { useToken } = theme;
 
 interface SourcePanelProps {
   selectedNoteId?: string;
@@ -37,12 +21,6 @@ export const SourcePanel: React.FC<SourcePanelProps> = ({
   setQuery,
   setSelectedNoteId,
 }) => {
-  const { token } = useToken();
-
-  // Theme constants
-  const borderColor = `2px solid ${token.colorPrimary}E0`;
-  const shadowColor = `4px 4px 0px ${token.colorPrimary}55`;
-
   // Fetch notes from API
   const { data: notesData, isLoading } = useGetAllNote();
 
@@ -101,15 +79,7 @@ export const SourcePanel: React.FC<SourcePanelProps> = ({
             >
               Find notes by title or tag
             </Text>
-            <Input
-              allowClear
-              size="large"
-              placeholder="Search by title or tag (e.g., React, DB)"
-              prefix={<SearchOutlined />}
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              style={{ width: "100%", fontFamily: "monospace" }}
-            />
+            <NoteSearchBar value={query} onChange={setQuery} />
           </div>
 
           <Divider style={{ margin: 0 }} />
@@ -137,33 +107,13 @@ export const SourcePanel: React.FC<SourcePanelProps> = ({
                 : "No notes available"}
             </Text>
 
-            {isLoading ? (
-              <div style={{ textAlign: "center", padding: "40px 0" }}>
-                <Spin size="large" />
-              </div>
-            ) : !filteredNotes || filteredNotes.length === 0 ? (
-              <Empty description="No notes found" />
-            ) : (
-              <Row gutter={[16, 16]}>
-                {filteredNotes.map((note) => {
-                  const isSelected = note.id === selectedNoteId;
-
-                  return (
-                    <Col xs={24} md={12} key={note.id}>
-                      <NoteCard
-                        note={note}
-                        isSelected={isSelected}
-                        onSelect={() => {
-                          setSelectedNoteId(note.id);
-                          form.setFieldsValue({ noteId: note.id });
-                        }}
-                        isDeleteAvailable={false}
-                      />
-                    </Col>
-                  );
-                })}
-              </Row>
-            )}
+            <NoteGrid
+              notes={filteredNotes}
+              isLoading={isLoading}
+              selectedNoteId={selectedNoteId}
+              form={form}
+              onSelectNote={setSelectedNoteId}
+            />
           </div>
         </Space>
       </Card>

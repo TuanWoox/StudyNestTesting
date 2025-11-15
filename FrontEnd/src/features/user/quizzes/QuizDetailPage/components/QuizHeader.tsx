@@ -1,19 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Typography, Flex, Button, Space, Input, message, theme } from "antd";
-import {
-  SaveOutlined,
-  CloseOutlined,
-  EditOutlined,
-  FormOutlined,
-  ArrowLeftOutlined,
-} from "@ant-design/icons";
+import { Flex, Space, message } from "antd";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import useUpdateQuiz from "@/hooks/quizHook/useUpdateQuiz";
 import { validateQuizTitle } from "@/utils/validation";
-
-const { Title } = Typography;
-const { useToken } = theme;
+import { QuizTitleEditor, QuizTitleDisplay, QuizActions } from "./";
 
 interface QuizHeaderProps {
   quiz: any;
@@ -28,12 +19,6 @@ const QuizHeader: React.FC<QuizHeaderProps> = ({
   showConfirmDiscard,
   onTakeQuiz,
 }) => {
-  const { token } = useToken();
-
-  // Theme constants
-  const borderColor = `2px solid ${token.colorPrimary}E0`;
-  const shadowColor = `4px 4px 0px ${token.colorPrimary}55`;
-
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -105,114 +90,19 @@ const QuizHeader: React.FC<QuizHeaderProps> = ({
       <Flex justify="space-between" align="center" wrap="wrap" gap={12}>
         <Space size={isMobile ? 8 : 16} style={{ flex: 1, minWidth: 0 }}>
           {isEditingTitle ? (
-            <Space wrap>
-              <Input
-                value={editedTitle}
-                onChange={(e) => setEditedTitle(e.target.value)}
-                maxLength={300}
-                style={{
-                  width: isMobile ? 200 : 400,
-                  minWidth: 150,
-                  fontFamily: "monospace",
-                  borderRadius: 0,
-                }}
-                size="large"
-                autoFocus
-                disabled={isUpdatingQuiz}
-                onPressEnter={handleSaveTitle}
-              />
-              <Button
-                type="primary"
-                icon={<SaveOutlined />}
-                onClick={handleSaveTitle}
-                size="large"
-                loading={isUpdatingQuiz}
-                style={{
-                  fontFamily: "monospace",
-                  fontWeight: 600,
-                  borderRadius: 0,
-                }}
-              >
-                {!isMobile && "Save"}
-              </Button>
-              <Button
-                icon={<CloseOutlined />}
-                onClick={handleCancelTitleEdit}
-                size="large"
-                disabled={isUpdatingQuiz}
-                style={{
-                  fontFamily: "monospace",
-                  fontWeight: 600,
-                  borderRadius: 0,
-                }}
-              >
-                {!isMobile && "Cancel"}
-              </Button>
-            </Space>
+            <QuizTitleEditor
+              value={editedTitle}
+              onChange={setEditedTitle}
+              onSave={handleSaveTitle}
+              onCancel={handleCancelTitleEdit}
+              isLoading={isUpdatingQuiz}
+            />
           ) : (
-            <Space style={{ overflow: "hidden" }}>
-              <Title
-                level={3}
-                style={{
-                  margin: 0,
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  maxWidth: isMobile ? "200px" : "500px",
-                  fontFamily: "monospace",
-                  fontWeight: 700,
-                }}
-                title={quiz.title}
-              >
-                {quiz.title}
-              </Title>
-              <Button
-                icon={<EditOutlined />}
-                onClick={handleEditTitle}
-                type="text"
-                style={{
-                  color: token.colorPrimary,
-                  fontFamily: "monospace",
-                  fontWeight: 600,
-                  borderRadius: 0,
-                }}
-                size={isMobile ? "small" : "middle"}
-              >
-                {!isMobile && "Edit"}
-              </Button>
-            </Space>
+            <QuizTitleDisplay title={quiz.title} onEdit={handleEditTitle} />
           )}
         </Space>
 
-        <Space wrap>
-          <Button
-            type="primary"
-            icon={<FormOutlined />}
-            onClick={onTakeQuiz}
-            size={isMobile ? "middle" : "large"}
-            style={{
-              whiteSpace: "nowrap",
-              fontFamily: "monospace",
-              fontWeight: 600,
-              borderRadius: 0,
-            }}
-          >
-            {!isMobile && "Take Quiz"}
-          </Button>
-          <Button
-            icon={<ArrowLeftOutlined />}
-            onClick={handleReturnQuiz}
-            size={isMobile ? "middle" : "large"}
-            style={{
-              whiteSpace: "nowrap",
-              fontFamily: "monospace",
-              fontWeight: 600,
-              borderRadius: 0,
-            }}
-          >
-            {!isMobile && "Back"}
-          </Button>
-        </Space>
+        <QuizActions onTakeQuiz={onTakeQuiz} onBack={handleReturnQuiz} />
       </Flex>
     </Flex>
   );

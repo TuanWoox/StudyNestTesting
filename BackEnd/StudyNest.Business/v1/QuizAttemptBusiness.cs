@@ -53,6 +53,26 @@ namespace StudyNest.Business.v1
             }
             return result;
         }
+        public async Task<ReturnResult<PagedData<SelectQuizAttemptDTO, string>>> GetPagingByQuizId(Page<string> page, string quizId, bool isExported = false)
+        {
+            ReturnResult<PagedData<SelectQuizAttemptDTO, string>> result = new ReturnResult<PagedData<SelectQuizAttemptDTO, string>>();
+            try
+            {
+                var query = _dbContext.QuizAttempts.Where(x => x.UserId == _userContext.UserId && x.QuizAttemptSnapshot.QuizId == quizId)
+                                                .Include(x => x.QuizAttemptSnapshot)
+                                                .OrderByDescending(x => x.DateCreated)
+                                                .AsNoTracking()
+                                                .AsQueryable();
+                var pagedData = await _repository.GetPagingAsync<Page<string>, SelectQuizAttemptDTO>(query, page, isExported);
+                result.Result = pagedData;
+            }
+            catch (Exception ex)
+            {
+                result.Message = ex.Message ?? ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
+                StudyNestLogger.Instance.Error(ex);
+            }
+            return result;
+        }
         public async Task<ReturnResult<QuizAttemptDTO>> GetOneById(string id)
         {
             ReturnResult<QuizAttemptDTO> result = new ReturnResult<QuizAttemptDTO>();
