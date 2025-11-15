@@ -6,7 +6,7 @@ import getQuizSnapshot from "@/utils/getQuizSnapshot";
 
 interface QuizAttemptState {
     createQuizAttemptAnswerList: CreateQuizAttemptAnswerDTO[];
-    quizId: string;
+    quizAttemptSnapshotId: string;
     questionId: string;
     quizAttemptSnapshot: string;
     isNeededToSubmit: boolean;
@@ -14,7 +14,7 @@ interface QuizAttemptState {
 
 const initialState: QuizAttemptState = {
     createQuizAttemptAnswerList: [],
-    quizId: "",
+    quizAttemptSnapshotId: "",
     questionId: "",
     quizAttemptSnapshot: "",
     isNeededToSubmit: false

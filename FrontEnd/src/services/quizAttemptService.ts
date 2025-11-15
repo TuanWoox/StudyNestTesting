@@ -10,8 +10,8 @@ const quizAttemptService = {
         return data.result;
     },
 
-    submitQuizAttempt: async (quizId: string, submittedAnswers: CreateQuizAttemptAnswerDTO[]) => {
-        const { data } = await instance.post<ReturnResult<string>>(`/QuizAttempt/SubmitQuizAttempt/${quizId}`, submittedAnswers);
+    submitQuizAttempt: async (quizAttemptSnapshotId: string, submittedAnswers: CreateQuizAttemptAnswerDTO[]) => {
+        const { data } = await instance.post<ReturnResult<string>>(`/QuizAttempt/SubmitQuizAttempt/${quizAttemptSnapshotId}`, submittedAnswers);
         return data.result;
     }
 

@@ -43,10 +43,10 @@ const QuizView: React.FC = () => {
     const [isBoardViewOpen, setIsBoardViewOpen] = useState<boolean>(true);
     const onSubmit = useCallback(() => {
         submitAnswer({
-            quizId: quizAttempt.quizId,
+            quizAttemptSnapshotId: quizAttempt.quizAttemptSnapshotId,
             submittedAnswer: quizAttempt.createQuizAttemptAnswerList,
         });
-    }, [submitAnswer, quizAttempt.quizId, quizAttempt.createQuizAttemptAnswerList]);
+    }, [submitAnswer, quizAttempt.quizAttemptSnapshotId, quizAttempt.createQuizAttemptAnswerList]);
 
     // Close board view on mobile, open on desktop
     useEffect(() => {
@@ -64,7 +64,7 @@ const QuizView: React.FC = () => {
 
         dispatch(
             initState({
-                quizId: id as string,
+                quizAttemptSnapshotId: resultQuizSnapshot.result.id,
                 quizAttemptSnapshot: JSON.stringify(resultQuizSnapshot?.result),
                 createQuizAttemptAnswerList: [],
                 questionId:
