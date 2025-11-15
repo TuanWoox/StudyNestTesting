@@ -7,7 +7,7 @@ import { useReduxDispatch } from "../reduxHook/useReduxDispatch";
 import { resetState } from "@/store/quizAttemptSlice";
 
 type SubmitQuizAttemptVariables = {
-    quizId: string;
+    quizAttemptSnapshotId: string;
     submittedAnswer: CreateQuizAttemptAnswerDTO[];
 };
 
@@ -17,8 +17,8 @@ export const useSubmitQuizAttempt = () => {
 
     const mutation = useMutation<string, AxiosError, SubmitQuizAttemptVariables>({
         mutationKey: ["submitQuizAttempt"],
-        mutationFn: ({ quizId, submittedAnswer }) =>
-            quizAttemptService.submitQuizAttempt(quizId, submittedAnswer),
+        mutationFn: ({ quizAttemptSnapshotId, submittedAnswer }) =>
+            quizAttemptService.submitQuizAttempt(quizAttemptSnapshotId, submittedAnswer),
         onSuccess: (quizAttemptId) => {
             if (quizAttemptId) {
                 // Navigate to a page after successful submission

@@ -16,7 +16,7 @@ namespace StudyNest.Common.Interfaces
     {
         public Task<ReturnResult<PagedData<SelectQuizAttemptDTO, string>>> GetPaging(Page<string> page, bool isExported = false);
         public Task<ReturnResult<QuizAttemptDTO>> GetOneById(string id);
-        public Task<ReturnResult<string>> SubmitQuizAttempt(string quizId, List<CreateQuizAttemptAnswerDTO> submittedAnswers);
+        public Task<ReturnResult<string>> SubmitQuizAttempt(string quizAttemptSnapshotId, List<CreateQuizAttemptAnswerDTO> submittedAnswers);
         public Task<ReturnResult<QuizAttemptDTO>> CreateQuizAttempt(CreateQuizAttemptDTO newEntity);
     }
 }

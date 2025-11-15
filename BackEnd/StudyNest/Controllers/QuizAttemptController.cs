@@ -51,13 +51,13 @@ namespace StudyNest.Controllers
             }
             return Ok(result);
         }
-        [HttpPost("SubmitQuizAttempt/{quizId}")]
-        public async Task<IActionResult> SubmitQuizAttempt(string quizId,[FromBody] List<CreateQuizAttemptAnswerDTO> submittedAnswers)
+        [HttpPost("SubmitQuizAttempt/{quizAttemptSnapshotId}")]
+        public async Task<IActionResult> SubmitQuizAttempt(string quizAttemptSnapshotId, [FromBody] List<CreateQuizAttemptAnswerDTO> submittedAnswers)
         {
             ReturnResult<string> result = new ReturnResult<string>();
             try
             {
-                result = await _quizAttemptBusiness.SubmitQuizAttempt(quizId, submittedAnswers);
+                result = await _quizAttemptBusiness.SubmitQuizAttempt(quizAttemptSnapshotId, submittedAnswers);
             }
             catch (Exception ex)
             {
