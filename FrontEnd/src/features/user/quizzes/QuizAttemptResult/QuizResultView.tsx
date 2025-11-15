@@ -24,14 +24,14 @@ const QuizResultView = () => {
         >
             <ResultHeader
                 score={data?.score}
-                id={data?.quizId}
+                id={data?.quizAttemptSnapshot.quizId}
                 totalQuestions={totalQuestions}
                 correctAnswers={correctAnswers}
             />
             <QuestionResultsList
                 answers={data?.quizAttemptAnswers}
                 questions={data?.quizAttemptSnapshot.quizQuestionsParsed}
-                quizId={data?.quizId}
+                quizId={data?.quizAttemptSnapshot.quizId}
             />
         </div>
     );

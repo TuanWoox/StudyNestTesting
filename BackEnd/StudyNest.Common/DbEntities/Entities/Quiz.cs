@@ -23,7 +23,6 @@ namespace StudyNest.Common.DbEntities.Entities
         public Note Note { get; set; }
         public bool IsBeingConvertToSnapShot { get; set; } = false;
         public ICollection<Question> Questions { get; set; } = new List<Question>();
-        public ICollection<QuizAttempt> QuizAttempts { get; set; } = new List<QuizAttempt>();
-
+        public ICollection<QuizAttemptSnapshot> QuizAttemptSnapshots { get; set; } = new List<QuizAttemptSnapshot>();
     }
 }
