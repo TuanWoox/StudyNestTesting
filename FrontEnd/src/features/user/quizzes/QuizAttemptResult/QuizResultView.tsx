@@ -8,10 +8,10 @@ import { useLocation } from "react-router-dom";
 const QuizResultView = () => {
     const { id } = useParams<{ id: string }>();
     const { data, isLoading } = useGetOneQuizAttemptById(id);
-    
+
     const location = useLocation();
-    const fromHistory = (location.state as any)?.fromHistory === true;
-    
+    const fromHistory = location.state?.fromHistory === true;
+
     if (isLoading) {
         return <QuizContentViewSkeleton />;
     }
@@ -31,7 +31,7 @@ const QuizResultView = () => {
                 id={data?.quizAttemptSnapshot.quizId}
                 totalQuestions={totalQuestions}
                 correctAnswers={correctAnswers}
-                />
+            />
             <QuestionResultsList
                 answers={data?.quizAttemptAnswers}
                 questions={data?.quizAttemptSnapshot.quizQuestionsParsed}

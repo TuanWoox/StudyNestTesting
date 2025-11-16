@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button, Grid } from "antd";
 import {
@@ -6,7 +6,7 @@ import {
   PlayCircleOutlined,
   HistoryOutlined,
 } from "@ant-design/icons";
-import { QuizTimeLimitModal } from "@/components/QuizTimeLimit/QuizTimeLimit";
+import { useQuizTimeLimit } from "@/hooks/quizAttempt/useQuizTimeLimit";
 
 const { useBreakpoint } = Grid;
 
@@ -15,9 +15,20 @@ interface QuizCardActionsProps {
 }
 
 const QuizCardActions: React.FC<QuizCardActionsProps> = ({ quizId }) => {
-  const [isQuizTimeLimitOpen, setIsQuizTimeLimitOpen] = useState<boolean>(false);
+  const { openTimeLimitModal, TimeLimitModal } = useQuizTimeLimit({ quizId: quizId });
   const navigate = useNavigate()
   const screens = useBreakpoint();
+
+  const onTakeQuiz = () => {
+    openTimeLimitModal(() => {
+      navigate(`/user/quiz/quizAttempt/${quizId}`, {
+        state: {
+          from: "/user/quiz"
+        }
+      });
+    });
+  };
+
 
   return (
     <div
@@ -40,7 +51,7 @@ const QuizCardActions: React.FC<QuizCardActionsProps> = ({ quizId }) => {
           fontWeight: 600,
           flex: 1
         }}
-        onClick={() => setIsQuizTimeLimitOpen(true)}
+        onClick={onTakeQuiz}
       >
         {!screens.xs && "Take Quiz"}
       </Button>
@@ -73,22 +84,7 @@ const QuizCardActions: React.FC<QuizCardActionsProps> = ({ quizId }) => {
         </Button>
       </Link>
 
-      <QuizTimeLimitModal
-        open={isQuizTimeLimitOpen}
-        onOpenChange={setIsQuizTimeLimitOpen}
-        onConfirm={(time: number) => {
-          //Set the time to local storage => so that we can take it out from other component
-          if (quizId && typeof time === "number" && (time > 0 || time === -1)) {
-            window.localStorage.setItem(quizId, time.toString());
-          }
-          setIsQuizTimeLimitOpen(false);
-          navigate(`/user/quiz/quizAttempt/${quizId}`, {
-            state: {
-              from: "/user/quiz"
-            }
-          });
-        }}
-      />
+      {TimeLimitModal}
     </div>
   );
 };

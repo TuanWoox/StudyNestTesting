@@ -9,8 +9,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
 import { selectDarkMode } from "@/store/themeSlice";
-import { QuizTimeLimitModal } from '@/components/QuizTimeLimit/QuizTimeLimit';
 import { useAntDesignTheme } from '@/hooks/common';
+import { useQuizTimeLimit } from '@/hooks/quizAttempt/useQuizTimeLimit';
 
 interface ResultHeaderTypeProp {
     score: number | undefined;
@@ -27,9 +27,9 @@ const ResultHeader = ({
 }: ResultHeaderTypeProp) => {
     const { token, borderColor, shadowColor } = useAntDesignTheme();
     const [animatedScore, setAnimatedScore] = useState(0);
-    const [isQuizTimeLimitOpen, setIsQuizTimeLimitOpen] = useState<boolean>(false);
     const darkMode = useReduxSelector(selectDarkMode);
     const navigate = useNavigate();
+    const { openTimeLimitModal, TimeLimitModal } = useQuizTimeLimit({ quizId: id });
 
     useEffect(() => {
         let timeout: ReturnType<typeof setTimeout>;
@@ -50,7 +50,7 @@ const ResultHeader = ({
         return () => clearTimeout(timeout);
     }, [score]);
 
-    const onRetake = () => setIsQuizTimeLimitOpen(true);
+    const onRetake = () => openTimeLimitModal(() => { navigate(`/user/quiz/quizAttempt/${id}`); })
 
     const getFeedbackMessage = () => {
         if (score < 70) {
@@ -227,18 +227,7 @@ const ResultHeader = ({
                 </div>
             </Card>
 
-            <QuizTimeLimitModal
-                open={isQuizTimeLimitOpen}
-                onOpenChange={setIsQuizTimeLimitOpen}
-                onConfirm={(time: number) => {
-                    //Set the time to local storage => so that we can take it out from other component
-                    if (id && typeof time === "number" && (time > 0 || time === -1)) {
-                        window.localStorage.setItem(id, time.toString());
-                    }
-                    setIsQuizTimeLimitOpen(false);
-                    navigate(`/user/quiz/quizAttempt/${id}`);
-                }}
-            />
+            {TimeLimitModal}
         </div>
     );
 };

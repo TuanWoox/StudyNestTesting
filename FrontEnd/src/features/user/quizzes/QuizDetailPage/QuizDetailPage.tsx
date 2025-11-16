@@ -12,8 +12,8 @@ import { useUnsavedChanges } from "@/hooks/common/useUnsavedChanges";
 import { useCollapsibleHeader } from "@/hooks/common/useCollapsibleHeader";
 import QuizHeader from "./components/QuizHeader";
 import QuestionList from "./components/QuestionList";
-import { QuizMetadataCard, UnsavedChangesModal } from "./components";
-import { QuizTimeLimitModal } from "@/components/QuizTimeLimit/QuizTimeLimit";
+import { QuizMetadataCard, UnsavedChangesModal } from "./components"
+import { useQuizTimeLimit } from "@/hooks/quizAttempt/useQuizTimeLimit";
 const { useToken } = theme;
 
 const QuizDetailPage: React.FC = () => {
@@ -26,7 +26,6 @@ const QuizDetailPage: React.FC = () => {
   const borderColor = `2px solid ${token.colorPrimary}E0`;
 
   const [isDirty, setIsDirty] = useState(false);
-  const [isQuizTimeLimitOpen, setIsQuizTimeLimitOpen] = useState(false);
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
   const {
@@ -49,6 +48,8 @@ const QuizDetailPage: React.FC = () => {
     handleDiscardChanges,
     handleContinueEditing,
   } = useUnsavedChanges({ isDirty });
+
+  const { openTimeLimitModal, TimeLimitModal } = useQuizTimeLimit({ quizId: id });
 
   const handleReturnQuiz = () => {
     showConfirmDiscard(() => {
@@ -109,7 +110,9 @@ const QuizDetailPage: React.FC = () => {
   }
 
   const onTakeQuiz = () => {
-    setIsQuizTimeLimitOpen(true);
+    openTimeLimitModal(() => {
+      navigate(`/user/quiz/quizAttempt/${id}`);
+    });
   };
 
   // Quiz data successfully loaded
@@ -186,18 +189,7 @@ const QuizDetailPage: React.FC = () => {
       />
 
       {/* Used To Ask User To Choose Time To Do The Quiz */}
-      <QuizTimeLimitModal
-        open={isQuizTimeLimitOpen}
-        onOpenChange={setIsQuizTimeLimitOpen}
-        onConfirm={(time: number) => {
-          //Set the time to local storage => so that we can take it out from other component
-          if (id && typeof time === "number" && (time > 0 || time === -1)) {
-            window.localStorage.setItem(id, time.toString());
-          }
-          setIsQuizTimeLimitOpen(false);
-          navigate(`/user/quiz/quizAttempt/${id}`);
-        }}
-      />
+      {TimeLimitModal}
     </div>
   );
 };
