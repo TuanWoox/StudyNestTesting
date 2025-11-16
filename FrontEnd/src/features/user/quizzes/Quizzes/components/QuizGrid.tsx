@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Row, Col, Card, Skeleton, Button, theme } from "antd";
+import { Row, Col, Card, Skeleton, theme } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { QuizList } from "@/types/quiz/quiz";
@@ -63,7 +63,7 @@ const QuizGrid: React.FC<QuizGridProps> = ({
           description="You haven't created any quizzes yet. Start by creating your first quiz from your notes!"
           actionLabel="Create Your First Quiz"
           actionIcon={<PlusOutlined />}
-          onAction={() => {}}
+          onAction={() => { }}
         />
       </Link>
     );

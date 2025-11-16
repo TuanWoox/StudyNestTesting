@@ -1,4 +1,4 @@
-import { Card, Button, Progress, Row, Col, Space, Tag, Divider, theme } from 'antd';
+import { Card, Button, Progress, Row, Col, Space, Tag, Divider } from 'antd';
 import {
     RedoOutlined,
     CheckCircleOutlined,
@@ -9,6 +9,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
 import { selectDarkMode } from "@/store/themeSlice";
+import { useAntDesignTheme } from '@/hooks/common';
+import { useQuizTimeLimit } from '@/hooks/quizAttempt/useQuizTimeLimit';
 
 interface ResultHeaderTypeProp {
     score: number | undefined;
@@ -23,11 +25,11 @@ const ResultHeader = ({
     correctAnswers,
     totalQuestions,
 }: ResultHeaderTypeProp) => {
+    const { token, borderColor, shadowColor } = useAntDesignTheme();
     const [animatedScore, setAnimatedScore] = useState(0);
-    // const darkMode = useOutletContext<boolean>();
     const darkMode = useReduxSelector(selectDarkMode);
     const navigate = useNavigate();
-    const { token } = theme.useToken();
+    const { openTimeLimitModal, TimeLimitModal } = useQuizTimeLimit({ quizId: id });
 
     useEffect(() => {
         let timeout: ReturnType<typeof setTimeout>;
@@ -48,7 +50,7 @@ const ResultHeader = ({
         return () => clearTimeout(timeout);
     }, [score]);
 
-    const onRetake = () => navigate(`/user/quiz/quizAttempt/${id}`);
+    const onRetake = () => openTimeLimitModal(() => { navigate(`/user/quiz/quizAttempt/${id}`); });
 
     const getFeedbackMessage = () => {
         if (score < 70) {
@@ -74,18 +76,14 @@ const ResultHeader = ({
 
     const feedback = getFeedbackMessage();
     const incorrectAnswers = totalQuestions - correctAnswers;
-
     const getPerformanceColor = (percent: number) => {
         if (percent >= 90) return '#52c41a';
         if (percent >= 70) return '#1890ff';
         if (percent >= 40) return '#faad14';
         return '#ff4d4f';
     };
-
     const performanceColor = getPerformanceColor(score);
-    const primaryColor = token.colorPrimary;
-    const borderColor = `${primaryColor}E0`; // 88% opacity
-    const shadowColor = `${primaryColor}55`; // 33% opacity
+
 
     return (
         <div
@@ -135,7 +133,7 @@ const ResultHeader = ({
                                     <ArrowUpOutlined
                                         style={{
                                             fontSize: 24,
-                                            color: primaryColor,
+                                            color: token.colorPrimary,
                                         }}
                                     />
                                 </div>
@@ -228,6 +226,8 @@ const ResultHeader = ({
                     </Button>
                 </div>
             </Card>
+
+            {TimeLimitModal}
         </div>
     );
 };
