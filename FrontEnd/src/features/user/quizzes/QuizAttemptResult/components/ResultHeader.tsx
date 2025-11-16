@@ -50,7 +50,7 @@ const ResultHeader = ({
         return () => clearTimeout(timeout);
     }, [score]);
 
-    const onRetake = () => openTimeLimitModal(() => { navigate(`/user/quiz/quizAttempt/${id}`); })
+    const onRetake = () => openTimeLimitModal(() => { navigate(`/user/quiz/quizAttempt/${id}`); });
 
     const getFeedbackMessage = () => {
         if (score < 70) {

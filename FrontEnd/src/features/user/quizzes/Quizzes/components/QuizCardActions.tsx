@@ -16,7 +16,7 @@ interface QuizCardActionsProps {
 
 const QuizCardActions: React.FC<QuizCardActionsProps> = ({ quizId }) => {
   const { openTimeLimitModal, TimeLimitModal } = useQuizTimeLimit({ quizId: quizId });
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const screens = useBreakpoint();
 
   const onTakeQuiz = () => {

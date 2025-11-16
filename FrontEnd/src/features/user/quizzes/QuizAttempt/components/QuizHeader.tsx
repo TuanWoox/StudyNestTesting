@@ -33,7 +33,7 @@ const QuizHeader: React.FC<QuizHeaderProps> = ({ isBoardViewOpen, toggleBoardVie
         } else {
             if (id) window.localStorage.removeItem(id);
             if (backTo) {
-                navigate(backTo)
+                navigate(backTo);
             } else navigate(`/user/quiz/${id}`);
         }
     };

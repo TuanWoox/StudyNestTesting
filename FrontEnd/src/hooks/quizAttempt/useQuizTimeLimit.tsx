@@ -24,7 +24,10 @@ export function useQuizTimeLimit({ quizId }: { quizId?: string }) {
                     window.localStorage.setItem(quizId, time.toString());
                 }
                 setIsOpen(false);
-                if (onConfirmCallback) onConfirmCallback();
+                if (onConfirmCallback) {
+                    onConfirmCallback();
+                    setOnConfirmCallback(null);
+                }
             }}
         />
     );

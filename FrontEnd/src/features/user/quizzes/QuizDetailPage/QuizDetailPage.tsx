@@ -12,7 +12,7 @@ import { useUnsavedChanges } from "@/hooks/common/useUnsavedChanges";
 import { useCollapsibleHeader } from "@/hooks/common/useCollapsibleHeader";
 import QuizHeader from "./components/QuizHeader";
 import QuestionList from "./components/QuestionList";
-import { QuizMetadataCard, UnsavedChangesModal } from "./components"
+import { QuizMetadataCard, UnsavedChangesModal } from "./components";
 import { useQuizTimeLimit } from "@/hooks/quizAttempt/useQuizTimeLimit";
 const { useToken } = theme;
 
