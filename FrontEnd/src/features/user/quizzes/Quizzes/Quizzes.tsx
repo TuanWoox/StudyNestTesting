@@ -127,12 +127,14 @@ const Quizzes: React.FC = () => {
           isDeleting={isDeleting}
         />
 
-        <QuizPagination
-          current={page}
-          pageSize={pageSize}
-          total={totalElements}
-          onChange={handleTableChange}
-        />
+        {totalElements > 0 && (
+          <QuizPagination
+            current={page}
+            pageSize={pageSize}
+            total={totalElements}
+            onChange={handleTableChange}
+          />
+        )}
       </div>
 
       <QuizDeleteModal

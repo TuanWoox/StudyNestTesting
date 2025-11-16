@@ -4,6 +4,7 @@ import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { Note } from "@/types/note/notes";
 import type { FormInstance } from "antd";
 import NoteCard from "@/features/user/notes/Notes/components/NoteCard";
+import { useNavigate } from "react-router-dom";
 
 interface NoteGridProps {
   notes: Note[];
@@ -20,6 +21,7 @@ export const NoteGrid: React.FC<NoteGridProps> = ({
   form,
   onSelectNote,
 }) => {
+  const navigate = useNavigate();
   if (isLoading) {
     return (
       <div style={{ textAlign: "center", padding: "40px 0" }}>
@@ -32,7 +34,10 @@ export const NoteGrid: React.FC<NoteGridProps> = ({
     return (
       <EmptyState
         type="empty"
+        title="No Notes Yet"
         description="No notes found. Please create a note first."
+        actionLabel="Create Note Now"
+        onAction={() => navigate(`/user/notes`)}
       />
     );
   }

@@ -24,7 +24,6 @@ const quizAttemptService = {
         const { data } = await instance.post<
         ReturnResult<PagedData<selectQuizAttemptDTO, string>>
         >(`/QuizAttempt/GetPagingByQuizId?quizId=${quizId}`, payload);
-        console.log(JSON.stringify(data.result, null, 2))
         return data.result;
     },
 }
