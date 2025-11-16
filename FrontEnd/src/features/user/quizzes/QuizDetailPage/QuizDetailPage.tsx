@@ -2,12 +2,9 @@ import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Card,
-  Typography,
-  Button,
   Skeleton,
   theme,
 } from "antd";
-import { WarningOutlined } from "@ant-design/icons";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { useQueryClient } from "@tanstack/react-query";
 import useGetQuizDetail from "@/hooks/quizHook/useGetQuizDetail";
@@ -17,8 +14,6 @@ import QuizHeader from "./components/QuizHeader";
 import QuestionList from "./components/QuestionList";
 import { QuizMetadataCard, UnsavedChangesModal } from "./components";
 import { QuizTimeLimitModal } from "@/components/QuizTimeLimit/QuizTimeLimit";
-
-const { Text } = Typography;
 const { useToken } = theme;
 
 const QuizDetailPage: React.FC = () => {
@@ -61,8 +56,6 @@ const QuizDetailPage: React.FC = () => {
       navigate(`/user/quiz`);
     });
   };
-
-
 
   if (isPending) {
     return (
@@ -201,6 +194,7 @@ const QuizDetailPage: React.FC = () => {
           if (id && typeof time === "number" && (time > 0 || time === -1)) {
             window.localStorage.setItem(id, time.toString());
           }
+          setIsQuizTimeLimitOpen(false);
           navigate(`/user/quiz/quizAttempt/${id}`);
         }}
       />

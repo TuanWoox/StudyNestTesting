@@ -15,9 +15,10 @@ const { Title, Text } = Typography;
 interface QuizHeaderProps {
     isBoardViewOpen: boolean,
     toggleBoardView: () => void;
+    backTo: string;
 }
 
-const QuizHeader: React.FC<QuizHeaderProps> = ({ isBoardViewOpen, toggleBoardView }) => {
+const QuizHeader: React.FC<QuizHeaderProps> = ({ isBoardViewOpen, toggleBoardView, backTo }) => {
     const { primaryColor, borderColor, shadowColor } = useAntDesignTheme()
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
@@ -26,12 +27,14 @@ const QuizHeader: React.FC<QuizHeaderProps> = ({ isBoardViewOpen, toggleBoardVie
     const { answeredCount } = useReduxSelector(selectQuizProgress);
     const { isMobile } = useIsMobile();
 
-    const onClickBackToQuizList = () => {
+    const onClickBack = () => {
         if (answeredCount) {
             setIsModalConfirmOpen(true);
         } else {
             if (id) window.localStorage.removeItem(id);
-            navigate(`/user/quiz/${id}`);
+            if (backTo) {
+                navigate(backTo)
+            } else navigate(`/user/quiz/${id}`);
         }
     };
 
@@ -55,7 +58,7 @@ const QuizHeader: React.FC<QuizHeaderProps> = ({ isBoardViewOpen, toggleBoardVie
                         type="default"
                         size={buttonSize}
                         icon={<ArrowLeftOutlined />}
-                        onClick={onClickBackToQuizList}
+                        onClick={onClickBack}
                         style={{
                             fontWeight: 600,
                             boxShadow: `3px 3px 0 ${shadowColor}`,
@@ -64,7 +67,7 @@ const QuizHeader: React.FC<QuizHeaderProps> = ({ isBoardViewOpen, toggleBoardVie
                             borderRadius: 0,
                         }}
                     >
-                        Back to Quiz
+                        Back to {backTo ? "Quizzes" : "Quiz"}
                     </Button>
 
                     <Button

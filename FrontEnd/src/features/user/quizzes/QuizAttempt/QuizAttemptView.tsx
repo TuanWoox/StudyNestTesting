@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { Drawer } from "antd";
 
 import { useGetOneForAttempting } from "@/hooks/quizAttemptSnapshotHook/useGetOneForAttempting";
@@ -31,7 +31,6 @@ const QuizView: React.FC = () => {
         refetch,
         error,
     } = useGetOneForAttempting(id, { enabled: false });
-
     const quizSnapshotLoading = useMemo(
         () => isLoading || isRefetching,
         [isLoading, isRefetching]
@@ -47,6 +46,7 @@ const QuizView: React.FC = () => {
             submittedAnswer: quizAttempt.createQuizAttemptAnswerList,
         });
     }, [submitAnswer, quizAttempt.quizAttemptSnapshotId, quizAttempt.createQuizAttemptAnswerList]);
+    const location = useLocation();
 
     // Close board view on mobile, open on desktop
     useEffect(() => {
@@ -115,6 +115,7 @@ const QuizView: React.FC = () => {
                     <QuizHeader
                         isBoardViewOpen={isBoardViewOpen}
                         toggleBoardView={() => setIsBoardViewOpen((prev) => !prev)}
+                        backTo={location?.state?.from || ""}
                     />
 
                     {!isBoardViewOpen && !isMobile && <QuizProgress />}

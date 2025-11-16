@@ -1,4 +1,4 @@
-import { Card, Button, Progress, Row, Col, Space, Tag, Divider, theme } from 'antd';
+import { Card, Button, Progress, Row, Col, Space, Tag, Divider } from 'antd';
 import {
     RedoOutlined,
     CheckCircleOutlined,
@@ -9,6 +9,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
 import { selectDarkMode } from "@/store/themeSlice";
+import { QuizTimeLimitModal } from '@/components/QuizTimeLimit/QuizTimeLimit';
+import { useAntDesignTheme } from '@/hooks/common';
 
 interface ResultHeaderTypeProp {
     score: number | undefined;
@@ -23,11 +25,11 @@ const ResultHeader = ({
     correctAnswers,
     totalQuestions,
 }: ResultHeaderTypeProp) => {
+    const { token, borderColor, shadowColor } = useAntDesignTheme();
     const [animatedScore, setAnimatedScore] = useState(0);
-    // const darkMode = useOutletContext<boolean>();
+    const [isQuizTimeLimitOpen, setIsQuizTimeLimitOpen] = useState<boolean>(false);
     const darkMode = useReduxSelector(selectDarkMode);
     const navigate = useNavigate();
-    const { token } = theme.useToken();
 
     useEffect(() => {
         let timeout: ReturnType<typeof setTimeout>;
@@ -48,7 +50,7 @@ const ResultHeader = ({
         return () => clearTimeout(timeout);
     }, [score]);
 
-    const onRetake = () => navigate(`/user/quiz/quizAttempt/${id}`);
+    const onRetake = () => setIsQuizTimeLimitOpen(true);
 
     const getFeedbackMessage = () => {
         if (score < 70) {
@@ -74,18 +76,14 @@ const ResultHeader = ({
 
     const feedback = getFeedbackMessage();
     const incorrectAnswers = totalQuestions - correctAnswers;
-
     const getPerformanceColor = (percent: number) => {
         if (percent >= 90) return '#52c41a';
         if (percent >= 70) return '#1890ff';
         if (percent >= 40) return '#faad14';
         return '#ff4d4f';
     };
-
     const performanceColor = getPerformanceColor(score);
-    const primaryColor = token.colorPrimary;
-    const borderColor = `${primaryColor}E0`; // 88% opacity
-    const shadowColor = `${primaryColor}55`; // 33% opacity
+
 
     return (
         <div
@@ -135,7 +133,7 @@ const ResultHeader = ({
                                     <ArrowUpOutlined
                                         style={{
                                             fontSize: 24,
-                                            color: primaryColor,
+                                            color: token.colorPrimary,
                                         }}
                                     />
                                 </div>
@@ -228,6 +226,19 @@ const ResultHeader = ({
                     </Button>
                 </div>
             </Card>
+
+            <QuizTimeLimitModal
+                open={isQuizTimeLimitOpen}
+                onOpenChange={setIsQuizTimeLimitOpen}
+                onConfirm={(time: number) => {
+                    //Set the time to local storage => so that we can take it out from other component
+                    if (id && typeof time === "number" && (time > 0 || time === -1)) {
+                        window.localStorage.setItem(id, time.toString());
+                    }
+                    setIsQuizTimeLimitOpen(false);
+                    navigate(`/user/quiz/quizAttempt/${id}`);
+                }}
+            />
         </div>
     );
 };
