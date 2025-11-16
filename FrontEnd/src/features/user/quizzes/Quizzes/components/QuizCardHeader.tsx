@@ -1,16 +1,21 @@
 import React from "react";
-import { Typography } from "antd";
+import { Typography, Button } from "antd";
+import { DeleteOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 
 interface QuizCardHeaderProps {
   title: string;
   noteTitle: string;
+  onDelete: () => void;
+  isDeleting: boolean;
 }
 
 const QuizCardHeader: React.FC<QuizCardHeaderProps> = ({
   title,
   noteTitle,
+  onDelete,
+  isDeleting,
 }) => {
   return (
     <div
@@ -19,9 +24,10 @@ const QuizCardHeader: React.FC<QuizCardHeaderProps> = ({
         justifyContent: "space-between",
         alignItems: "flex-start",
         marginBottom: 16,
+        gap: 12,
       }}
     >
-      <div style={{ flex: 1, paddingRight: 8 }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
         <Title
           level={5}
           style={{
@@ -50,6 +56,24 @@ const QuizCardHeader: React.FC<QuizCardHeaderProps> = ({
           Source: {noteTitle}
         </Text>
       </div>
+      <Button
+        danger
+        type="text"
+        icon={<DeleteOutlined />}
+        size="middle"
+        loading={isDeleting}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onDelete();
+        }}
+        style={{
+          borderRadius: 0,
+          fontFamily: "monospace",
+          flexShrink: 0,
+        }}
+        title="Delete quiz"
+      />
     </div>
   );
 };

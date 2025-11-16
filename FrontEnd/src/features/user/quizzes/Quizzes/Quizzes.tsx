@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { Button, Card, Typography, Empty, theme } from "antd";
+import { Button, Card, Typography, theme } from "antd";
 import { WarningOutlined } from "@ant-design/icons";
+import { EmptyState } from "@/components/EmptyState/EmptyState";
 import useGetAllQuiz from "@/hooks/quizHook/useGetAllQuiz";
 import useDeleteQuiz from "@/hooks/quizHook/useDeleteQuiz";
 import useDebounce from "@/hooks/common/useDebounce";
@@ -85,30 +86,13 @@ const Quizzes: React.FC = () => {
   if (isError || (!isPending && !quizData)) {
     return (
       <div style={{ padding: "24px", width: "100%" }}>
-        <Card
-          style={{
-            margin: "0 auto",
-            textAlign: "center",
-            padding: "48px 24px",
-          }}
-        >
-          <Empty
-            image={
-              <WarningOutlined
-                style={{ fontSize: 48, color: token.colorError }}
-              />
-            }
-            description={
-              <Text type="danger">
-                {error?.message || "Unable to load quiz list"}
-              </Text>
-            }
-          >
-            <Button type="primary" onClick={() => refetch()}>
-              Try Again
-            </Button>
-          </Empty>
-        </Card>
+        <EmptyState
+          type="error"
+          title="Failed to Load Quizzes"
+          description={error?.message || "Unable to load quiz list. Please try again."}
+          actionLabel="Try Again"
+          onAction={() => refetch()}
+        />
       </div>
     );
   }

@@ -1,7 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Row, Col, Card, Skeleton, Empty, Button, theme } from "antd";
+import { Row, Col, Card, Skeleton, Button, theme } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
+import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { QuizList } from "@/types/quiz/quiz";
 import QuizCard from "./QuizCard";
 
@@ -33,7 +34,7 @@ const QuizGrid: React.FC<QuizGridProps> = ({
   // Loading state
   if (isPending) {
     return (
-      <Row gutter={[16, 16]} style={{ marginBottom: 100 }}>
+      <Row gutter={[16, 16]} style={{ marginBottom: 30 }}>
         {[...Array(pageSize)].map((_, index) => (
           <Col key={index} xs={24} sm={12} md={8}>
             <Card
@@ -55,42 +56,22 @@ const QuizGrid: React.FC<QuizGridProps> = ({
   // Empty state
   if (!quizzes || quizzes.length === 0) {
     return (
-      <Card
-        style={{
-          textAlign: "center",
-          padding: "48px 24px",
-          marginBottom: 100,
-          border: borderColor,
-          borderRadius: 0,
-          boxShadow: shadowColor,
-          backgroundColor: token.colorBgContainer,
-        }}
-      >
-        <Empty
-          description="You haven't created any quizzes yet"
-          image={Empty.PRESENTED_IMAGE_SIMPLE}
-        >
-          <Link to="/user/quiz/generate">
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              style={{
-                borderRadius: 0,
-                fontFamily: "monospace",
-                fontWeight: 600,
-              }}
-            >
-              Create Your First Quiz
-            </Button>
-          </Link>
-        </Empty>
-      </Card>
+      <Link to="/user/quiz/generate">
+        <EmptyState
+          type="empty"
+          title="No Quizzes Yet"
+          description="You haven't created any quizzes yet. Start by creating your first quiz from your notes!"
+          actionLabel="Create Your First Quiz"
+          actionIcon={<PlusOutlined />}
+          onAction={() => {}}
+        />
+      </Link>
     );
   }
 
   // Quiz grid
   return (
-    <Row gutter={[16, 16]} style={{ marginBottom: 100 }}>
+    <Row gutter={[16, 16]} style={{ marginBottom: 30 }}>
       {quizzes.map((quiz, index) => (
         <Col key={quiz.id} xs={24} sm={12} md={8}>
           <QuizCard

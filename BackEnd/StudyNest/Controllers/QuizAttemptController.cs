@@ -37,6 +37,20 @@ namespace StudyNest.Controllers
             }
             return Ok(result);
         }
+        [HttpPost("GetPagingByQuizId")]
+        public async Task<IActionResult> GetPagingByQuizId(Page<string> page, string quizId , bool isExported = false)
+        {
+            ReturnResult<PagedData<SelectQuizAttemptDTO, string>> result = new ReturnResult<PagedData<SelectQuizAttemptDTO, string>>();
+            try
+            {
+                result = await _quizAttemptBusiness.GetPagingByQuizId(page, quizId, isExported);
+            }
+            catch (Exception ex)
+            {
+                StudyNestLogger.Instance.Error(ex);
+            }
+            return Ok(result);
+        }
         [HttpGet("{id}")]
         public async Task<IActionResult> GetOneById(string id)
         {

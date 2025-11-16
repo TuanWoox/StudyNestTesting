@@ -3,11 +3,15 @@ import { useParams } from "react-router-dom";
 import ResultHeader from "./components/ResultHeader";
 import QuestionResultsList from "./components/QuestionResultsList";
 import QuizContentViewSkeleton from "@/components/QuizContentViewSkeleton/QuizContentViewSkeleton";
+import { useLocation } from "react-router-dom";
 
 const QuizResultView = () => {
     const { id } = useParams<{ id: string }>();
     const { data, isLoading } = useGetOneQuizAttemptById(id);
-
+    
+    const location = useLocation();
+    const fromHistory = (location.state as any)?.fromHistory === true;
+    
     if (isLoading) {
         return <QuizContentViewSkeleton />;
     }
@@ -27,11 +31,12 @@ const QuizResultView = () => {
                 id={data?.quizAttemptSnapshot.quizId}
                 totalQuestions={totalQuestions}
                 correctAnswers={correctAnswers}
-            />
+                />
             <QuestionResultsList
                 answers={data?.quizAttemptAnswers}
                 questions={data?.quizAttemptSnapshot.quizQuestionsParsed}
                 quizId={data?.quizAttemptSnapshot.quizId}
+                fromHistory={fromHistory}
             />
         </div>
     );

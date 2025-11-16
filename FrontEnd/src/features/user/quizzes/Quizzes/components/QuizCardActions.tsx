@@ -2,26 +2,18 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Button, Grid } from "antd";
 import {
-  DeleteOutlined,
   EyeOutlined,
   PlayCircleOutlined,
+  HistoryOutlined,
 } from "@ant-design/icons";
 
 const { useBreakpoint } = Grid;
 
 interface QuizCardActionsProps {
   quizId: string;
-  onDelete: (quizId: string) => void;
-  isDeleting: boolean;
-  deletingId: string | null;
 }
 
-const QuizCardActions: React.FC<QuizCardActionsProps> = ({
-  quizId,
-  onDelete,
-  isDeleting,
-  deletingId,
-}) => {
+const QuizCardActions: React.FC<QuizCardActionsProps> = ({ quizId }) => {
   const screens = useBreakpoint();
 
   return (
@@ -62,40 +54,20 @@ const QuizCardActions: React.FC<QuizCardActionsProps> = ({
           {!screens.xs && "Details"}
         </Button>
       </Link>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          pointerEvents: "auto",
-        }}
-      >
+      <Link to={`/user/quiz/history/${quizId}`} style={{ flex: 1 }}>
         <Button
-          danger
-          type="default"
-          icon={<DeleteOutlined />}
+          icon={<HistoryOutlined />}
+          block
           size="middle"
-          loading={deletingId === quizId && isDeleting}
-          disabled={isDeleting && deletingId !== quizId}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onDelete(quizId);
-          }}
           style={{
             borderRadius: 0,
             fontFamily: "monospace",
             fontWeight: 600,
-            minWidth: "44px",
-            height: "100%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer",
-            pointerEvents: "auto",
           }}
-          title="Delete quiz"
-        />
-      </div>
+        >
+          {!screens.xs && "History"}
+        </Button>
+      </Link>
     </div>
   );
 };

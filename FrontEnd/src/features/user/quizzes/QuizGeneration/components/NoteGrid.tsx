@@ -1,8 +1,9 @@
 import React from "react";
-import { Row, Col, Empty, Spin } from "antd";
+import { Row, Col, Spin } from "antd";
+import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { Note } from "@/types/note/notes";
-import NoteCard from "@/features/user/notes/NoteSidebar/NoteCard";
 import type { FormInstance } from "antd";
+import NoteCard from "@/features/user/notes/Notes/components/NoteCard";
 
 interface NoteGridProps {
   notes: Note[];
@@ -28,7 +29,12 @@ export const NoteGrid: React.FC<NoteGridProps> = ({
   }
 
   if (!notes || notes.length === 0) {
-    return <Empty description="No notes found" />;
+    return (
+      <EmptyState
+        type="empty"
+        description="No notes found. Please create a note first."
+      />
+    );
   }
 
   return (

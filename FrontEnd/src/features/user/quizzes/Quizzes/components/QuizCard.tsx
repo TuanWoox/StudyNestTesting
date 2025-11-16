@@ -67,7 +67,12 @@ const QuizCard: React.FC<QuizCardProps> = ({
         e.currentTarget.style.transform = "translate(0, 0)";
       }}
     >
-      <QuizCardHeader title={quiz.title} noteTitle={quiz.noteTitle} />
+      <QuizCardHeader 
+        title={quiz.title} 
+        noteTitle={quiz.noteTitle}
+        onDelete={() => onDelete(quiz.id)}
+        isDeleting={deletingId === quiz.id && isDeleting}
+      />
 
       <QuizCardInfo
         totalQuestions={quiz.totalQuestion}
@@ -80,12 +85,7 @@ const QuizCard: React.FC<QuizCardProps> = ({
           borderTop: `1px solid ${token.colorPrimary}88`,
         }}
       >
-        <QuizCardActions
-          quizId={quiz.id}
-          onDelete={onDelete}
-          isDeleting={isDeleting}
-          deletingId={deletingId}
-        />
+        <QuizCardActions quizId={quiz.id} />
       </div>
     </Card>
   );

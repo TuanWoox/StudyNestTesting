@@ -3,14 +3,14 @@ import { Pagination, theme, Grid } from "antd";
 
 const { useToken } = theme;
 
-interface QuizPaginationProps {
+interface QuizHistoryPaginationProps {
   current: number;
   pageSize: number;
   total: number;
   onChange: (page: number, pageSize: number) => void;
 }
 
-const QuizPagination: React.FC<QuizPaginationProps> = ({
+const QuizHistoryPagination: React.FC<QuizHistoryPaginationProps> = ({
   current,
   pageSize,
   total,
@@ -22,6 +22,7 @@ const QuizPagination: React.FC<QuizPaginationProps> = ({
   return (
     <div
       style={{
+        marginTop: 32,
         display: "flex",
         justifyContent: "center",
       }}
@@ -35,11 +36,10 @@ const QuizPagination: React.FC<QuizPaginationProps> = ({
         simple={screens.xs}
         showTotal={!screens.xs ? (total, range) => (
           <span style={{ fontFamily: "monospace" }}>
-            {screens.md ? `${range[0]}-${range[1]} of ${total} quizzes` : `${total} quizzes`}
+            {screens.md ? `${range[0]}-${range[1]} of ${total} attempts` : `${total} attempts`}
           </span>
         ) : undefined}
-        pageSizeOptions={[6, 9, 15, 30]}
-        
+        pageSizeOptions={[5, 10, 20, 50]}
         style={{
           fontFamily: "monospace",
         }}
@@ -48,4 +48,4 @@ const QuizPagination: React.FC<QuizPaginationProps> = ({
   );
 };
 
-export default QuizPagination;
+export default QuizHistoryPagination;

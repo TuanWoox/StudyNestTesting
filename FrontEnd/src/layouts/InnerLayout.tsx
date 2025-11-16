@@ -124,14 +124,14 @@ const InnerLayout = () => {
             padding: 0,
             display: "flex",
             flexDirection: "column",
-            /* quan trọng: cho phép vùng content co lại, tránh tràn */
             minHeight: 0,
             overflow: "hidden",
           }}
           rightContentRender={() => (
             <>
             <QuizJobBell />
-            <Space>
+            <Space style={{ marginLeft: 10 }}>
+
               <button
                 onClick={() => dispatch(toggleDarkMode())} // <- dispatch toggle
                 className={`relative flex items-center w-14 h-7 rounded-full transition-all duration-300 ${darkMode ? "bg-indigo-500" : "bg-[#3b5bdb]"

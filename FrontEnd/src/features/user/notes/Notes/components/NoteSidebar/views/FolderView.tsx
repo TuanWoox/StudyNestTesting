@@ -1,5 +1,6 @@
 import React from "react";
-import { Collapse, Empty, Button, Dropdown, Menu, Tooltip, theme, Pagination, Grid, Skeleton } from "antd";
+import { Collapse, Button, Dropdown, Menu, Tooltip, theme, Pagination, Grid, Skeleton } from "antd";
+import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { PlusOutlined, MoreOutlined, EditOutlined, DeleteOutlined, FolderOutlined } from "@ant-design/icons";
 import NoteCard from "@/features/user/notes/Notes/components/NoteCard";
 import { Folder, Note } from "@/types/note/notes";
@@ -168,22 +169,14 @@ const FolderView: React.FC<Props> = ({
         };
 
         return (
-            <Empty
-                description="No notes in any folder"
-                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                style={{
-                    minHeight: 200,
-                    marginTop: 40
-                }}
-            >
-                <Button
-                    type="primary"
-                    icon={<PlusOutlined />}
-                    onClick={() => handleCreateNote()}
-                >
-                    Create New Note
-                </Button>
-            </Empty>
+            <EmptyState
+                type="empty"
+                title="No Folders Yet"
+                description="You haven't created any folders yet. Create your first note to get started!"
+                actionLabel="Create New Note"
+                actionIcon={<PlusOutlined />}
+                onAction={() => handleCreateNote()}
+            />
         );
     };
 
@@ -236,36 +229,31 @@ const FolderView: React.FC<Props> = ({
                 }}
                 items={items}
             />
-            {totalFolders > folderPageSize && (
-                <div
+            <div
+                style={{
+                    marginTop: 32,
+                    display: 'flex',
+                    justifyContent: 'center'
+                }}
+            >
+                <Pagination
+                    current={folderPage}
+                    pageSize={folderPageSize}
+                    total={totalFolders}
+                    onChange={handleFolderChange}
+                    showSizeChanger={!screens.xs}
+                    simple={screens.xs}
+                    showTotal={!screens.xs ? (total, range) => (
+                        <span style={{ fontFamily: "monospace" }}>
+                            {screens.md ? `${range[0]}-${range[1]} of ${total} folders` : `${total} folders`}
+                        </span>
+                    ) : undefined}
+                    pageSizeOptions={[5, 10, 20, 50]}
                     style={{
-                        display: 'flex',
-                        justifyContent: 'center'
+                        fontFamily: "monospace",
                     }}
-                >
-                    <div
-                        style={{
-                            padding: screens.md ? '8px 16px' : '4px 12px',
-                            background: token.colorBgElevated,
-                            boxShadow: `3px 3px 0 ${shadowColor}`,
-                            border: `2px solid ${borderColor}`,
-                            marginTop: '20px'
-                        }}
-                    >
-                        <Pagination
-                            current={folderPage}
-                            pageSize={folderPageSize}
-                            total={totalFolders}
-                            onChange={handleFolderChange}
-                            showSizeChanger={false}
-                            size={screens.md ? 'default' : 'small'}
-                            showTotal={screens.md ?
-                                ((total, range) => `${range[0]}-${range[1]} of ${total} folders`)
-                                : undefined}
-                            responsive />
-                    </div>
-                </div>
-            )}
+                />
+            </div>
         </>
     );
 };

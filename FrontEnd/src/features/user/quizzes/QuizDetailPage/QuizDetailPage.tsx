@@ -5,10 +5,10 @@ import {
   Typography,
   Button,
   Skeleton,
-  Empty,
   theme,
 } from "antd";
 import { WarningOutlined } from "@ant-design/icons";
+import { EmptyState } from "@/components/EmptyState/EmptyState";
 import { useQueryClient } from "@tanstack/react-query";
 import useGetQuizDetail from "@/hooks/quizHook/useGetQuizDetail";
 import { useUnsavedChanges } from "@/hooks/common/useUnsavedChanges";
@@ -104,37 +104,13 @@ const QuizDetailPage: React.FC = () => {
           alignItems: "center",
         }}
       >
-        <Empty
-          image={
-            <WarningOutlined
-              style={{
-                fontSize: isMobile ? 40 : 48,
-                color: token.colorError,
-              }}
-            />
-          }
-          description={
-            <Text
-              type="danger"
-              style={{ fontSize: isMobile ? 13 : 14, fontFamily: "monospace" }}
-            >
-              {error?.message || "Failed to load quiz details"}
-            </Text>
-          }
-        >
-          <Button
-            onClick={handleReturnQuiz}
-            type="primary"
-            size={isMobile ? "middle" : "large"}
-            style={{
-              borderRadius: 0,
-              fontFamily: "monospace",
-              fontWeight: 600,
-            }}
-          >
-            Back to Quizzes
-          </Button>
-        </Empty>
+        <EmptyState
+          type="error"
+          title="Failed to Load Quiz"
+          description={error?.message || "Failed to load quiz details. Please try again."}
+          actionLabel="Back to Quizzes"
+          onAction={handleReturnQuiz}
+        />
       </Card>
     );
   }
