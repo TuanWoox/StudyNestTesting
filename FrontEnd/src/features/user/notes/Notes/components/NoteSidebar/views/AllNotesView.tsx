@@ -1,6 +1,7 @@
 import React from "react";
-import { Empty, Button, Pagination, theme, Grid, Card, Skeleton } from "antd";
+import { Button, Pagination, theme, Grid, Card, Skeleton } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
+import { EmptyState } from "@/components/EmptyState/EmptyState";
 import NoteCard from "@/features/user/notes/Notes/components/NoteCard";
 import { Folder, Note } from "@/types/note/notes";
 
@@ -59,19 +60,14 @@ const AllNotesView: React.FC<Props> = ({
 
     if (notes.length === 0) {
         return (
-            <Empty
-                description="No notes found. Create your first note!"
-                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                style={{ marginTop: 40 }}
-            >
-                <Button
-                    type="primary"
-                    icon={<PlusOutlined />}
-                    onClick={() => handleCreateNote()}
-                >
-                    Create New Note
-                </Button>
-            </Empty>
+            <EmptyState
+                type="empty"
+                title="No Notes Yet"
+                description="You haven't created any notes yet. Start by creating your first note!"
+                actionLabel="Create New Note"
+                actionIcon={<PlusOutlined />}
+                onAction={() => handleCreateNote()}
+            />
         );
     };
 
@@ -89,37 +85,31 @@ const AllNotesView: React.FC<Props> = ({
                 ))}
             </div>
 
-            {totalElements > pageSize && (
-                <div
+            <div
+                style={{
+                    marginTop: 32,
+                    display: 'flex',
+                    justifyContent: 'center'
+                }}
+            >
+                <Pagination
+                    current={page}
+                    pageSize={pageSize}
+                    total={totalElements}
+                    onChange={handleTableChange}
+                    showSizeChanger={!screens.xs}
+                    simple={screens.xs}
+                    showTotal={!screens.xs ? (total, range) => (
+                        <span style={{ fontFamily: "monospace" }}>
+                            {screens.md ? `${range[0]}-${range[1]} of ${total} notes` : `${total} notes`}
+                        </span>
+                    ) : undefined}
+                    pageSizeOptions={[8, 12, 24, 36]}
                     style={{
-                        display: 'flex',
-                        justifyContent: 'center'
+                        fontFamily: "monospace",
                     }}
-                >
-                    <div
-                        style={{
-                            padding: screens.md ? '8px 16px' : '4px 12px',
-                            background: token.colorBgElevated,
-                            boxShadow: `3px 3px 0 ${shadowColor}`,
-                            border: `2px solid ${borderColor}`,
-                            marginTop: '20px'
-                        }}
-                    >
-                        <Pagination
-                            current={page}
-                            pageSize={pageSize}
-                            total={totalElements}
-                            onChange={handleTableChange}
-                            showSizeChanger={false}
-                            size={screens.md ? 'default' : 'small'}
-                            showTotal={screens.md ?
-                                ((total, range) => `${range[0]}-${range[1]} of ${total} notes`)
-                                : undefined}
-                            responsive
-                        />
-                    </div>
-                </div>
-            )}
+                />
+            </div>
         </>
     );
 };

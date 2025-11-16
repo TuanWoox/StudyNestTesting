@@ -21,6 +21,7 @@ import QuizGeneration from "./features/user/quizzes/QuizGeneration/QuizGeneratio
 import QuizDetailPage from "./features/user/quizzes/QuizDetailPage/QuizDetailPage";
 import QuizView from "./features/user/quizzes/QuizAttempt/QuizAttemptView";
 import QuizResultView from "./features/user/quizzes/QuizAttemptResult/QuizResultView";
+import QuizHistory from "./features/user/quizzes/QuizHistory/QuizHistory";
 import { LandingPage } from "./features/guest/HomePage/HomePage";
 
 export const router = createBrowserRouter([
@@ -42,6 +43,7 @@ export const router = createBrowserRouter([
       { path: "quiz", element: <Quizzes /> },
       { path: "quiz/generate", element: <QuizGeneration /> },
       { path: "quiz/:id", element: <QuizDetailPage /> },
+      { path: "quiz/history/:id", element: <QuizHistory /> },
       { path: "quiz/quizAttempt/:id", element: <QuizView /> },
       { path: "quiz/quizAttemptResult/:id", element: <QuizResultView /> },
       { path: "analytics", element: <Analytics /> },

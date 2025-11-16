@@ -23,9 +23,9 @@ const NotesPage: React.FC = () => {
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(12);
     const [folderPage, setFolderPage] = useState(1);
-    const [folderPageSize, setFolderPageSize] = useState(8); // số folder/trang
+    const [folderPageSize, setFolderPageSize] = useState(10); // số folder/trang
     const [tagPage, setTagPage] = useState(1);
-    const [tagPageSize, setTagPageSize] = useState(8); // số tag/trang
+    const [tagPageSize, setTagPageSize] = useState(10); // số tag/trang
     const [searchNote, setSearchNote] = useState("");
     const [searchFolder, setSearchFolder] = useState("");
     const [searchTag, setSearchTag] = useState("");

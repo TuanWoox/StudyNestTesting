@@ -11,9 +11,10 @@ interface QuestionResultsListProps {
     questions: QuestionDTO[] | undefined;
     answers: QuizAttemptAnswerDTO[] | undefined;
     quizId: string | undefined;
+    fromHistory: boolean | false;
 }
 
-const QuestionResultsList = ({ questions, answers, quizId }: QuestionResultsListProps) => {
+const QuestionResultsList = ({ questions, answers, quizId, fromHistory }: QuestionResultsListProps) => {
     const { token } = theme.useToken();
     // const darkMode = useOutletContext<boolean>();
     const darkMode = useReduxSelector(selectDarkMode);
@@ -43,7 +44,10 @@ const QuestionResultsList = ({ questions, answers, quizId }: QuestionResultsList
 
     const onClickBackToQuiz = () => {
         if (quizId) window.localStorage.removeItem(quizId);
-        navigate(`/user/quiz/${quizId}`)
+        if(fromHistory) {
+            navigate(`/user/quiz/history/${quizId}`)
+        }
+        else navigate(`/user/quiz/${quizId}`)
     };
 
     const primaryColor = token.colorPrimary;
@@ -78,7 +82,7 @@ const QuestionResultsList = ({ questions, answers, quizId }: QuestionResultsList
                         border: `1px solid ${borderColor}`,
                     }}
                 >
-                    Back to Quiz
+                    Back to {fromHistory ? "History" : "Quiz"} 
                 </Button>
 
                 {totalQuestions > pageSize && (

@@ -1,11 +1,12 @@
 // ChoiceEditor component for editing question choices
 
 import React from "react";
-import { Input, Checkbox, Space, Typography, Radio, theme } from "antd";
+import { Space, Typography } from "antd";
 import type { Choice } from "@/types/quiz/quiz";
+import { ChoiceInput } from "./ChoiceInput";
+import { ChoiceValidationHint } from "./ChoiceValidationHint";
 
 const { Text } = Typography;
-const { useToken } = theme;
 
 interface ChoiceEditorProps {
   type: "MCQ" | "MSQ" | "TF";
@@ -20,11 +21,6 @@ export const ChoiceEditor: React.FC<ChoiceEditorProps> = ({
   onChange,
   disabled = false,
 }) => {
-  const { token } = useToken();
-
-  // Theme constants
-  const borderColor = `2px solid ${token.colorPrimary}E0`;
-  const shadowColor = `4px 4px 0px ${token.colorPrimary}55`;
   const handleTextChange = (index: number, text: string) => {
     const newChoices = [...choices];
     newChoices[index] = { ...newChoices[index], text };
@@ -73,98 +69,19 @@ export const ChoiceEditor: React.FC<ChoiceEditorProps> = ({
       </div>
 
       {choices.map((choice, index) => (
-        <div
+        <ChoiceInput
           key={index}
-          style={{
-            display: "flex",
-            gap: 12,
-            alignItems: "center",
-            padding: "12px 16px",
-            backgroundColor: choice.isCorrect
-              ? token.colorSuccessBg
-              : token.colorFillAlter,
-            borderRadius: 0,
-            border: choice.isCorrect
-              ? `2px solid ${token.colorSuccess}`
-              : `1px solid ${token.colorBorder}`,
-            boxShadow: choice.isCorrect
-              ? `4px 4px 0px ${token.colorSuccess}55`
-              : "none",
-            borderLeft: choice.isCorrect
-              ? `4px solid ${token.colorSuccess}`
-              : `4px solid ${token.colorFillSecondary}`,
-          }}
-        >
-          {/* Correct indicator - Radio for MCQ/TF, Checkbox for MSQ */}
-          {type === "MSQ" ? (
-            <Checkbox
-              checked={choice.isCorrect}
-              onChange={(e) => handleCorrectChange(index, e.target.checked)}
-              disabled={disabled}
-              style={{ flexShrink: 0 }}
-            />
-          ) : (
-            <Radio
-              checked={choice.isCorrect}
-              onChange={(e) => handleCorrectChange(index, e.target.checked)}
-              disabled={disabled}
-              style={{ flexShrink: 0 }}
-            />
-          )}
-
-          {/* Choice text input */}
-          <Input
-            value={choice.text}
-            onChange={(e) => handleTextChange(index, e.target.value)}
-            placeholder={`Choice ${index + 1}`}
-            disabled={disabled || type === "TF"} // TF text is fixed
-            maxLength={200}
-            showCount={!disabled && type !== "TF"}
-            style={{ flex: 1, fontFamily: "monospace" }}
-            status={!choice.text.trim() ? "error" : undefined}
-          />
-
-          {/* Correct label */}
-          {choice.isCorrect && (
-            <Text
-              type="success"
-              style={{
-                fontSize: 12,
-                fontWeight: 600,
-                flexShrink: 0,
-                minWidth: 60,
-                textAlign: "right",
-                fontFamily: "monospace",
-              }}
-            >
-              ✓ Correct
-            </Text>
-          )}
-        </div>
+          choice={choice}
+          index={index}
+          type={type}
+          onTextChange={handleTextChange}
+          onCorrectChange={handleCorrectChange}
+          disabled={disabled}
+        />
       ))}
 
       {/* Validation hints */}
-      <div
-        style={{
-          marginTop: 4,
-          padding: "8px 12px",
-          backgroundColor: token.colorInfoBg,
-          borderRadius: 0,
-          border: borderColor,
-          boxShadow: shadowColor,
-        }}
-      >
-        <Text
-          type="secondary"
-          style={{ fontSize: 12, fontFamily: "monospace" }}
-        >
-          {type === "MCQ" && "✓ Exactly 4 choices, 1 correct answer required"}
-          {type === "MSQ" &&
-            "✓ Exactly 4 choices, at least 2 correct answers required"}
-          {type === "TF" &&
-            "✓ True/False choices with 1 correct answer (fixed text)"}
-        </Text>
-      </div>
+      <ChoiceValidationHint type={type} />
     </Space>
   );
 };
