@@ -1,15 +1,16 @@
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Navigate, useNavigate } from "react-router-dom";
+
 import Spinner from "@/components/Spinner/Spinner";
+import GoogleLogin from "@/components/GoogleLogin/GoogleLogin";
 import useLogin from "@/hooks/authHook/useLogin";
 import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
-import { initAuthState, selectRole, selectUserId } from "@/store/authSlice";
-import { ERole } from "@/utils/enums/ERole";
-import GoogleLogin from "@/components/GoogleLogin/GoogleLogin";
 import { useReduxDispatch } from "@/hooks/reduxHook/useReduxDispatch";
-import { theme } from "antd";
+import { useAntDesignTheme } from "@/hooks/common";
+import { initAuthState, selectRole } from "@/store/authSlice";
 import { selectDarkMode } from "@/store/themeSlice";
+import { ERole } from "@/utils/enums/ERole";
 
 interface LoginFormInputs {
     username: string;
@@ -19,17 +20,13 @@ interface LoginFormInputs {
 
 const Login: React.FC = () => {
     const navigate = useNavigate();
-    const darkMode = useReduxSelector(selectDarkMode);
-    const { login, isAuthenticating } = useLogin();
-    const role = useReduxSelector(selectRole);
     const dispatch = useReduxDispatch();
-    const userId = useReduxSelector(selectUserId);
-    const { token } = theme.useToken();
 
-    const borderColor = `${token.colorPrimary}E0`; // 88% opacity
-    const shadowColor = `${token.colorPrimary}55`; // 33% opacity
-    const bgColor = `${token.colorBgLayout}`;
-    const textColor = `${token.colorText}`;
+    const { token, borderColor, shadowColor, bgColor, textColor } =
+        useAntDesignTheme();
+    const darkMode = useReduxSelector(selectDarkMode);
+    const role = useReduxSelector(selectRole);
+    const { login, isAuthenticating } = useLogin();
 
     const {
         register,
@@ -44,6 +41,7 @@ const Login: React.FC = () => {
         },
     });
 
+    // Handle OAuth callback with token
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         const token = params.get("token");
@@ -54,21 +52,12 @@ const Login: React.FC = () => {
         }
     }, [dispatch]);
 
-    // Handle redirect if user reloads the page
-    if (role) {
-        const lastRoute = localStorage.getItem('lastRoute');
-        const userIdLocal = localStorage.getItem('userId');
-        //Only the same user can reload the page or move to that previous page when log in again
-        if (lastRoute && userIdLocal === userId) {
-            return <Navigate to={lastRoute} replace />;
-        }
-
-        switch (role) {
-            case ERole.User:
-                return <Navigate to="/user/notes" replace />;
-            case ERole.Admin:
-                return <Navigate to="/admin/dashboard" replace />;
-        }
+    // Redirect authenticated users
+    switch (role) {
+        case ERole.User:
+            return <Navigate to="/user/notes" replace />;
+        case ERole.Admin:
+            return <Navigate to="/admin/dashboard" replace />;
     }
 
     const onSubmit = (data: LoginFormInputs) => {
@@ -81,22 +70,6 @@ const Login: React.FC = () => {
 
     return (
         <div className="w-[95%] sm:w-[85%] md:w-[70%] lg:w-[50%] max-w-xl m-5 transition-all duration-300 ease-out">
-            <button
-                type="button"
-                onClick={() => navigate("/homepage")}
-                className="self-start mb-4 px-3 py-1 border text-sm sm:text-base hover:-translate-y-[2px] transition-all"
-                style={{
-                    border: `1px solid ${borderColor}`,
-                    color: textColor,
-                    boxShadow: `3px 3px 0 ${shadowColor}`,
-                    fontFamily: "'IBM Plex Mono', monospace",
-                    fontWeight: 600,
-                    cursor: "pointer"
-                }}
-            >
-                ← Back to Home
-            </button>
-
             <div
                 style={{
                     border: `1.5px solid ${borderColor}`,
@@ -105,10 +78,10 @@ const Login: React.FC = () => {
                     fontFamily: "'IBM Plex Mono', 'Courier New', monospace",
                 }}
             >
-                <div className="flex flex-col items-center px-4 sm:px-6 md:px-8 lg:px-10 py-6">
+                <div className="flex flex-col items-center px-4 sm:px-6 md:px-8 lg:px-10 py-8 gap-y-5">
                     {/* Title */}
                     <div
-                        className="text-3xl sm:text-4xl lg:text-5xl font-bold text-center mb-5"
+                        className="text-3xl sm:text-4xl lg:text-5xl font-bold text-center"
                         style={{
                             color: token.colorPrimary,
                             textShadow: `2px 2px 0 ${shadowColor}`,
@@ -120,7 +93,7 @@ const Login: React.FC = () => {
 
                     {/* Subtitle */}
                     <h2
-                        className="text-lg sm:text-xl md:text-2xl font-medium text-center mb-5"
+                        className="text-lg sm:text-xl md:text-2xl font-medium text-center mb-1"
                         style={{
                             color: textColor,
                             fontFamily: "'IBM Plex Mono', monospace",
@@ -129,9 +102,12 @@ const Login: React.FC = () => {
                         Sign in to your account
                     </h2>
 
-                    {/* Form */}
-                    <form onSubmit={handleSubmit(onSubmit)} className="w-full space-y-6 sm:space-y-7">
-                        {/* Username */}
+                    {/* Login Form */}
+                    <form
+                        onSubmit={handleSubmit(onSubmit)}
+                        className="w-full space-y-5"
+                    >
+                        {/* Username Field */}
                         <div>
                             <label
                                 htmlFor="username"
@@ -166,13 +142,13 @@ const Login: React.FC = () => {
                                 }}
                             />
                             {errors.username && (
-                                <p className="mt-1 text-xs sm:text-sm text-red-600">
+                                <p className="mt-1.5 text-xs sm:text-sm text-red-600">
                                     {errors.username.message}
                                 </p>
                             )}
                         </div>
 
-                        {/* Password */}
+                        {/* Password Field */}
                         <div>
                             <label
                                 htmlFor="password"
@@ -207,14 +183,14 @@ const Login: React.FC = () => {
                                 }}
                             />
                             {errors.password && (
-                                <p className="mt-1 text-xs sm:text-sm text-red-600">
+                                <p className="mt-1.5 text-xs sm:text-sm text-red-600">
                                     {errors.password.message}
                                 </p>
                             )}
                         </div>
 
-                        {/* Remember Me */}
-                        <div className="flex items-center">
+                        {/* Remember Me Checkbox */}
+                        <div className="flex items-center pt-1">
                             <input
                                 type="checkbox"
                                 id="rememberMe"
@@ -233,31 +209,52 @@ const Login: React.FC = () => {
                             </label>
                         </div>
 
-                        {/* Submit */}
+                        {/* Submit Button */}
                         <button
                             type="submit"
                             disabled={!isValid || isAuthenticating}
-                            className="w-full py-3 flex items-center justify-center transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-[3px] hover:cursor-pointer"
+                            className="w-full py-3 flex items-center justify-center transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-[3px] hover:cursor-pointer mt-6"
                             style={{
                                 color: token.colorText,
                                 boxShadow: `4px 4px 0 ${shadowColor}`,
                                 border: `1px solid ${borderColor}`,
                                 fontFamily: "'IBM Plex Mono', monospace",
-                                fontWeight: 600
+                                fontWeight: 600,
                             }}
                         >
                             {isAuthenticating ? <Spinner /> : "Login"}
                         </button>
                     </form>
 
+                    {/* Divider */}
+                    <div className="w-full flex items-center gap-3 my-1">
+                        <div
+                            className="flex-1 h-px"
+                            style={{ backgroundColor: borderColor }}
+                        />
+                        <span
+                            className="text-sm"
+                            style={{
+                                color: textColor,
+                                fontFamily: "'IBM Plex Mono', monospace",
+                            }}
+                        >
+                            OR
+                        </span>
+                        <div
+                            className="flex-1 h-px"
+                            style={{ backgroundColor: borderColor }}
+                        />
+                    </div>
+
                     {/* Google Login */}
-                    <div className="my-7 w-full">
+                    <div className="w-full">
                         <GoogleLogin disable={isAuthenticating} />
                     </div>
 
-                    {/* Links */}
+                    {/* Footer Links */}
                     <div
-                        className="flex justify-between w-full text-sm sm:text-base"
+                        className="flex justify-between w-full text-sm sm:text-base mt-4"
                         style={{
                             color: textColor,
                             fontFamily: "'IBM Plex Mono', monospace",
@@ -276,6 +273,23 @@ const Login: React.FC = () => {
                             Register
                         </span>
                     </div>
+
+                    {/* Back to Home Button */}
+                    <button
+                        type="button"
+                        onClick={() => navigate("/homepage")}
+                        className="self-start mt-3 px-3 py-1.5 border text-sm sm:text-base hover:-translate-y-[2px] transition-all"
+                        style={{
+                            border: `1px solid ${borderColor}`,
+                            color: textColor,
+                            boxShadow: `3px 3px 0 ${shadowColor}`,
+                            fontFamily: "'IBM Plex Mono', monospace",
+                            fontWeight: 600,
+                            cursor: "pointer",
+                        }}
+                    >
+                        ← Back to Home
+                    </button>
                 </div>
             </div>
         </div>

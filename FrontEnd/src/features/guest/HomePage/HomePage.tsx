@@ -2,42 +2,34 @@ import React from "react";
 import { Button, Card, Divider, ConfigProvider, theme } from "antd";
 import { BookOutlined, BarChartOutlined, RobotOutlined, MailOutlined, PhoneOutlined, ExclamationCircleOutlined, CheckCircleOutlined, SunOutlined, MoonOutlined } from "@ant-design/icons";
 import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
-import { selectRole, selectUserId } from "@/store/authSlice";
+import { selectRole } from "@/store/authSlice";
 import { toggleDarkMode, selectDarkMode } from "@/store/themeSlice";
 import { useReduxDispatch } from "@/hooks/reduxHook/useReduxDispatch";
 import { Navigate, useNavigate } from "react-router-dom";
 import { ERole } from "@/utils/enums/ERole";
+import { useAntDesignTheme } from "@/hooks/common";
 
 const HomePage: React.FC = () => {
+    const { token, borderColor, shadowColor, bgColor } = useAntDesignTheme();
     const role = useReduxSelector(selectRole); // nếu user logged in, role tồn tại
-    const userId = useReduxSelector(selectUserId);
 
-    const { token } = theme.useToken();
+
     const navigate = useNavigate();
 
     const cardStyle: React.CSSProperties = {
-        border: `1.5px solid ${token.colorPrimary}E0`,
-        boxShadow: `4px 4px 0 ${token.colorPrimary}55`,
-        backgroundColor: token.colorBgLayout,
+        border: `1.5px solid ${borderColor}`,
+        boxShadow: `4px 4px 0 ${shadowColor}`,
+        backgroundColor: bgColor,
         fontFamily: "'IBM Plex Mono', monospace",
         transition: "all 0.3s ease",
     };
 
     // Handle redirect if user reloads the page
-    if (role) {
-        const lastRoute = localStorage.getItem('lastRoute');
-        const userIdLocal = localStorage.getItem('userId');
-        //Only the same user can reload the page or move to that previous page when log in again
-        if (lastRoute && userIdLocal === userId) {
-            return <Navigate to={lastRoute} replace />;
-        }
-
-        switch (role) {
-            case ERole.User:
-                return <Navigate to="/user/notes" replace />;
-            case ERole.Admin:
-                return <Navigate to="/admin/dashboard" replace />;
-        }
+    switch (role) {
+        case ERole.User:
+            return <Navigate to="/user/notes" replace />;
+        case ERole.Admin:
+            return <Navigate to="/admin/dashboard" replace />;
     }
 
     return (
