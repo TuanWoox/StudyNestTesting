@@ -26,7 +26,6 @@ const useGetAllFolder = (options?: UseGetAllFolderOptions) => {
     const pageNumber = options?.pageNumber ?? 0;
     const searchTerm = options?.searchTerm ?? "";
 
-
     return useQuery<PagedData<Folder, string>, AxiosError>({
         queryKey: ["folders", { pageNumber, pageSize, sortByNewest, searchTerm }],
         enabled,

@@ -1,11 +1,10 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 
 import CenterLayout from "./layouts/CenterLayout";
-import InnerLayout from "./layouts/InnerLayout";
 
 // Auth features
-import Login from "./features/auth/Login";
-import Register from "./features/auth/Register";
+import Login from "./features/guest/Login/Login";
+import Register from "./features/guest/Register/Register";
 
 // User features
 import NotesPage from "./features/user/notes/Notes/NotesPage";
@@ -23,6 +22,8 @@ import QuizView from "./features/user/quizzes/QuizAttempt/QuizAttemptView";
 import QuizResultView from "./features/user/quizzes/QuizAttemptResult/QuizResultView";
 import QuizHistory from "./features/user/quizzes/QuizHistory/QuizHistory";
 import { LandingPage } from "./features/guest/HomePage/HomePage";
+import UserLayout from "./layouts/UserLayout";
+import AdminLayout from "./layouts/AdminLayout";
 
 export const router = createBrowserRouter([
   {
@@ -36,7 +37,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "/user",
-    element: <InnerLayout />,
+    element: <UserLayout />,
     children: [
       { index: true, element: <Navigate to="/user/notes" /> },
       { path: "notes", element: <NotesPage /> },
@@ -52,7 +53,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "/admin",
-    element: <InnerLayout />,
+    element: <AdminLayout />,
     children: [
       { index: true, element: <Navigate to="/admin/dashboard" /> },
       { path: "dashboard", element: <Dashboard /> },

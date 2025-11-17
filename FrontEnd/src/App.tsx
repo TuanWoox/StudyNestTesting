@@ -8,23 +8,20 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import queryClient from "@/config/reactQueryConfig";
 import { QuizAttemptSnapshotHubProvider } from "./context/QuizSnapshotHubContext/QuizSnapshotHubProvider";
-import { AuthProvider } from "./context/AuthContext/AuthProvider";
 import { QuizJobProvider } from "@/context/QuizJobContext/QuizJobProvider";
 
 function App() {
   return (
     <Provider store={store}>
-      <AuthProvider>
-        <QueryClientProvider client={queryClient}>
-          <QuizJobProvider>
-            <QuizAttemptSnapshotHubProvider>
-              <RouterProvider router={router}></RouterProvider>
-              <ReactQueryDevtools initialIsOpen={false} />
-            </QuizAttemptSnapshotHubProvider>
-          </QuizJobProvider>
-          <Toaster richColors expand={false} position="top-right" closeButton />
-        </QueryClientProvider>
-      </AuthProvider>
+      <QueryClientProvider client={queryClient}>
+        <QuizJobProvider>
+          <QuizAttemptSnapshotHubProvider>
+            <RouterProvider router={router}></RouterProvider>
+            <ReactQueryDevtools initialIsOpen={false} />
+          </QuizAttemptSnapshotHubProvider>
+        </QuizJobProvider>
+        <Toaster richColors expand={false} position="top-right" closeButton />
+      </QueryClientProvider>
     </Provider>
   );
 }

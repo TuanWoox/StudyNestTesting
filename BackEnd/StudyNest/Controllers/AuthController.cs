@@ -82,7 +82,7 @@ namespace StudyNest.Controllers
             return Ok(result);
         }
 
-        [HttpGet]
+        [HttpGet("/ValidateToken")]
         public IActionResult Auth()
         {
             ReturnResult<bool> result = new ReturnResult<bool>();

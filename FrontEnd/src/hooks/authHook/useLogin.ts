@@ -1,4 +1,3 @@
-import userService from "@/services/userService";
 import { UserLogin } from "@/types/auth/UserLogin";
 import { useMutation } from "@tanstack/react-query";
 import { useReduxDispatch } from "../reduxHook/useReduxDispatch";
@@ -6,13 +5,14 @@ import { initAuthState, selectRole } from "@/store/authSlice";
 import { useReduxSelector } from "../reduxHook/useReduxSelector";
 import { ERole } from "@/utils/enums/ERole";
 import { useNavigate } from "react-router-dom";
+import authService from "@/services/authService";
 
 const useLogin = () => {
     const dispatch = useReduxDispatch();
     const role = useReduxSelector(selectRole);
     const navigate = useNavigate();
     const mutation = useMutation({
-        mutationFn: (userLogin: UserLogin) => userService.login(userLogin),
+        mutationFn: (userLogin: UserLogin) => authService.login(userLogin),
         onSuccess: (data) => {
             if (data.result) {
                 dispatch(initAuthState(data.result));

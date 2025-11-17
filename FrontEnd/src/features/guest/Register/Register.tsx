@@ -1,13 +1,14 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { Navigate, useNavigate } from "react-router-dom";
+
 import Spinner from "@/components/Spinner/Spinner";
 import useRegister from "@/hooks/authHook/useRegister";
 import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
 import { selectRole } from "@/store/authSlice";
-import { ERole } from "@/utils/enums/ERole";
-import { theme } from "antd";
 import { selectDarkMode } from "@/store/themeSlice";
+import { ERole } from "@/utils/enums/ERole";
+import { useAntDesignTheme } from "@/hooks/common";
 
 interface RegisterFormInputs {
     email: string;
@@ -19,15 +20,12 @@ interface RegisterFormInputs {
 
 const Register: React.FC = () => {
     const navigate = useNavigate();
+    const { token, borderColor, shadowColor, bgColor, textColor } = useAntDesignTheme();
+
     const { registerFn, isRegistering } = useRegister();
     const role = useReduxSelector(selectRole);
     const darkMode = useReduxSelector(selectDarkMode);
-    const { token } = theme.useToken();
 
-    const borderColor = `${token.colorPrimary}E0`;
-    const shadowColor = `${token.colorPrimary}55`;
-    const bgColor = token.colorBgLayout;
-    const textColor = token.colorText;
 
     const {
         register,
@@ -45,6 +43,7 @@ const Register: React.FC = () => {
         },
     });
 
+    // Redirect authenticated users
     switch (role) {
         case ERole.User:
             return <Navigate to="/user/notes" replace />;
@@ -68,22 +67,6 @@ const Register: React.FC = () => {
 
     return (
         <div className="w-[95%] sm:w-[85%] md:w-[70%] lg:w-[50%] max-w-xl m-5 transition-all duration-300 ease-out">
-            <button
-                type="button"
-                onClick={() => navigate("/homepage")}
-                className="self-start mb-4 px-3 py-1 border text-sm sm:text-base hover:-translate-y-[2px] transition-all"
-                style={{
-                    border: `1px solid ${borderColor}`,
-                    color: textColor,
-                    boxShadow: `3px 3px 0 ${shadowColor}`,
-                    fontFamily: "'IBM Plex Mono', monospace",
-                    fontWeight: 600,
-                    cursor: "pointer"
-                }}
-            >
-                ← Back to Home
-            </button>
-
             <div
                 style={{
                     border: `1.5px solid ${borderColor}`,
@@ -92,9 +75,10 @@ const Register: React.FC = () => {
                     fontFamily: "'IBM Plex Mono', 'Courier New', monospace",
                 }}
             >
-                <div className="flex flex-col items-center px-4 sm:px-6 py-6">
+                <div className="flex flex-col items-center px-4 sm:px-6 py-6 gap-y-3">
+                    {/* Title */}
                     <div
-                        className="text-3xl sm:text-4xl lg:text-5xl font-bold text-center mb-5"
+                        className="text-3xl sm:text-4xl lg:text-5xl font-bold text-center"
                         style={{
                             color: token.colorPrimary,
                             textShadow: `2px 2px 0 ${shadowColor}`,
@@ -104,8 +88,9 @@ const Register: React.FC = () => {
                         Study Nest
                     </div>
 
+                    {/* Subtitle */}
                     <h2
-                        className="text-lg sm:text-xl md:text-2xl font-medium text-center mb-5"
+                        className="text-lg sm:text-xl md:text-2xl font-medium text-center mb-1"
                         style={{
                             color: textColor,
                             fontFamily: "'IBM Plex Mono', monospace",
@@ -114,9 +99,12 @@ const Register: React.FC = () => {
                         Create your account
                     </h2>
 
-                    {/* Form */}
-                    <form onSubmit={handleSubmit(onSubmit)} className="w-full space-y-6 sm:space-y-7">
-                        {/* Email */}
+                    {/* Registration Form */}
+                    <form
+                        onSubmit={handleSubmit(onSubmit)}
+                        className="w-full space-y-4"
+                    >
+                        {/* Email Field */}
                         <div>
                             <label
                                 htmlFor="email"
@@ -139,13 +127,14 @@ const Register: React.FC = () => {
                                     },
                                 })}
                                 placeholder="Enter your email"
-                                className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base transition-all duration-200 outline-none font-mono border ${errors.email ? "border-red-500" : "focus:border-gray-900"
+                                className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base transition-all duration-200 outline-none font-mono ${errors.email
+                                    ? "border-red-500 focus:ring-red-500"
+                                    : "border border-gray-300 focus:border-gray-900"
                                     }`}
                                 style={{
                                     backgroundColor: darkMode ? "#1e1e1e" : "#fafafa",
                                     color: textColor,
                                     boxShadow: `4px 4px 0 ${shadowColor}`,
-                                    borderRadius: "0px",
                                     border: `1.5px solid ${borderColor}`,
                                 }}
                             />
@@ -156,7 +145,7 @@ const Register: React.FC = () => {
                             )}
                         </div>
 
-                        {/* Username */}
+                        {/* Username Field */}
                         <div>
                             <label
                                 htmlFor="username"
@@ -179,13 +168,14 @@ const Register: React.FC = () => {
                                     },
                                 })}
                                 placeholder="Enter your username"
-                                className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base transition-all duration-200 outline-none font-mono border ${errors.username ? "border-red-500" : "focus:border-gray-900"
+                                className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base transition-all duration-200 outline-none font-mono ${errors.username
+                                    ? "border-red-500 focus:ring-red-500"
+                                    : "border border-gray-300 focus:border-gray-900"
                                     }`}
                                 style={{
                                     backgroundColor: darkMode ? "#1e1e1e" : "#fafafa",
                                     color: textColor,
                                     boxShadow: `4px 4px 0 ${shadowColor}`,
-                                    borderRadius: "0px",
                                     border: `1.5px solid ${borderColor}`,
                                 }}
                             />
@@ -196,7 +186,7 @@ const Register: React.FC = () => {
                             )}
                         </div>
 
-                        {/* Full Name */}
+                        {/* Full Name Field */}
                         <div>
                             <label
                                 htmlFor="fullName"
@@ -215,13 +205,14 @@ const Register: React.FC = () => {
                                     required: "Full name is required",
                                 })}
                                 placeholder="Enter your full name"
-                                className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base transition-all duration-200 outline-none font-mono border ${errors.fullName ? "border-red-500" : "focus:border-gray-900"
+                                className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base transition-all duration-200 outline-none font-mono ${errors.fullName
+                                    ? "border-red-500 focus:ring-red-500"
+                                    : "border border-gray-300 focus:border-gray-900"
                                     }`}
                                 style={{
                                     backgroundColor: darkMode ? "#1e1e1e" : "#fafafa",
                                     color: textColor,
                                     boxShadow: `4px 4px 0 ${shadowColor}`,
-                                    borderRadius: "0px",
                                     border: `1.5px solid ${borderColor}`,
                                 }}
                             />
@@ -232,7 +223,7 @@ const Register: React.FC = () => {
                             )}
                         </div>
 
-                        {/* Password */}
+                        {/* Password Field */}
                         <div>
                             <label
                                 htmlFor="password"
@@ -257,13 +248,14 @@ const Register: React.FC = () => {
                                     },
                                 })}
                                 placeholder="Enter your password"
-                                className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base transition-all duration-200 outline-none font-mono border ${errors.password ? "border-red-500" : "focus:border-gray-900"
+                                className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base transition-all duration-200 outline-none font-mono ${errors.password
+                                    ? "border-red-500 focus:ring-red-500"
+                                    : "border border-gray-300 focus:border-gray-900"
                                     }`}
                                 style={{
                                     backgroundColor: darkMode ? "#1e1e1e" : "#fafafa",
                                     color: textColor,
                                     boxShadow: `4px 4px 0 ${shadowColor}`,
-                                    borderRadius: "0px",
                                     border: `1.5px solid ${borderColor}`,
                                 }}
                             />
@@ -274,7 +266,7 @@ const Register: React.FC = () => {
                             )}
                         </div>
 
-                        {/* Confirm Password */}
+                        {/* Confirm Password Field */}
                         <div>
                             <label
                                 htmlFor="confirmPassword"
@@ -295,15 +287,14 @@ const Register: React.FC = () => {
                                         value === watch("password") || "Passwords do not match",
                                 })}
                                 placeholder="Repeat your password"
-                                className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base transition-all duration-200 outline-none font-mono border ${errors.confirmPassword
-                                    ? "border-red-500"
-                                    : "focus:border-gray-900"
+                                className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base transition-all duration-200 outline-none font-mono ${errors.confirmPassword
+                                    ? "border-red-500 focus:ring-red-500"
+                                    : "border border-gray-300 focus:border-gray-900"
                                     }`}
                                 style={{
                                     backgroundColor: darkMode ? "#1e1e1e" : "#fafafa",
                                     color: textColor,
                                     boxShadow: `4px 4px 0 ${shadowColor}`,
-                                    borderRadius: "0px",
                                     border: `1.5px solid ${borderColor}`,
                                 }}
                             />
@@ -314,11 +305,11 @@ const Register: React.FC = () => {
                             )}
                         </div>
 
-                        {/* Submit */}
+                        {/* Submit Button */}
                         <button
                             type="submit"
                             disabled={!isValid || isRegistering}
-                            className="w-full py-2.5 sm:py-3 text-sm sm:text-base flex items-center justify-center transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-[2px] sm:hover:-translate-y-[3px] hover:cursor-pointer"
+                            className="w-full py-3 flex items-center justify-center transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-[3px] hover:cursor-pointer mt-5"
                             style={{
                                 color: token.colorText,
                                 boxShadow: `4px 4px 0 ${shadowColor}`,
@@ -330,9 +321,9 @@ const Register: React.FC = () => {
                             {isRegistering ? <Spinner /> : "Register"}
                         </button>
 
-                        {/* Links */}
+                        {/* Login Link */}
                         <div
-                            className="flex justify-center text-sm sm:text-base mt-2"
+                            className="flex justify-center text-sm sm:text-base pt-1"
                             style={{
                                 color: textColor,
                                 fontFamily: "'IBM Plex Mono', monospace",
@@ -346,6 +337,23 @@ const Register: React.FC = () => {
                             </span>
                         </div>
                     </form>
+
+                    {/* Back to Home Button */}
+                    <button
+                        type="button"
+                        onClick={() => navigate("/homepage")}
+                        className="self-start mt-2 px-3 py-1.5 border text-sm sm:text-base hover:-translate-y-[2px] transition-all"
+                        style={{
+                            border: `1px solid ${borderColor}`,
+                            color: textColor,
+                            boxShadow: `3px 3px 0 ${shadowColor}`,
+                            fontFamily: "'IBM Plex Mono', monospace",
+                            fontWeight: 600,
+                            cursor: "pointer",
+                        }}
+                    >
+                        ← Back to Home
+                    </button>
                 </div>
             </div>
         </div>

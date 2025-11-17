@@ -32,7 +32,7 @@ const CenterLayout: React.FC = () => {
         style={{
           minHeight: "100vh",
           display: "flex",
-          // alignItems: "center",
+          alignItems: "center",
           justifyContent: "center",
           background: darkMode
             ? "linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%)"
