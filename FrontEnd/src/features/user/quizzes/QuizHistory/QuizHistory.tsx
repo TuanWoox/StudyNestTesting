@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Typography, theme, Grid, Button, Space } from "antd";
+import { theme, Button, Space } from "antd";
 import { ArrowLeftOutlined, ReloadOutlined } from "@ant-design/icons";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
 import useGetAllQuizAttempts from "@/hooks/quizAttempt/useGetAllQuizAttempts";
@@ -11,16 +11,14 @@ import {
   QuizHistoryList,
   QuizHistoryPagination,
 } from "./components";
+import QuizStatistics from "./components/QuizStatistics";
 
-const { Title } = Typography;
 const { useToken } = theme;
-const { useBreakpoint } = Grid;
 
 const QuizHistory: React.FC = () => {
   const { id: quizId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { token } = useToken();
-  const screens = useBreakpoint();
 
   const [pageNumber, setPageNumber] = useState(0);
   const [pageSize, setPageSize] = useState(10);
@@ -109,8 +107,11 @@ const QuizHistory: React.FC = () => {
         {/* Header */}
         <QuizHistoryHeader
           quizTitle={quiz.title}
-          totalAttempts={totalAttempts}
           onBack={handleBack}
+        />
+        {/* Quiz Statistics */}
+        <QuizStatistics
+          quizId={quiz.id}
         />
 
         {/* Sort and Refresh Controls */}
@@ -180,7 +181,10 @@ const QuizHistory: React.FC = () => {
           </div>
         ) : (
           <>
-            <QuizHistoryList attempts={attempts} quizId={quizId || ""} />
+            <QuizHistoryList
+              attempts={attempts}
+              quizId={quizId || ""}
+            />
 
             {/* Pagination */}
             <QuizHistoryPagination

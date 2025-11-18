@@ -3,8 +3,7 @@ import {
     UserOutlined,
     MessageOutlined,
     FileTextOutlined,
-    EditOutlined,
-    BarChartOutlined,
+    EditOutlined
 } from '@ant-design/icons';
 
 export const adminMenus = [
@@ -16,6 +15,5 @@ export const adminMenus = [
 export const userMenus = [
     { path: '/user/notes', name: 'Notes', icon: <FileTextOutlined /> },
     { path: '/user/quiz', name: 'Quiz', icon: <EditOutlined /> },
-    { path: '/user/analytics', name: 'Analytics', icon: <BarChartOutlined /> },
     { path: '/user/feedback', name: 'Feedback', icon: <MessageOutlined /> },
 ];
