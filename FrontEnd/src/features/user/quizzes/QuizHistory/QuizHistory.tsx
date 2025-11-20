@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { theme, Button, Space } from "antd";
-import { ArrowLeftOutlined, ReloadOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, BarChartOutlined, ReloadOutlined } from "@ant-design/icons";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
 import useGetAllQuizAttempts from "@/hooks/quizAttempt/useGetAllQuizAttempts";
 import useGetQuizDetail from "@/hooks/quizHook/useGetQuizDetail";
@@ -11,7 +11,7 @@ import {
   QuizHistoryList,
   QuizHistoryPagination,
 } from "./components";
-import QuizStatistics from "./components/QuizStatistics";
+import QuizStatistics, { QuizStatisticsRef } from "../QuizStatistics/QuizStatistics";
 
 const { useToken } = theme;
 
@@ -44,6 +44,8 @@ const QuizHistory: React.FC = () => {
     pageSize,
     pageNumber,
   });
+
+  const quizStatsRef = useRef<QuizStatisticsRef>(null);
 
   const handlePageChange = (page: number, newPageSize?: number) => {
     setPageNumber(page - 1);
@@ -109,10 +111,7 @@ const QuizHistory: React.FC = () => {
           quizTitle={quiz.title}
           onBack={handleBack}
         />
-        {/* Quiz Statistics */}
-        <QuizStatistics
-          quizId={quiz.id}
-        />
+
 
         {/* Sort and Refresh Controls */}
         <div
@@ -149,17 +148,31 @@ const QuizHistory: React.FC = () => {
               Oldest
             </Button>
           </Space>
-          <Button
-            icon={<ReloadOutlined />}
-            onClick={() => refetch()}
-            style={{
-              fontFamily: "monospace",
-              borderRadius: 0,
-              fontWeight: 600,
-            }}
-          >
-            Refresh
-          </Button>
+          <Space>
+            <Button
+              type="primary"
+              icon={<BarChartOutlined />}
+              onClick={() => quizStatsRef.current?.handleOpenStats()}
+              style={{
+                fontFamily: "monospace",
+                borderRadius: 0,
+                fontWeight: 600,
+              }}
+            >
+              Quiz Stats
+            </Button>
+            <Button
+              icon={<ReloadOutlined />}
+              onClick={() => refetch()}
+              style={{
+                fontFamily: "monospace",
+                borderRadius: 0,
+                fontWeight: 600,
+              }}
+            >
+              Refresh
+            </Button>
+          </Space>
         </div>
 
         {/* Attempts List */}
@@ -181,6 +194,9 @@ const QuizHistory: React.FC = () => {
           </div>
         ) : (
           <>
+
+            {quizId ? <QuizStatistics ref={quizStatsRef} quizId={quizId} /> : null}
+
             <QuizHistoryList
               attempts={attempts}
               quizId={quizId || ""}

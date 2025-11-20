@@ -14,7 +14,7 @@ export interface QuizAttemptSummaryDTO {
     totalAttempts: number;
     firstAttemptDate?: Date;
     lastAttemptDate?: Date;
-    scores: number[];
+    scores: QuizScore[];
     totalRightQuestion: number;
     totalWrongQuestion: number;
     questionErrorCounts: QuestionErrorCount[];
@@ -38,4 +38,9 @@ export interface QuizProgressDTO {
 export interface QuestionErrorCount {
     question: QuestionDTO;
     wrongCounts: number;
+}
+
+export interface QuizScore {
+    dateCreated: Date,
+    score: number,
 }

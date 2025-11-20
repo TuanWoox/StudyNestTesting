@@ -18,7 +18,7 @@ namespace StudyNest.Common.Models.DTOs.ViewDTO.QuizStatistic
         public int TotalAttempts { get; set; }
         public DateTime? FirstAttemptDate { get; set; }
         public DateTime? LastAttemptDate { get; set; }
-        public List<int> Scores { get; set; }
+        public List<QuizScore> Scores { get; set; }
         public int TotalRightQuestion { get; set; }
         public int TotalWrongQuestion { get; set; }
         public List<QuestionErrorCount> QuestionErrorCounts { get; set; }
@@ -39,6 +39,11 @@ namespace StudyNest.Common.Models.DTOs.ViewDTO.QuizStatistic
         public decimal ImprovementRate { get; set; } // % change from first to last
         public decimal ScoreChange { get; set; } // latest - first attempt
         public string TrendDirection { get; set; } // "Improving", "Declining", "Stable"
+    }
+    public class QuizScore
+    {
+        public DateTimeOffset? DateCreated;
+        public int Score;
     }
 
     public class QuestionErrorCount

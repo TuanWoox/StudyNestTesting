@@ -51,6 +51,11 @@ namespace StudyNest.Business.v1
                     var totalQuestions = snapshots.Sum(s => s.Questions?.Count()) ?? 0;
                     var allAttempts = snapshots.SelectMany(s => s.QuizAttempts).OrderBy(a => a.DateCreated).ToList();
                     var allScores = allAttempts.Select(a => a.Score).ToList();
+                    List<QuizScore> allScoresList = allAttempts.Select(a => new QuizScore
+                    {
+                        DateCreated = a.DateCreated,
+                        Score = a.Score
+                    }).ToList();
                     // Attempt Summary
                     var totalRight = allAttempts.SelectMany(a => a.QuizAttemptAnswers).Count(ans => ans.IsCorrect);
                     var questionErrorCounts = allAttempts.SelectMany(at => at.QuizAttemptAnswers)
@@ -68,7 +73,7 @@ namespace StudyNest.Business.v1
                     quizStats.AttemptSummary = new QuizAttemptSummaryDTO
                     {
                         TotalAttempts = allAttempts.Count,
-                        Scores = allScores,
+                        Scores = allScoresList,
                         TotalRightQuestion = totalRight,
                         TotalWrongQuestion = totalQuestions - totalRight,
                         QuestionErrorCounts = questionErrorCounts
