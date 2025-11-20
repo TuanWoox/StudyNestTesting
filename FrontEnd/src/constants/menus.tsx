@@ -5,12 +5,14 @@ import {
     FileTextOutlined,
     EditOutlined,
     BarChartOutlined,
+    SettingOutlined,
 } from '@ant-design/icons';
 
 export const adminMenus = [
     { path: '/admin/dashboard', name: 'Dashboard', icon: <DashboardOutlined /> },
-    { path: '/admin/users', name: 'Manage Users', icon: <UserOutlined /> },
+    { path: '/admin/users', name: 'Users', icon: <UserOutlined /> },
     { path: '/admin/feedback', name: 'Feedback', icon: <MessageOutlined /> },
+    { path: '/admin/settings', name: 'Settings', icon: <SettingOutlined /> },
 ];
 
 export const userMenus = [

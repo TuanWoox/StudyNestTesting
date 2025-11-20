@@ -85,24 +85,6 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
 
             {/* Action Buttons */}
             <div className="flex gap-3">
-                {/* ✅ Save */}
-                <Button
-                    type="text"
-                    onClick={onSave}
-                    icon={<SaveOutlined />}
-                    loading={isLoading}
-                    style={{
-                        ...baseStyle,
-                        border: `1px solid ${primary88}`,
-                        backgroundColor: darkMode ? "#1e1e1e" : "#fafafa",
-                        color: token.colorPrimary,
-                    }}
-                    onMouseEnter={handleEnter}
-                    onMouseLeave={handleLeave}
-                >
-                    Save
-                </Button>
-
                 {/* 🧡 Close */}
                 <Button
                     type="text"
@@ -123,6 +105,24 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
                     onMouseLeave={handleLeave}
                 >
                     Close
+                </Button>
+
+                {/* ✅ Save */}
+                <Button
+                    type="text"
+                    onClick={onSave}
+                    icon={<SaveOutlined />}
+                    loading={isLoading}
+                    style={{
+                        ...baseStyle,
+                        border: `1px solid ${primary88}`,
+                        backgroundColor: darkMode ? "#1e1e1e" : "#fafafa",
+                        color: token.colorPrimary,
+                    }}
+                    onMouseEnter={handleEnter}
+                    onMouseLeave={handleLeave}
+                >
+                    Save
                 </Button>
             </div>
         </>
