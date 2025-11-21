@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace StudyNest.Common.Models.DTOs.EntityDTO.Questions
+namespace StudyNest.Common.Models.DTOs.EntityDTO.Question
 {
     [AutoMap(typeof(DbEntities.Entities.Question), ReverseMap = true, PreserveReferences = true)]
     public class UpdateQuestionDTO : BaseKey

@@ -26,7 +26,7 @@ import { resetAuthState } from "@/store/authSlice";
 import { toggleDarkMode, selectDarkMode } from "@/store/themeSlice";
 import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
 import { useReduxDispatch } from "@/hooks/reduxHook/useReduxDispatch";
-import QuizJobBell from "@/components/QuizJobBell";
+import QuizJobBell from "@/components/QuizJobBell/QuizJobBell";
 
 interface InnerLayoutProps {
   role: ERole;

@@ -1,24 +1,20 @@
 import React from "react";
-import { Typography, Button, Space, Grid, theme } from "antd";
-import { ArrowLeftOutlined, HistoryOutlined } from "@ant-design/icons";
+import { Typography, Button, Space, Grid } from "antd";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 const { useBreakpoint } = Grid;
-const { useToken } = theme;
 
 interface QuizHistoryHeaderProps {
   quizTitle: string;
-  totalAttempts: number;
   onBack: () => void;
 }
 
 const QuizHistoryHeader: React.FC<QuizHistoryHeaderProps> = ({
   quizTitle,
-  totalAttempts,
   onBack,
 }) => {
   const screens = useBreakpoint();
-  const { token } = useToken();
 
   return (
     <div
@@ -36,16 +32,30 @@ const QuizHistoryHeader: React.FC<QuizHistoryHeaderProps> = ({
           gap: 12,
         }}
       >
-        <Title
-          level={2}
-          style={{
-            margin: 0,
-            fontFamily: "monospace",
-            fontWeight: 700,
-          }}
-        >
-          Quiz History
-        </Title>
+        <div>
+          <Title
+            level={2}
+            style={{
+              margin: 0,
+              fontFamily: "monospace",
+              fontWeight: 700,
+            }}
+          >
+            Quiz History
+          </Title>
+
+          <Text
+            style={{
+              fontSize: screens.md ? 16 : 14,
+              fontFamily: "monospace",
+              fontWeight: 500,
+              display: "block",
+            }}
+          >
+            Review your quiz attempts and learning progress
+          </Text>
+        </div>
+
 
         <Button
           icon={<ArrowLeftOutlined />}
@@ -72,15 +82,6 @@ const QuizHistoryHeader: React.FC<QuizHistoryHeaderProps> = ({
           {quizTitle}
         </Text>
 
-        <Text
-          type="secondary"
-          style={{
-            fontSize: screens.md ? 14 : 13,
-            fontFamily: "monospace",
-          }}
-        >
-          {totalAttempts} {totalAttempts === 1 ? "attempt" : "attempts"} found
-        </Text>
       </Space>
     </div>
   );

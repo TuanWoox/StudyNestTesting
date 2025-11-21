@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { Button, Card, Typography, theme } from "antd";
-import { WarningOutlined } from "@ant-design/icons";
+import { theme } from "antd";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
 import useGetAllQuiz from "@/hooks/quizHook/useGetAllQuiz";
 import useDeleteQuiz from "@/hooks/quizHook/useDeleteQuiz";
@@ -11,7 +10,6 @@ import QuizGrid from "./components/QuizGrid";
 import QuizDeleteModal from "./components/QuizDeleteModal";
 import QuizPagination from "./components/QuizPagination";
 
-const { Text } = Typography;
 const { useToken } = theme;
 
 const Quizzes: React.FC = () => {

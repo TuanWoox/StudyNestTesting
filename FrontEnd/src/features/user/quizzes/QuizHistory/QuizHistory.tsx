@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Typography, theme, Grid, Button, Space } from "antd";
-import { ArrowLeftOutlined, ReloadOutlined } from "@ant-design/icons";
+import { theme, Button, Space } from "antd";
+import { ArrowLeftOutlined, BarChartOutlined, ReloadOutlined } from "@ant-design/icons";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
 import useGetAllQuizAttempts from "@/hooks/quizAttempt/useGetAllQuizAttempts";
 import useGetQuizDetail from "@/hooks/quizHook/useGetQuizDetail";
@@ -11,16 +11,14 @@ import {
   QuizHistoryList,
   QuizHistoryPagination,
 } from "./components";
+import QuizStatistics, { QuizStatisticsRef } from "../QuizStatistics/QuizStatistics";
 
-const { Title } = Typography;
 const { useToken } = theme;
-const { useBreakpoint } = Grid;
 
 const QuizHistory: React.FC = () => {
   const { id: quizId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { token } = useToken();
-  const screens = useBreakpoint();
 
   const [pageNumber, setPageNumber] = useState(0);
   const [pageSize, setPageSize] = useState(10);
@@ -46,6 +44,8 @@ const QuizHistory: React.FC = () => {
     pageSize,
     pageNumber,
   });
+
+  const quizStatsRef = useRef<QuizStatisticsRef>(null);
 
   const handlePageChange = (page: number, newPageSize?: number) => {
     setPageNumber(page - 1);
@@ -109,9 +109,9 @@ const QuizHistory: React.FC = () => {
         {/* Header */}
         <QuizHistoryHeader
           quizTitle={quiz.title}
-          totalAttempts={totalAttempts}
           onBack={handleBack}
         />
+
 
         {/* Sort and Refresh Controls */}
         <div
@@ -148,17 +148,31 @@ const QuizHistory: React.FC = () => {
               Oldest
             </Button>
           </Space>
-          <Button
-            icon={<ReloadOutlined />}
-            onClick={() => refetch()}
-            style={{
-              fontFamily: "monospace",
-              borderRadius: 0,
-              fontWeight: 600,
-            }}
-          >
-            Refresh
-          </Button>
+          <Space>
+            <Button
+              type="primary"
+              icon={<BarChartOutlined />}
+              onClick={() => quizStatsRef.current?.handleOpenStats()}
+              style={{
+                fontFamily: "monospace",
+                borderRadius: 0,
+                fontWeight: 600,
+              }}
+            >
+              Quiz Stats
+            </Button>
+            <Button
+              icon={<ReloadOutlined />}
+              onClick={() => refetch()}
+              style={{
+                fontFamily: "monospace",
+                borderRadius: 0,
+                fontWeight: 600,
+              }}
+            >
+              Refresh
+            </Button>
+          </Space>
         </div>
 
         {/* Attempts List */}
@@ -180,7 +194,13 @@ const QuizHistory: React.FC = () => {
           </div>
         ) : (
           <>
-            <QuizHistoryList attempts={attempts} quizId={quizId || ""} />
+
+            {quizId ? <QuizStatistics ref={quizStatsRef} quizId={quizId} /> : null}
+
+            <QuizHistoryList
+              attempts={attempts}
+              quizId={quizId || ""}
+            />
 
             {/* Pagination */}
             <QuizHistoryPagination
