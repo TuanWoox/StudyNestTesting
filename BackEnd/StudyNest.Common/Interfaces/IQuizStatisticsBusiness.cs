@@ -1,5 +1,5 @@
 ﻿using StudyNest.Common.Models.DTOs.CoreDTO;
-using StudyNest.Common.Models.DTOs.EntityDTO.Questions;
+using StudyNest.Common.Models.DTOs.EntityDTO.Question;
 using StudyNest.Common.Models.DTOs.ViewDTO.QuizStatistic;
 using System;
 using System.Collections.Generic;

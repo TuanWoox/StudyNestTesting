@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace StudyNest.Common.Models.DTOs.EntityDTO.Questions
+namespace StudyNest.Common.Models.DTOs.EntityDTO.Question
 {
     public class CreateQuestionDTO
     {
