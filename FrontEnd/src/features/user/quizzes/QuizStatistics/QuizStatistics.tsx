@@ -1,4 +1,4 @@
-import StudynestModal from "@/components/StudyN'estModal/StudynestModal";
+import StudynestModal from "@/components/StudyNestModal/StudynestModal";
 import useGetOneStatisticsByQuizId from "@/hooks/quizStatisticsHook/useGetOneStatisticsByQuizId";
 import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
 import QuizStatisticsHeader from "./components/QuizStatisticsHeader";
@@ -68,7 +68,7 @@ const QuizStatistics = forwardRef<QuizStatisticsRef, QuizStatisticsProps>(
                     {/* Show spinner while loading */}
                     {isLoading ? (
                         <SpinnerFull />
-                    ) : data?.result?.attemptSummary.totalAttempts === 0 ? (
+                    ) : data?.result?.attemptSummary?.totalAttempts === 0 ? (
                         <EmptyState
                             type="info"
                             title="Your Quiz Journey Awaits!"

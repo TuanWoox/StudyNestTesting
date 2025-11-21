@@ -76,6 +76,12 @@ const useAntDesignTheme = () => {
         marginTop: token.marginLG,
     }
 
+    // PIE CHART
+    const pieChart = {
+        rightColor: "#10b981",
+        wrongColor: "#ef4444"
+    }
+
     return {
         token,
         primaryColor,
@@ -87,7 +93,8 @@ const useAntDesignTheme = () => {
         cardShadowStyle,
         cardStyles,
         modalStyles,
-        collapsableStyle
+        collapsableStyle,
+        pieChart
     };
 }
 

@@ -36,7 +36,7 @@ const QuizStatisticsChart: React.FC<QuizStatisticsChartProps> = ({ data }) => {
         { name: "Wrong Answers", value: data?.result?.attemptSummary?.totalWrongQuestion || 0 }
     ];
 
-    const { cardStyles } = useAntDesignTheme();
+    const { cardStyles, pieChart } = useAntDesignTheme();
 
     const customCardStyles = {
         ...cardStyles,
@@ -116,7 +116,7 @@ const QuizStatisticsChart: React.FC<QuizStatisticsChartProps> = ({ data }) => {
                                 {formattedRightWrong.map((entry, index) => (
                                     <Cell
                                         key={`cell-${index}`}
-                                        fill={entry.name === "Right Answers" ? "#52c41a" : "#ff4d4f"}
+                                        fill={entry.name === "Right Answers" ? pieChart.rightColor : pieChart.wrongColor}
                                     />
                                 ))}
                             </Pie>
