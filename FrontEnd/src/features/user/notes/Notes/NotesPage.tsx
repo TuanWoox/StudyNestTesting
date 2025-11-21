@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Note, Folder } from "@/types/note/notes";
 import { EStatus } from "@/utils/enums/EStatus";
 import useGetAllFolder from "@/hooks/folderHook/useGetAllFolder";
@@ -127,6 +127,55 @@ const NotesPage: React.FC = () => {
         setIsEditorVisible(false);
         setSelectedNote(null);
     };
+
+    useEffect(() => {
+        if (!noteData) return;
+
+        const total = noteData.page.totalElements;
+        const totalPages = Math.ceil(total / pageSize);
+
+        // Nếu page > totalPages → lùi về trang cuối đúng
+        if (page > totalPages && totalPages > 0) {
+            setPage(totalPages);
+        }
+
+        // Nếu totalPages = 0 → reset về page 1
+        if (totalPages === 0 && page !== 1) {
+            setPage(1);
+        }
+    }, [noteData, page, pageSize]);
+
+
+    useEffect(() => {
+        if (!folderData) return;
+
+        const total = folderData.page.totalElements;
+        const totalPages = Math.ceil(total / folderPageSize);
+
+        if (folderPage > totalPages && totalPages > 0) {
+            setFolderPage(totalPages);
+        }
+
+        if (totalPages === 0 && folderPage !== 1) {
+            setFolderPage(1);
+        }
+    }, [folderData, folderPage, folderPageSize]);
+
+    useEffect(() => {
+        if (!tagData) return;
+
+        const total = tagData.page.totalElements;
+        const totalPages = Math.ceil(total / tagPageSize);
+
+        if (tagPage > totalPages && totalPages > 0) {
+            setTagPage(totalPages);
+        }
+
+        if (totalPages === 0 && tagPage !== 1) {
+            setTagPage(1);
+        }
+    }, [tagData, tagPage, tagPageSize]);
+
 
     return (
         <div

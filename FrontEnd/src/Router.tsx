@@ -16,6 +16,7 @@ import Feedback from "./features/user/Feedback";
 import Dashboard from "./features/admin/Dashboard";
 import ManageUser from "./features/admin/ManageUser";
 import AdminFeedback from "./features/admin/ManageFeedback";
+import SettingsConfig from "./features/admin/settings/SettingsConfig";
 import QuizGeneration from "./features/user/quizzes/QuizGeneration/QuizGeneration";
 import QuizDetailPage from "./features/user/quizzes/QuizDetailPage/QuizDetailPage";
 import QuizView from "./features/user/quizzes/QuizAttempt/QuizAttemptView";
@@ -59,6 +60,7 @@ export const router = createBrowserRouter([
       { path: "dashboard", element: <Dashboard /> },
       { path: "users", element: <ManageUser /> },
       { path: "feedback", element: <AdminFeedback /> },
+      { path: "settings", element: <SettingsConfig /> },
     ],
   },
   {
