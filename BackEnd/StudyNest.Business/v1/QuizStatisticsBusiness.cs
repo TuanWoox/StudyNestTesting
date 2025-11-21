@@ -1,11 +1,7 @@
-﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualBasic;
-using StudyNest.Common.DbEntities.Entities;
+﻿using Microsoft.EntityFrameworkCore;
 using StudyNest.Common.Interfaces;
 using StudyNest.Common.Models.DTOs.CoreDTO;
 using StudyNest.Common.Models.DTOs.EntityDTO.Question;
-using StudyNest.Common.Models.DTOs.EntityDTO.QuizAttemptSnapshot;
 using StudyNest.Common.Models.DTOs.ViewDTO.QuizStatistic;
 using StudyNest.Common.Utils.Extensions;
 using StudyNest.Common.Utils.Helper;
@@ -16,12 +12,10 @@ namespace StudyNest.Business.v1
 {
     public class QuizStatisticsBusiness: IQuizStatisticsBusiness
     {
-        ApplicationDbContext _context;
-        IMapper _mapper;
-        public QuizStatisticsBusiness(ApplicationDbContext context, IMapper mapper)
+        public ApplicationDbContext _context;
+        public QuizStatisticsBusiness(ApplicationDbContext context)
         {
             this._context = context;
-            this._mapper = mapper;
         }
         public async Task<ReturnResult<QuizStatisticsDTO>> GetOneById(string quizId, DateFilter dateFilter)
         {
@@ -52,13 +46,21 @@ namespace StudyNest.Business.v1
                     };
 
                     // Choose snapshots that have quiz attempts
-                    var snapshots = existingQuiz.QuizAttemptSnapshots.Where(s => s.QuizAttempts.Any()).Select(s => new
+                    var snapshots = existingQuiz.QuizAttemptSnapshots
+                    .Where(s => s.QuizAttempts.Any())
+                    .Select(s =>
                     {
-                        s.QuizAttempts,
-                        Questions = JsonSerializer.Deserialize<List<QuestionDTO>>(s.QuizQuestions),
-                        s.DateCreated
-                    }).ToList();
-                    var totalQuestions = snapshots.Sum(s => s.Questions?.Count()) ?? 0;
+                        var questions = JsonSerializer.Deserialize<List<QuestionDTO>>(s.QuizQuestions) ?? new List<QuestionDTO>();
+                        return new
+                        {
+                            s.QuizAttempts,
+                            Questions = questions,
+                            s.DateCreated,
+                            TotalQuestionsAccrossAllAttempts = s.QuizAttempts.Count() * questions.Count
+                        };
+                    })
+                    .ToList();
+                    var totalQuestions = snapshots.Sum(s => s.TotalQuestionsAccrossAllAttempts);
                     var allAttempts = snapshots.SelectMany(s => s.QuizAttempts).OrderBy(a => a.DateCreated).ToList();
                     var allScores = allAttempts.Select(a => a.Score).ToList();
                     List<QuizScore> allScoresList = allAttempts.Select(a => new QuizScore
@@ -75,7 +77,7 @@ namespace StudyNest.Business.v1
                                                         .Select(g => new QuestionErrorCount
                                                         {
                                                             Question = snapshots.Where(s => s.QuizAttempts?.Any(qa => qa.Id == g.First().QuizAttemptId) ?? false)
-                                                                                .OrderBy(s => s)
+                                                                                .OrderBy(s => s.DateCreated)
                                                                                 .SelectMany(s => s.Questions ?? new List<QuestionDTO>())
                                                                                 .FirstOrDefault(q => q.Id == g.Key.SnapshotQuestionId) ?? new QuestionDTO(),
                                                             WrongCounts = g.Count()

@@ -25,14 +25,13 @@ const QuizStatisticsHeader: React.FC<QuizStatisticsHeaderProps> = ({ dateFilter,
                 <RangePicker
                     value={dateFilter || defaultRange}
                     onChange={(dates) => {
-                        //Only set the data when the dates is not null in both date
+                        // Only set the date when both dates are not null
                         if (dates?.[0] && dates?.[1]) {
                             setDateFilter(dates as [Dayjs | null, Dayjs | null])
 
                         }
                     }}
                     disabledDate={(currentDate) => {
-                        // Don't allow dates in the future
                         if (!currentDate) return false
                         const startOfMonth = dayjs().startOf("month");
                         const endOfMonth = dayjs().endOf("month");

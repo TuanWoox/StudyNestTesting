@@ -90,4 +90,5 @@ const QuizStatistics = forwardRef<QuizStatisticsRef, QuizStatisticsProps>(
     }
 );
 
+QuizStatistics.displayName = "QuizStatistics";
 export default QuizStatistics;

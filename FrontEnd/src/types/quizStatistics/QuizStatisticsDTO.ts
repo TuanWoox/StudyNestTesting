@@ -7,7 +7,6 @@ export interface QuizStatisticsDTO {
     quizTitle: string;
     attemptSummary: QuizAttemptSummaryDTO;
     scoreStatistics: QuizScoreStatisticsDTO;
-    progress: QuizProgressDTO;
 }
 
 export interface QuizAttemptSummaryDTO {
@@ -25,14 +24,6 @@ export interface QuizScoreStatisticsDTO {
     worstScore: number;
     averageScore: number;
     latestScore: number;
-    medianScore: number;
-}
-
-export interface QuizProgressDTO {
-    isImproving: boolean;
-    improvementRate: number; // % change from first to last
-    scoreChange: number; // latest - first attempt
-    trendDirection: 'Improving' | 'Declining' | 'Stable';
 }
 
 export interface QuestionErrorCount {

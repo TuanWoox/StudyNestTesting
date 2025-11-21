@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using StudyNest.Common.Interfaces;
 using StudyNest.Common.Models.DTOs.CoreDTO;
@@ -13,13 +12,13 @@ namespace StudyNest.Controllers
     [Authorize]
     public class QuizStatisticsController : ControllerBase
     {
-        IQuizStatisticsBusiness _quizStatisticsBusiness;
+        public IQuizStatisticsBusiness _quizStatisticsBusiness;
         public QuizStatisticsController(IQuizStatisticsBusiness quizStatisticsBusiness)
         {
             this._quizStatisticsBusiness = quizStatisticsBusiness;
         }
         [HttpPost("{quizId}")]
-        public async Task<IActionResult> GetQuizStatisticsById(string quizId,DateFilter dateFilter)
+        public async Task<IActionResult> GetQuizStatisticsById(string quizId, DateFilter dateFilter)
         {
             ReturnResult<QuizStatisticsDTO> result = new ReturnResult<QuizStatisticsDTO>();
             try

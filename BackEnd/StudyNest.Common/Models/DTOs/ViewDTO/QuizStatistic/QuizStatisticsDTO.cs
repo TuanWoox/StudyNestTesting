@@ -33,13 +33,13 @@ namespace StudyNest.Common.Models.DTOs.ViewDTO.QuizStatistic
 
     public class QuizScore
     {
-        public DateTimeOffset? DateCreated;
-        public int Score;
+        public DateTimeOffset? DateCreated { get; set; }
+        public int Score { get; set; }
     }
 
     public class QuestionErrorCount
     {
-        public QuestionDTO Question;
-        public int WrongCounts = 0;
+        public QuestionDTO Question { get; set; }
+        public int WrongCounts { get; set; } = 0;
     }
 }
