@@ -1,7 +1,6 @@
 import React from "react";
-import { Pagination, theme, Grid } from "antd";
+import { Pagination, Grid } from "antd";
 
-const { useToken } = theme;
 
 interface QuizPaginationProps {
   current: number;
@@ -16,7 +15,6 @@ const QuizPagination: React.FC<QuizPaginationProps> = ({
   total,
   onChange,
 }) => {
-  const { token } = useToken();
   const screens = Grid.useBreakpoint();
 
   return (
@@ -39,7 +37,7 @@ const QuizPagination: React.FC<QuizPaginationProps> = ({
           </span>
         ) : undefined}
         pageSizeOptions={[6, 9, 15, 30]}
-        
+
         style={{
           fontFamily: "monospace",
         }}

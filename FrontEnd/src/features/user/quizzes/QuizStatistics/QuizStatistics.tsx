@@ -1,11 +1,16 @@
-import StudynestModal from "@/components/StudynestModal/StudynestModal";
+import StudynestModal from "@/components/StudyN'estModal/StudynestModal";
 import useGetOneStatisticsByQuizId from "@/hooks/quizStatisticsHook/useGetOneStatisticsByQuizId";
-import { forwardRef, useImperativeHandle, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
 import QuizStatisticsHeader from "./components/QuizStatisticsHeader";
-import QuizStatisticsSummary from "./components/QuizStatisticsSummary"
+import QuizStatisticsSummary from "./components/QuizStatisticsSummary";
 import QuizStatisticsChart from "./components/QuizStatisticsChart";
+import QuizTopMistakes from "./components/QuizTopMistakes";
 import { useAntDesignTheme } from "@/hooks/common";
 import { ModalProps } from "antd";
+import dayjs, { Dayjs } from "dayjs";
+import SpinnerFull from "@/components/SpinnerFull/SpinnerFull";
+import { EmptyState } from "@/components/EmptyState/EmptyState";
+
 interface QuizStatisticsProps {
     quizId: string;
 }
@@ -16,9 +21,15 @@ export interface QuizStatisticsRef {
 
 const QuizStatistics = forwardRef<QuizStatisticsRef, QuizStatisticsProps>(
     ({ quizId }, ref) => {
-        const { data, isLoading } = useGetOneStatisticsByQuizId(quizId);
+        const [dateFilter, setDateFilter] = useState<[Dayjs | null, Dayjs | null]>([
+            dayjs().subtract(7, "day"),
+            dayjs(),
+        ]);
+
+        const { data, isLoading } = useGetOneStatisticsByQuizId(quizId, dateFilter);
         const [isOpen, setIsOpen] = useState<boolean>(false);
         const { modalStyles } = useAntDesignTheme();
+
         const customModalStyles: ModalProps["styles"] = {
             ...modalStyles,
             body: {
@@ -31,10 +42,14 @@ const QuizStatistics = forwardRef<QuizStatisticsRef, QuizStatisticsProps>(
         useImperativeHandle(ref, () => ({
             handleOpenStats() {
                 setIsOpen(true);
-            }
+            },
         }));
 
-        if (isLoading) return null;
+        useEffect(() => {
+            if (isOpen) {
+                setDateFilter([dayjs().subtract(7, "day"), dayjs()]);
+            }
+        }, [isOpen]);
 
         return (
             <StudynestModal
@@ -45,12 +60,30 @@ const QuizStatistics = forwardRef<QuizStatisticsRef, QuizStatisticsProps>(
             >
                 <div className="m-4 space-y-4">
                     {/* Ant Design Title + Subtitle */}
-                    <QuizStatisticsHeader />
-                    {/* Statistics Grid */}
-                    <QuizStatisticsSummary data={data} />
-                    {/* Chart Section */}
-                    <QuizStatisticsChart data={data} />
-                    {/* Top Mistakes Question, Do A Pagination From Full From BackEnd */}
+                    <QuizStatisticsHeader
+                        dateFilter={dateFilter}
+                        setDateFilter={setDateFilter}
+                    />
+
+                    {/* Show spinner while loading */}
+                    {isLoading ? (
+                        <SpinnerFull />
+                    ) : data?.result?.attemptSummary.totalAttempts === 0 ? (
+                        <EmptyState
+                            type="info"
+                            title="Your Quiz Journey Awaits!"
+                            description="You haven't taken this quiz yet. Start your first attempt now and track your progress!"
+                        />
+                    ) : (
+                        <>
+                            {/* Statistics Grid */}
+                            <QuizStatisticsSummary data={data} />
+                            {/* Chart Section */}
+                            <QuizStatisticsChart data={data} />
+                            {/* Top Mistakes Question */}
+                            <QuizTopMistakes data={data} />
+                        </>
+                    )}
                 </div>
             </StudynestModal>
         );

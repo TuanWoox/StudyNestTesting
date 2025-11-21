@@ -10,7 +10,6 @@ namespace StudyNest.Common.Models.DTOs.ViewDTO.QuizStatistic
         public string QuizTitle { get; set; }
         public QuizAttemptSummaryDTO AttemptSummary { get; set; }
         public QuizScoreStatisticsDTO ScoreStatistics { get; set; }
-        public QuizProgressDTO Progress { get; set; }
     }
 
     public class QuizAttemptSummaryDTO
@@ -30,16 +29,8 @@ namespace StudyNest.Common.Models.DTOs.ViewDTO.QuizStatistic
         public double WorstScore { get; set; }
         public double AverageScore { get; set; }
         public double LatestScore { get; set; }
-        public double MedianScore { get; set; }
     }
 
-    public class QuizProgressDTO
-    {
-        public bool IsImproving { get; set; }
-        public decimal ImprovementRate { get; set; } // % change from first to last
-        public decimal ScoreChange { get; set; } // latest - first attempt
-        public string TrendDirection { get; set; } // "Improving", "Declining", "Stable"
-    }
     public class QuizScore
     {
         public DateTimeOffset? DateCreated;

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { theme } from "antd";
 import { Note, Folder, Tag } from "@/types/note/notes";
 import SidebarHeader from "./SidebarHeader";

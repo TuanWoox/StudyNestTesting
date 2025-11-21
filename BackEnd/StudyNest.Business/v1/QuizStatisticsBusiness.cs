@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic;
 using StudyNest.Common.DbEntities.Entities;
 using StudyNest.Common.Interfaces;
 using StudyNest.Common.Models.DTOs.CoreDTO;
@@ -22,18 +23,26 @@ namespace StudyNest.Business.v1
             this._context = context;
             this._mapper = mapper;
         }
-        public async Task<ReturnResult<QuizStatisticsDTO>> GetOneById(string quizId)
+        public async Task<ReturnResult<QuizStatisticsDTO>> GetOneById(string quizId, DateFilter dateFilter)
         {
             ReturnResult<QuizStatisticsDTO> result = new ReturnResult<QuizStatisticsDTO>();
             try
             {
+                if (dateFilter == null || dateFilter.DateFrom == null || dateFilter.DateTo == null || dateFilter.DateTo > dateFilter.DateFrom.Value.AddMonths(1))
+                {
+                    result.Message = "DateFilter is invalid";
+                    return result;
+                }
+
                 var existingQuiz = await _context.Quizzes.Where(q => q.Id == quizId)
-                                                        .Include(q => q.QuizAttemptSnapshots)
-                                                        .ThenInclude(x => x.QuizAttempts)
-                                                        .ThenInclude( x => x.QuizAttemptAnswers)
-                                                        .AsNoTracking()
-                                                        .FirstOrDefaultAsync();
-                if(existingQuiz != null)
+                                                          .Include(q => q.QuizAttemptSnapshots)
+                                                         .ThenInclude(x => x.QuizAttempts.Where(at =>
+                                                          at.DateCreated >= dateFilter.DateFrom.Value.AddDays(-1) &&
+                                                          at.DateCreated <= dateFilter.DateTo.Value.AddDays(1)))
+                                                          .ThenInclude(x => x.QuizAttemptAnswers)
+                                                          .AsNoTracking()
+                                                          .FirstOrDefaultAsync();
+                if (existingQuiz != null)
                 {
 
                     var quizStats = new QuizStatisticsDTO
@@ -47,6 +56,7 @@ namespace StudyNest.Business.v1
                     {
                         s.QuizAttempts,
                         Questions = JsonSerializer.Deserialize<List<QuestionDTO>>(s.QuizQuestions),
+                        s.DateCreated
                     }).ToList();
                     var totalQuestions = snapshots.Sum(s => s.Questions?.Count()) ?? 0;
                     var allAttempts = snapshots.SelectMany(s => s.QuizAttempts).OrderBy(a => a.DateCreated).ToList();
@@ -58,17 +68,20 @@ namespace StudyNest.Business.v1
                     }).ToList();
                     // Attempt Summary
                     var totalRight = allAttempts.SelectMany(a => a.QuizAttemptAnswers).Count(ans => ans.IsCorrect);
+
                     var questionErrorCounts = allAttempts.SelectMany(at => at.QuizAttemptAnswers)
                                                         .Where(a => !a.IsCorrect && a.QuizAttempt != null)
                                                         .GroupBy(a => new { a.SnapshotQuestionId, SnapshotId = a.QuizAttempt.QuizAttemptSnapshotId })
                                                         .Select(g => new QuestionErrorCount
                                                         {
                                                             Question = snapshots.Where(s => s.QuizAttempts?.Any(qa => qa.Id == g.First().QuizAttemptId) ?? false)
+                                                                                .OrderBy(s => s)
                                                                                 .SelectMany(s => s.Questions ?? new List<QuestionDTO>())
                                                                                 .FirstOrDefault(q => q.Id == g.Key.SnapshotQuestionId) ?? new QuestionDTO(),
                                                             WrongCounts = g.Count()
                                                         })
                                                         .ToList();
+
 
                     quizStats.AttemptSummary = new QuizAttemptSummaryDTO
                     {
@@ -86,11 +99,6 @@ namespace StudyNest.Business.v1
                         BestScore = allScores.DefaultIfEmpty(0).Max(),
                         WorstScore = allScores.DefaultIfEmpty(0).Min(),
                         LatestScore = allAttempts.LastOrDefault()?.Score ?? 0,
-                        MedianScore = allScores.Count == 0
-                            ? 0
-                            : allScores.Count % 2 == 1
-                                ? allScores[allScores.Count / 2]
-                                : (allScores[allScores.Count / 2 - 1] + allScores[allScores.Count / 2]) / 2.0
                     };
 
                     result.Result = quizStats;

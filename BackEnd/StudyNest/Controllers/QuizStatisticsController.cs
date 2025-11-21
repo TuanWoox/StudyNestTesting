@@ -18,13 +18,13 @@ namespace StudyNest.Controllers
         {
             this._quizStatisticsBusiness = quizStatisticsBusiness;
         }
-        [HttpGet("{quizId}")]
-        public async Task<IActionResult> GetQuizStatisticsById(string quizId)
+        [HttpPost("{quizId}")]
+        public async Task<IActionResult> GetQuizStatisticsById(string quizId,DateFilter dateFilter)
         {
             ReturnResult<QuizStatisticsDTO> result = new ReturnResult<QuizStatisticsDTO>();
             try
             {
-                result =  await _quizStatisticsBusiness.GetOneById(quizId);
+                result =  await _quizStatisticsBusiness.GetOneById(quizId, dateFilter);
             }
             catch (Exception ex)
             {

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import {
   Flex,
   Space,
@@ -9,7 +9,7 @@ import {
   Divider,
   theme,
 } from "antd";
-import { QuestionCircleOutlined, CheckCircleFilled } from "@ant-design/icons";
+import { CheckCircleFilled } from "@ant-design/icons";
 import type { Question } from "@/types/quiz/quiz";
 import { QuestionActions } from "./QuestionActions";
 import { ChoiceList } from "./ChoiceList";
@@ -18,67 +18,49 @@ const { useToken } = theme;
 const { Text, Paragraph } = Typography;
 
 interface QuestionItemProps {
-  question: Question;
-  index: number;
-  onEdit: (questionId: string) => void;
-  onDelete: (questionId: string) => void;
-  isDeleting: boolean;
+  question?: Question;
+  index?: number;
+  onEdit?: (questionId: string) => void;
+  onDelete?: (questionId: string) => void;
+  isDeleting?: boolean;
 }
 
 export const QuestionItem: React.FC<QuestionItemProps> = ({
   question,
-  index,
+  index = 0,
   onEdit,
   onDelete,
-  isDeleting,
+  isDeleting = false,
 }) => {
   const { token } = useToken();
 
-  // Theme constants
   const borderColor = `2px solid ${token.colorPrimary}E0`;
   const shadowColor = `4px 4px 0px ${token.colorPrimary}55`;
 
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
-  const getQuestionTypeInfo = (type: string) => {
+  const getQuestionTypeInfo = (type?: string) => {
     switch (type) {
       case "MCQ":
-        return {
-          color: token.colorInfo,
-          bgColor: token.colorInfoBg,
-          label: "Multiple Choice",
-        };
+        return { color: token.colorInfo, bgColor: token.colorInfoBg, label: "Multiple Choice" };
       case "MSQ":
-        return {
-          color: token.colorPrimary,
-          bgColor: token.colorPrimaryBg,
-          label: "Multi-Select",
-        };
+        return { color: token.colorPrimary, bgColor: token.colorPrimaryBg, label: "Multi-Select" };
       case "TF":
-        return {
-          color: token.colorSuccess,
-          bgColor: token.colorSuccessBg,
-          label: "True/False",
-        };
+        return { color: token.colorSuccess, bgColor: token.colorSuccessBg, label: "True/False" };
       default:
         return {
           color: token.colorTextSecondary,
           bgColor: token.colorFillSecondary,
-          label: type,
+          label: type ?? "Unknown",
         };
     }
   };
 
-  const typeInfo = getQuestionTypeInfo(question.type);
+  const typeInfo = getQuestionTypeInfo(question?.type);
 
   return (
-    <Card
-      style={{
-        border: "none",
-      }}
-      bodyStyle={{ padding: "12px" }}
-    >
-      {/* Question Header */}
+    <Card style={{ border: "none" }} bodyStyle={{ padding: "12px" }}>
+      {/* Header */}
       <Flex
         justify="space-between"
         align="flex-start"
@@ -88,10 +70,10 @@ export const QuestionItem: React.FC<QuestionItemProps> = ({
         <Flex
           align="flex-start"
           gap={isMobile ? token.marginXS : token.marginSM}
-          style={{ flex: 1, minWidth: 0, padding: "0px" }}
+          style={{ flex: 1, minWidth: 0 }}
         >
           <Badge
-            count={index + 1}
+            count={(index ?? 0) + 1}
             style={{
               backgroundColor: token.colorPrimary,
               fontSize: isMobile ? 13 : 15,
@@ -100,6 +82,7 @@ export const QuestionItem: React.FC<QuestionItemProps> = ({
               color: token.colorWhite,
             }}
           />
+
           <div style={{ flex: 1, minWidth: 0 }}>
             <Text
               strong
@@ -113,8 +96,9 @@ export const QuestionItem: React.FC<QuestionItemProps> = ({
                 fontFamily: "monospace",
               }}
             >
-              {question.name}
+              {question?.name ?? "Untitled Question"}
             </Text>
+
             <Space size={isMobile ? token.marginXXS : token.marginXS} wrap>
               <Tag
                 style={{
@@ -129,6 +113,7 @@ export const QuestionItem: React.FC<QuestionItemProps> = ({
               >
                 {typeInfo.label}
               </Tag>
+
               <Tag
                 style={{
                   fontFamily: "monospace",
@@ -138,18 +123,21 @@ export const QuestionItem: React.FC<QuestionItemProps> = ({
                   border: `1px solid ${token.colorBorder}`,
                 }}
               >
-                {question.choices?.length || 0} choices
+                {question?.choices?.length ?? 0} choices
               </Tag>
             </Space>
           </div>
         </Flex>
 
-        <QuestionActions
-          questionId={question.id}
-          onEdit={onEdit}
-          onDelete={onDelete}
-          isDeleting={isDeleting}
-        />
+        {/* Render actions only if handlers exist */}
+        {onEdit && onDelete ? (
+          <QuestionActions
+            questionId={question?.id ?? ""}
+            onEdit={onEdit}
+            onDelete={onDelete}
+            isDeleting={isDeleting}
+          />
+        ) : null}
       </Flex>
 
       {/* Divider */}
@@ -162,18 +150,21 @@ export const QuestionItem: React.FC<QuestionItemProps> = ({
       {/* Choices */}
       <div
         style={{
-          marginBottom: question.explanation
+          marginBottom: question?.explanation
             ? isMobile
               ? token.margin
               : token.marginLG
             : 0,
         }}
       >
-        <ChoiceList type={question.type} choices={question.choices || []} />
+        <ChoiceList
+          type={question?.type ?? "MCQ"}
+          choices={question?.choices ?? []}
+        />
       </div>
 
       {/* Explanation */}
-      {question.explanation && (
+      {question?.explanation && (
         <Card
           size="small"
           style={{

@@ -11,6 +11,6 @@ namespace StudyNest.Common.Interfaces
 {
     public interface IQuizStatisticsBusiness
     {
-        Task<ReturnResult<QuizStatisticsDTO>> GetOneById(string quizId);
+        Task<ReturnResult<QuizStatisticsDTO>> GetOneById(string quizId, DateFilter dateFilter);
     }
 }

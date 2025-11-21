@@ -67,6 +67,15 @@ const useAntDesignTheme = () => {
         }
     };
 
+    // === COLLAPSABLE styles
+    const collapsableStyle = {
+        backgroundColor: "transparent",
+        border: "none",
+        alignItems: "center",
+        paddingRight: "4px",
+        marginTop: token.marginLG,
+    }
+
     return {
         token,
         primaryColor,
@@ -74,8 +83,11 @@ const useAntDesignTheme = () => {
         shadowColor,
         bgColor,
         textColor,
+        cardBorderStyle,
+        cardShadowStyle,
         cardStyles,
         modalStyles,
+        collapsableStyle
     };
 }
 
