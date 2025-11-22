@@ -13,7 +13,7 @@ const initialState: AuthState = {
     userId: "",
     role: "",
     authenticated: false,
-    activeLogout: false
+    activeLogout: false,
 };
 
 interface DecodedToken {
@@ -55,7 +55,7 @@ export const selectRole = (state: RootState) => {
 }
 
 export const selectActiveLogout = (state: RootState) => {
-    return state.authReducer.activeLogout
+    return state.authReducer.activeLogout;
 }
 
 export const { initAuthState, resetAuthState, logOut } = authSlice.actions;

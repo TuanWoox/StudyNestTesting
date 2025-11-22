@@ -2,7 +2,7 @@ import { useReduxDispatch } from "@/hooks/reduxHook/useReduxDispatch";
 import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
 import { resetAuthState, selectRole } from "@/store/authSlice";
 import { ERole } from "@/utils/enums/ERole";
-import { useEffect } from "react"
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const EntryComponent = () => {

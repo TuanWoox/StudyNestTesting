@@ -29,7 +29,14 @@ const useAutoValidateToken = () => {
                 return;
             }
 
-            const { role }: DecodedToken = jwtDecode(accessToken);
+            let role: string | undefined;
+            try {
+                ({ role } = jwtDecode<DecodedToken>(accessToken));
+            } catch (error) {
+                setIsLoading(false);
+                console.log(error);
+                return;
+            }
 
             // Token exists but no role → invalid token
             if (!role) {

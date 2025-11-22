@@ -69,7 +69,7 @@ const InnerLayout: React.FC<InnerLayoutProps> = ({
     dispatch(logOut());
     window.localStorage.removeItem("accessToken");
     queryClient.clear();
-    return navigate("/homepage");
+    navigate("/homepage");
   };
 
   const menu = (

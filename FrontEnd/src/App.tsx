@@ -7,7 +7,7 @@ import { store } from "./store/store";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import queryClient from "@/config/reactQueryConfig";
-import { QuizAttemptSnapshotHubProvider } from "./context/QuizSnapshotHubProvder/QuizSnapshotHubProvider";
+import { QuizAttemptSnapshotHubProvider } from "./context/QuizSnapshotHubProvider/QuizSnapshotHubProvider";
 import { QuizJobProvider } from "@/context/QuizJobProvider/QuizJobProvider";
 import AuthProvider from "./context/AuthProvider/AuthProvider";
 

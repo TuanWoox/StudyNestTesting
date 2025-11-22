@@ -18,7 +18,7 @@ import useAntDesignTheme from "@/hooks/common/useAntDesignTheme";
 import useIsMobile from "@/hooks/common/useIsMobile";
 import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
 import { useSubmitQuizAttempt } from "@/hooks/quizAttempt/useSubmitQuizAttempt";
-import { useQuizAttemptSnapshotHub } from "@/context/QuizSnapshotHubProvder/QuizAttemptSnapshotHubContextValue";
+import { useQuizAttemptSnapshotHub } from "@/context/QuizSnapshotHubProvider/QuizAttemptSnapshotHubContextValue";
 
 const QuizView: React.FC = () => {
     const { id } = useParams<{ id: string }>();

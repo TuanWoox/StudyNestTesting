@@ -37,7 +37,7 @@ const useAuthRedirect = (requiredRole?: ERole) => {
             if (role === ERole.User) {
                 navigate('/user');
             } else if (role === ERole.Admin) {
-                navigate('/admin')
+                navigate('/admin');
             }
         }
 

@@ -27,10 +27,10 @@ const HomePage: React.FC = () => {
     const onNavigateSite = () => {
         switch (role) {
             case ERole.User:
-                navigate('/user/notes')
+                navigate('/user/notes');
                 break;
             case ERole.Admin:
-                navigate('/admin/dashboard')
+                navigate('/admin/dashboard');
                 break;
         }
     }
