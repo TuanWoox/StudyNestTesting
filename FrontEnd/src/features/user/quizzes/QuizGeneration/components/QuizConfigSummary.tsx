@@ -19,6 +19,32 @@ export const QuizConfigSummary: React.FC<QuizConfigSummaryProps> = ({
   const shadowColor = `4px 4px 0px ${token.colorPrimary}55`;
 
   const cap = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : "");
+  
+  const getDifficultyColor = (diff: string) => {
+    switch (diff.toLowerCase()) {
+      case 'easy':
+        return token.colorSuccess;
+      case 'medium':
+        return token.colorWarning;
+      case 'hard':
+        return token.colorError;
+      default:
+        return token.colorWarning;
+    }
+  };
+  
+  const getDifficultyBgColor = (diff: string) => {
+    switch (diff.toLowerCase()) {
+      case 'easy':
+        return token.colorSuccessBg;
+      case 'medium':
+        return token.colorWarningBg;
+      case 'hard':
+        return token.colorErrorBg;
+      default:
+        return token.colorWarningBg;
+    }
+  };
 
   const totalQuestions =
     (quizOptions?.count_Mcq || 0) +
@@ -75,7 +101,7 @@ export const QuizConfigSummary: React.FC<QuizConfigSummaryProps> = ({
               size="small"
               style={{
                 textAlign: "center",
-                background: token.colorWarningBg,
+                background: getDifficultyBgColor(quizOptions.difficulty),
                 borderRadius: 0,
                 border: borderColor,
                 boxShadow: shadowColor,
@@ -85,7 +111,7 @@ export const QuizConfigSummary: React.FC<QuizConfigSummaryProps> = ({
                 style={{
                   fontSize: 24,
                   fontWeight: "bold",
-                  color: token.colorWarning,
+                  color: getDifficultyColor(quizOptions.difficulty),
                   fontFamily: "monospace",
                 }}
               >

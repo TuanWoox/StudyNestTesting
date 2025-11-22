@@ -31,17 +31,15 @@ const useGetAllQuizAttempts = (options: UseGetAllQuizAttemptsOptions) => {
         size: pageSize,
         pageNumber: pageNumber,
         totalElements: 0,
-        orders: sortByNewest
-          ? [
-              {
-                sort: "dateModified",
-                sortDir: SortOrderType.DESC,
-                dynamicProperty: "",
-                delimiter: "",
-                dataType: "",
-              },
-            ]
-          : [],
+        orders: [
+          {
+            sort: "dateModified",
+            sortDir: sortByNewest ? SortOrderType.DESC : SortOrderType.ASC,
+            dynamicProperty: "",
+            delimiter: "",
+            dataType: "",
+          },
+        ],
         filter: [],
         selected: [],
       };
