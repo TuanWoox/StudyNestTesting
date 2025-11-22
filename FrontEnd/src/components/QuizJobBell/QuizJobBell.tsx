@@ -7,7 +7,7 @@ import {
   CloseCircleOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { useQuizJobContext } from "@/context/QuizJobContext/QuizJobContextValue";
+import { useQuizJobContext } from "@/context/QuizJobProvider/QuizJobContextValue";
 import { formatDMY } from "@/utils/date";
 
 const { Text } = Typography;
@@ -88,8 +88,8 @@ export default function QuizJobBell() {
           j.status === "error" && j.errorMessage
             ? `Error: ${j.errorMessage}`
             : j.status === "success"
-            ? "Click to view quiz"
-            : "Quiz is being created..."
+              ? "Click to view quiz"
+              : "Quiz is being created..."
         }
         placement="left"
         overlayStyle={{
@@ -191,8 +191,8 @@ export default function QuizJobBell() {
           connectionStatus === "connected"
             ? undefined
             : connectionStatus === "reconnecting"
-            ? "warning"
-            : "default"
+              ? "warning"
+              : "default"
         }
       >
         <button

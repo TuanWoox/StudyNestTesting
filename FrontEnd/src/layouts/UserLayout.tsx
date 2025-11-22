@@ -1,14 +1,13 @@
-import useLayoutValidateToken from "@/hooks/authHook/useLayoutValidateToken";
 import { ERole } from "@/utils/enums/ERole";
 import InnerLayout from "./InnerLayout";
+import useAuthRedirect from "@/hooks/authHook/useAuthRedirect";
 
 const UserLayout = () => {
-    const { isLoading } = useLayoutValidateToken(ERole.User);
+    const canRender = useAuthRedirect(ERole.User);
 
-    return <InnerLayout
-        role={ERole.User}
-        isValidatingToken={isLoading}
-    />
+    if (!canRender) return null;
+
+    return <InnerLayout role={ERole.User} />;
 };
 
 export default UserLayout;

@@ -5,15 +5,13 @@ import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
 import { selectRole } from "@/store/authSlice";
 import { toggleDarkMode, selectDarkMode } from "@/store/themeSlice";
 import { useReduxDispatch } from "@/hooks/reduxHook/useReduxDispatch";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ERole } from "@/utils/enums/ERole";
 import { useAntDesignTheme } from "@/hooks/common";
 
 const HomePage: React.FC = () => {
     const { token, borderColor, shadowColor, bgColor } = useAntDesignTheme();
     const role = useReduxSelector(selectRole); // nếu user logged in, role tồn tại
-
-
     const navigate = useNavigate();
 
     const cardStyle: React.CSSProperties = {
@@ -25,12 +23,18 @@ const HomePage: React.FC = () => {
     };
 
     // Handle redirect if user reloads the page
-    switch (role) {
-        case ERole.User:
-            return <Navigate to="/user/notes" replace />;
-        case ERole.Admin:
-            return <Navigate to="/admin/dashboard" replace />;
+
+    const onNavigateSite = () => {
+        switch (role) {
+            case ERole.User:
+                navigate('/user/notes')
+                break;
+            case ERole.Admin:
+                navigate('/admin/dashboard')
+                break;
+        }
     }
+
 
     return (
         <div
@@ -74,32 +78,49 @@ const HomePage: React.FC = () => {
 
                 {/* Buttons */}
                 <div className="flex flex-wrap justify-center gap-2">
-                    <Button
-                        size="middle"
-                        style={{
-                            border: `1.5px solid ${token.colorPrimary}`,
-                            fontFamily: "'IBM Plex Mono', monospace",
-                            boxShadow: `3px 3px 0 ${token.colorPrimary}33`,
-                        }}
-                        onClick={() => navigate("/login")}
-                        className="hover:-translate-y-[2px]"
-                    >
-                        Log in
-                    </Button>
-                    <Button
-                        size="middle"
-                        type="primary"
-                        style={{
-                            backgroundColor: token.colorPrimary,
-                            border: "none",
-                            fontFamily: "'IBM Plex Mono', monospace",
-                            boxShadow: `3px 3px 0 ${token.colorPrimary}33`,
-                        }}
-                        onClick={() => navigate("/register")}
-                        className="hover:-translate-y-[2px]"
-                    >
-                        Sign up
-                    </Button>
+                    {role ? (
+                        <Button
+                            size="middle"
+                            style={{
+                                border: `1.5px solid ${token.colorPrimary}`,
+                                fontFamily: "'IBM Plex Mono', monospace",
+                                boxShadow: `3px 3px 0 ${token.colorPrimary}33`,
+                            }}
+                            onClick={onNavigateSite}
+                            className="hover:-translate-y-[2px]"
+                        >
+                            Go To Your Site
+                        </Button>
+                    ) : (
+                        <>
+                            <Button
+                                size="middle"
+                                style={{
+                                    border: `1.5px solid ${token.colorPrimary}`,
+                                    fontFamily: "'IBM Plex Mono', monospace",
+                                    boxShadow: `3px 3px 0 ${token.colorPrimary}33`,
+                                }}
+                                onClick={() => navigate("/login")}
+                                className="hover:-translate-y-[2px]"
+                            >
+                                Log in
+                            </Button>
+                            <Button
+                                size="middle"
+                                type="primary"
+                                style={{
+                                    backgroundColor: token.colorPrimary,
+                                    border: "none",
+                                    fontFamily: "'IBM Plex Mono', monospace",
+                                    boxShadow: `3px 3px 0 ${token.colorPrimary}33`,
+                                }}
+                                onClick={() => navigate("/register")}
+                                className="hover:-translate-y-[2px]"
+                            >
+                                Sign up
+                            </Button>
+                        </>
+                    )}
                 </div>
             </header>
 

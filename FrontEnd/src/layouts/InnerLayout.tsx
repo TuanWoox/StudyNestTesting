@@ -12,7 +12,6 @@ import {
   ConfigProvider,
   Space,
   theme,
-  Spin,
 } from "antd";
 import enUS from "antd/locale/en_US";
 import { SunIcon, MoonIcon } from "@heroicons/react/24/outline";
@@ -22,7 +21,7 @@ import { useEffect } from "react";
 import logo from "@/assets/react.svg";
 import { ERole } from "@/utils/enums/ERole";
 import { adminMenus, userMenus } from "@/constants/menus";
-import { resetAuthState } from "@/store/authSlice";
+import { logOut } from "@/store/authSlice";
 import { toggleDarkMode, selectDarkMode } from "@/store/themeSlice";
 import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
 import { useReduxDispatch } from "@/hooks/reduxHook/useReduxDispatch";
@@ -30,12 +29,10 @@ import QuizJobBell from "@/components/QuizJobBell/QuizJobBell";
 
 interface InnerLayoutProps {
   role: ERole;
-  isValidatingToken: boolean;
 }
 
 const InnerLayout: React.FC<InnerLayoutProps> = ({
   role,
-  isValidatingToken,
 }) => {
   const navigate = useNavigate();
   const dispatch = useReduxDispatch();
@@ -65,23 +62,14 @@ const InnerLayout: React.FC<InnerLayoutProps> = ({
     }
   }, [darkMode]);
 
-  // Show loading spinner while validating token
-  if (isValidatingToken) {
-    return (
-      <div className="w-full h-screen flex items-center justify-center">
-        <Spin size="large" />
-      </div>
-    );
-  }
-
   const layoutTitle = role === ERole.Admin ? "Admin Panel" : "Study Nest";
   const menus = role === ERole.Admin ? adminMenus : userMenus;
 
   const handleLogout = () => {
-    dispatch(resetAuthState());
+    dispatch(logOut());
     window.localStorage.removeItem("accessToken");
     queryClient.clear();
-    navigate("/login");
+    return navigate("/homepage");
   };
 
   const menu = (

@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import Spinner from "@/components/Spinner/Spinner";
 import GoogleLogin from "@/components/GoogleLogin/GoogleLogin";
@@ -10,7 +10,7 @@ import { useReduxDispatch } from "@/hooks/reduxHook/useReduxDispatch";
 import { useAntDesignTheme } from "@/hooks/common";
 import { initAuthState, selectRole } from "@/store/authSlice";
 import { selectDarkMode } from "@/store/themeSlice";
-import { ERole } from "@/utils/enums/ERole";
+import useAuthRedirect from "@/hooks/authHook/useAuthRedirect";
 
 interface LoginFormInputs {
     username: string;
@@ -25,8 +25,9 @@ const Login: React.FC = () => {
     const { token, borderColor, shadowColor, bgColor, textColor } =
         useAntDesignTheme();
     const darkMode = useReduxSelector(selectDarkMode);
-    const role = useReduxSelector(selectRole);
     const { login, isAuthenticating } = useLogin();
+    const role = useReduxSelector(selectRole);
+    useAuthRedirect();
 
     const {
         register,
@@ -52,13 +53,6 @@ const Login: React.FC = () => {
         }
     }, [dispatch]);
 
-    // Redirect authenticated users
-    switch (role) {
-        case ERole.User:
-            return <Navigate to="/user/notes" replace />;
-        case ERole.Admin:
-            return <Navigate to="/admin/dashboard" replace />;
-    }
 
     const onSubmit = (data: LoginFormInputs) => {
         login({
@@ -68,6 +62,7 @@ const Login: React.FC = () => {
         });
     };
 
+    if (role) return null;
     return (
         <div className="w-[95%] sm:w-[85%] md:w-[70%] lg:w-[50%] max-w-xl m-5 transition-all duration-300 ease-out">
             <div

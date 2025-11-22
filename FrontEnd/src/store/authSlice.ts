@@ -6,12 +6,14 @@ interface AuthState {
     userId: string;
     role: string;
     authenticated: boolean;
+    activeLogout: boolean;
 }
 
 const initialState: AuthState = {
     userId: "",
     role: "",
     authenticated: false,
+    activeLogout: false
 };
 
 interface DecodedToken {
@@ -38,6 +40,10 @@ const authSlice = createSlice({
                 state.role = "";
                 state.authenticated = false;
             }
+            state.activeLogout = false;
+        },
+        logOut: () => {
+            return { ...initialState, activeLogout: true }
         },
         resetAuthState: () => initialState,
     },
@@ -48,5 +54,9 @@ export const selectRole = (state: RootState) => {
     return state.authReducer.role;
 }
 
-export const { initAuthState, resetAuthState } = authSlice.actions;
+export const selectActiveLogout = (state: RootState) => {
+    return state.authReducer.activeLogout
+}
+
+export const { initAuthState, resetAuthState, logOut } = authSlice.actions;
 export default authSlice.reducer;
