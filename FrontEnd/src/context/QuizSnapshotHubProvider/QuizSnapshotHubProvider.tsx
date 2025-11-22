@@ -26,7 +26,7 @@ export const QuizAttemptSnapshotHubProvider = ({ children }: ProviderProps) => {
         const token = localStorage.getItem("accessToken");
 
         // if either missing, don't connect
-        if (!token || !role) return;
+        if (!role || !token) return;
 
         let connection: signalR.HubConnection | null = null;
 
@@ -66,7 +66,7 @@ export const QuizAttemptSnapshotHubProvider = ({ children }: ProviderProps) => {
                     .catch((err) => console.error("❌ Error stopping connection:", err));
             }
         };
-    }, [role]);
+    }, [role, queryClient]);
 
     return (
         <QuizAttemptSnapshotHubContext.Provider value={{ notificationConnection }}>

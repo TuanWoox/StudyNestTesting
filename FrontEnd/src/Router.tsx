@@ -25,13 +25,14 @@ import QuizHistory from "./features/user/quizzes/QuizHistory/QuizHistory";
 import { LandingPage } from "./features/guest/HomePage/HomePage";
 import UserLayout from "./layouts/UserLayout";
 import AdminLayout from "./layouts/AdminLayout";
+import EntryComponent from "./features/guest/Entry/EntryComponent";
 
 export const router = createBrowserRouter([
   {
     path: "/",
     element: <CenterLayout />,
     children: [
-      { index: true, element: <Navigate to="/homepage" /> },
+      { index: true, element: <EntryComponent /> },
       { path: "login", element: <Login /> },
       { path: "register", element: <Register /> },
     ],

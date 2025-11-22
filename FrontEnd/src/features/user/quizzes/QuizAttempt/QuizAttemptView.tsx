@@ -5,7 +5,6 @@ import { Drawer } from "antd";
 import { useGetOneForAttempting } from "@/hooks/quizAttemptSnapshotHook/useGetOneForAttempting";
 import { useReduxDispatch } from "@/hooks/reduxHook/useReduxDispatch";
 import { initState, selectQuizAttempt } from "@/store/quizAttemptSlice";
-import { useQuizAttemptSnapshotHub } from "@/context/QuizSnapshotHubContext/QuizAttemptSnapshotHubContextValue";
 
 import ErrorDisplay from "@/components/ErrorDisplay/ErrorDisplay";
 import QuizSnapshotNotReady from "./components/QuizSnapshotNotReady";
@@ -19,6 +18,7 @@ import useAntDesignTheme from "@/hooks/common/useAntDesignTheme";
 import useIsMobile from "@/hooks/common/useIsMobile";
 import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
 import { useSubmitQuizAttempt } from "@/hooks/quizAttempt/useSubmitQuizAttempt";
+import { useQuizAttemptSnapshotHub } from "@/context/QuizSnapshotHubProvider/QuizAttemptSnapshotHubContextValue";
 
 const QuizView: React.FC = () => {
     const { id } = useParams<{ id: string }>();
