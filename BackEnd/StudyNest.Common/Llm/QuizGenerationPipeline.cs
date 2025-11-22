@@ -127,7 +127,7 @@ namespace StudyNest.Common.Llm
 
 
         // 2) Parse raw LLM text → Quiz entity (handles code fences, T/F casing, rejection path)
-        public Quiz ParseToQuiz(string llmText, string createdBy, string noteId, string difficulty = "Medium")
+        public Quiz ParseToQuiz(string llmText, string createdBy, string? noteId = null, string difficulty = "Medium")
         {
             if (string.IsNullOrWhiteSpace(createdBy))
                 throw new ArgumentException("createdBy is required", nameof(createdBy));

@@ -1,18 +1,19 @@
 import React from "react";
 import { Input, Button, theme, Grid } from "antd";
 import { SearchOutlined, FilterOutlined, PlusOutlined } from "@ant-design/icons";
-import { Link } from "react-router-dom";
 
 interface QuizSearchControlsProps {
     searchTerm: string;
     onSearchChange: (value: string) => void;
     onOpenFilter: () => void;
+    onCreateQuiz: () => void;
 }
 
 const QuizSearchControls: React.FC<QuizSearchControlsProps> = ({
     searchTerm,
     onSearchChange,
     onOpenFilter,
+    onCreateQuiz,
 }) => {
     const { token } = theme.useToken();
     const { useBreakpoint } = Grid;
@@ -66,23 +67,22 @@ const QuizSearchControls: React.FC<QuizSearchControlsProps> = ({
             </Button>
 
             {/* Create New Quiz Button */}
-            <Link to="/user/quiz/generate">
-                <Button
-                    type="primary"
-                    icon={<PlusOutlined />}
-                    style={{
-                        borderRadius: 0,
-                        border: `1px solid ${borderColor}`,
-                        fontWeight: 600,
-                        boxShadow: `2px 2px 0 ${shadowColor}`,
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center"
-                    }}
-                >
-                    {screens.sm ? "Create New Quiz" : ""}
-                </Button>
-            </Link>
+            <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={onCreateQuiz}
+                style={{
+                    borderRadius: 0,
+                    border: `1px solid ${borderColor}`,
+                    fontWeight: 600,
+                    boxShadow: `2px 2px 0 ${shadowColor}`,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center"
+                }}
+            >
+                {screens.sm ? "Create New Quiz" : ""}
+            </Button>
         </div>
     );
 };

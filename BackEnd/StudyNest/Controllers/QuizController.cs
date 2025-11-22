@@ -55,12 +55,26 @@ namespace StudyNest.Controllers
             return Ok(rs);
         }
         [HttpPost]
-        public async Task<IActionResult> CreateQuiz(CreateQuizDTO model)
+        public async Task<IActionResult> CreateQuiz(CreateQuizDTO request)
         {
             var rs = new ReturnResult<CreateQuizJobResponseDTO>();
             try
             {
-                rs = await _quizBusiness.EnqueueGenerateAsync(model);
+                rs = await _quizBusiness.EnqueueGenerateAsync(request);
+            }
+            catch (Exception ex)
+            {
+                StudyNestLogger.Instance.Error(ex);
+            }
+            return Ok(rs);
+        }
+        [HttpPost("manual")]
+        public async Task<IActionResult> CreateQuizFromScratch(CreateManualQuizDTO request)
+        {
+            var rs = new ReturnResult<string>();
+            try
+            {
+                rs = await _quizBusiness.CreateQuizFromScratch(request);
             }
             catch (Exception ex)
             {

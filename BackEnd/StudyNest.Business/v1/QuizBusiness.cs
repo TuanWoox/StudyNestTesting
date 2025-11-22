@@ -9,6 +9,8 @@ using StudyNest.Business.Repository;
 using StudyNest.Common.DbEntities.Entities;
 using StudyNest.Common.Interfaces;
 using StudyNest.Common.Models.DTOs.CoreDTO;
+using StudyNest.Common.Models.DTOs.EntityDTO.Choice;
+using StudyNest.Common.Models.DTOs.EntityDTO.Question;
 using StudyNest.Common.Models.DTOs.EntityDTO.Quizzes;
 using StudyNest.Common.Models.Paging;
 using StudyNest.Common.Utils.Extensions;
@@ -164,7 +166,68 @@ namespace StudyNest.Business.v1
                     jobId, false, null, "An unexpected error occurred.");
             }
         }
+        public async Task<ReturnResult<string>> CreateQuizFromScratch(CreateManualQuizDTO request)
+        {
+            var rs = new ReturnResult<string>();
+            try
+            {
+                if (request.Questions is null || request.Questions.Count == 0)
+                {
+                    rs.Message = "Quiz cannot have empty questions.";
+                    return rs;
+                }
 
+                var newQuiz = new Quiz
+                {
+                    Title = request.Title.Trim(),
+                    Difficulty = request.Difficulty.Trim(),
+                    OwnerId = _userContext.UserId,
+                    NoteId = null
+                };
+
+                foreach (var qDto in request.Questions)
+                {
+                    var choicesForValidate = (qDto.Choices ?? new())
+                        .Select(c => new Choice { Text = c.Text, IsCorrect = c.IsCorrect })
+                        .ToList();
+
+                    var validationError = QuestionBusiness.ValidateQuestion(
+                        qDto.Name, qDto.Type, qDto.Explanation ?? string.Empty, choicesForValidate);
+                    
+                    if (!string.IsNullOrEmpty(validationError))
+                    {
+                        rs.Message = validationError;
+                        return rs;
+                    }   
+
+                    var newQuestion = new Question
+                    {
+                        Name = qDto.Name.Trim(),
+                        Type = qDto.Type.Trim().ToUpperInvariant(),
+                        Explanation = qDto.Explanation?.Trim() ?? string.Empty,
+                        Choices = (qDto.Choices ?? new())
+                            .Select(c => new Choice
+                            {
+                                Text = c.Text.Trim(),
+                                IsCorrect = c.IsCorrect
+                            })
+                            .ToList()
+                    };
+                    newQuiz.Questions.Add(newQuestion);
+                }
+
+                _context.Quizzes.Add(newQuiz);
+                await _context.SaveChangesAsync();
+
+                rs.Result = newQuiz.Id;
+            }
+            catch (Exception ex)
+            {
+                rs.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
+                StudyNestLogger.Instance.Error(ex);
+            }
+            return rs;
+        }
         public async Task<ReturnResult<PagedData<QuizListDTO, string>>> GetAllQuizByUserId(Page<string> page, bool isExported = false)
         {
             var rs = new ReturnResult<PagedData<QuizListDTO, string>>();
@@ -245,7 +308,6 @@ namespace StudyNest.Business.v1
                 existingQuiz.Title = request.Title?.Trim() ?? existingQuiz.Title;
                 var incomingQuestions = request.Questions;
 
-                // ---- REMOVE questions not present anymore (by Id) ----
                 var incomingIds = new HashSet<string>(
                     incomingQuestions.Where(q => !string.IsNullOrWhiteSpace(q.Id)).Select(q => q.Id!),
                     StringComparer.OrdinalIgnoreCase
@@ -256,15 +318,12 @@ namespace StudyNest.Business.v1
                     .ToList();
                 _context.Questions.RemoveRange(removeQuestions);
 
-                // ---- ADD / UPDATE questions ----
                 foreach (var qDto in incomingQuestions)
                 {
-                    // 1) Build temp choice list for validation (không ép Id/QuestionId)
-                    var choicesForValidate = (qDto.Choices ?? new List<ChoiceUpsertDTO>())
+                    var choicesForValidate = (qDto.Choices ?? new List<Common.Models.DTOs.EntityDTO.Question.ChoiceDTO>())
                         .Select(c => new Choice { Text = c.Text, IsCorrect = c.IsCorrect })
                         .ToList();
 
-                    // 2) Validate per-question (re-use validator)
                     var v = QuestionBusiness.ValidateQuestion(qDto.Name, qDto.Type, qDto.Explanation ?? string.Empty, choicesForValidate);
                     if (!string.IsNullOrEmpty(v)) { rs.Message = v; return rs; }
 
@@ -289,26 +348,21 @@ namespace StudyNest.Business.v1
                     }
                     else
                     {
-                        // UPDATE Question
                         var qEntity = existingQuiz.Questions.FirstOrDefault(x => x.Id == qDto.Id);
-                        if (qEntity is null) continue; // hoặc báo lỗi "Question not found in quiz"
+                        if (qEntity is null) continue; 
 
-                        // Phòng payload lẫn quiz
                         if (!string.Equals(qEntity.QuizId, existingQuiz.Id, StringComparison.OrdinalIgnoreCase))
                         {
                             rs.Message = "Question does not belong to this quiz.";
                             return rs;
                         }
 
-                        // Scalars
                         qEntity.Name = qDto.Name;
                         qEntity.Type = qDto.Type;
                         qEntity.Explanation = qDto.Explanation ?? string.Empty;
 
-                        // ---- DIFF Choices (remove / add / update) ----
-                        var incomingChoices = qDto.Choices ?? new List<ChoiceUpsertDTO>();
+                        var incomingChoices = qDto.Choices;
 
-                        // a) Remove choices không còn trong incoming
                         var incomingChoiceIds = new HashSet<string>(
                             incomingChoices.Where(c => !string.IsNullOrWhiteSpace(c.Id)).Select(c => c.Id!),
                             StringComparer.OrdinalIgnoreCase
@@ -319,12 +373,10 @@ namespace StudyNest.Business.v1
                             .ToList();
                         _context.Choices.RemoveRange(toRemoveChoices);
 
-                        // b) Add or Update
                         foreach (var cDto in incomingChoices)
                         {
                             if (string.IsNullOrWhiteSpace(cDto.Id))
                             {
-                                // Add
                                 qEntity.Choices.Add(new Choice
                                 {
                                     QuestionId = qEntity.Id,
@@ -334,7 +386,6 @@ namespace StudyNest.Business.v1
                             }
                             else
                             {
-                                // Update
                                 var cEntity = qEntity.Choices.FirstOrDefault(c => c.Id == cDto.Id);
                                 if (cEntity is null) continue;
                                 cEntity.Text = cDto.Text;

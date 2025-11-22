@@ -20,6 +20,7 @@ namespace StudyNest.Common.Models.DTOs.EntityDTO.Question
         public string Explanation { get; set; } = string.Empty;
         public List<ChoiceDTO> Choices { get; set; } = new List<ChoiceDTO>();
     }
+    [AutoMap(typeof(StudyNest.Common.DbEntities.Entities.Choice), ReverseMap = true)]
     public class ChoiceDTO
     {
         public string? Id { get; set; }

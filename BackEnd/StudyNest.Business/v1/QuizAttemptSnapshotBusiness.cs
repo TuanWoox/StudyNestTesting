@@ -44,7 +44,7 @@ namespace StudyNest.Business.v1
             try
             {
                 //Find the latest snapshot for the quiz that belongs to the current user and is not being converted to snapshot
-                var existingSnapshot = await _context.QuizAttemptSnapshots.Where(x => x.QuizId == quizId.Trim())
+                var existingSnapshot = await _context.QuizAttemptSnapshots.IgnoreQueryFilters().Where(x => x.QuizId == quizId.Trim())
                                                                      .Include(x => x.Quiz)
                                                                      .Where(x => x.Quiz.OwnerId == _userContext.UserId
                                                                      && x.Quiz.IsBeingConvertToSnapShot == false)
@@ -52,7 +52,7 @@ namespace StudyNest.Business.v1
                                                                      .OrderByDescending(x => x.DateCreated)
                                                                      .FirstOrDefaultAsync();
 
-                if (existingSnapshot != null && !string.IsNullOrEmpty(existingSnapshot.QuizQuestions))
+                if (existingSnapshot != null && !string.IsNullOrEmpty(existingSnapshot?.QuizQuestions))
                 {
                     var needToCreateSnapShot = await CompareQuizSnapShotContentForCreatingNewOne(existingSnapshot,quizId);
                     if (!needToCreateSnapShot.Result && needToCreateSnapShot.Message == null)
@@ -83,10 +83,20 @@ namespace StudyNest.Business.v1
                 }
                 else
                 {
-                    var fetchedQuiz = await _context.Quizzes.Where(x => x.Id == quizId).FirstOrDefaultAsync();
-                    if(!(fetchedQuiz != null && fetchedQuiz.IsBeingConvertToSnapShot))
+                    var fetchedQuiz = await _context.Quizzes.IgnoreQueryFilters().Where(x => x.Id == quizId).FirstOrDefaultAsync();
+                    if(fetchedQuiz != null)
                     {
-                        //Return the appropriate message if not founds
+                        if(fetchedQuiz.IsBeingConvertToSnapShot)
+                        {
+                            return result;
+                        }
+                        else
+                        {
+                            _ = await CreateSnapShot(fetchedQuiz.Id);
+                        }
+                    }
+                    else
+                    {
                         result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "quiz", quizId);
                     }
 

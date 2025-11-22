@@ -2,6 +2,7 @@ import instance from "@/config/axiosConfig";
 import { Page } from "@/types/common/page";
 import { PagedData } from "@/types/common/paged-data";
 import { ReturnResult } from "@/types/common/return-result";
+import { CreateManualQuizDTO } from "@/types/quiz/createManualQuizDTO";
 import { CreateQuizDTO } from "@/types/quiz/createQuizDTO";
 import { QuizDetail, QuizList } from "@/types/quiz/quiz";
 import { UpdateQuizDTO } from "@/types/quiz/updateQuizDTO";
@@ -30,6 +31,13 @@ const quizService = {
     const { data } = await instance.post<
       ReturnResult<PagedData<QuizList, string>>
     >("/Quiz/GetPaging", payload);
+    return data.result;
+  },
+  createManualQuiz: async (payload: CreateManualQuizDTO): Promise<string> => {
+    const {data} = await instance.post<ReturnResult<string>>(
+      "/Quiz/manual", payload
+    )
+
     return data.result;
   },
   updateQuiz: async (payload: UpdateQuizDTO): Promise<boolean> => {

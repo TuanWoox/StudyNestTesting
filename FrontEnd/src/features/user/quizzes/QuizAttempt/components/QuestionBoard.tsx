@@ -1,10 +1,11 @@
 import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector"
 import { selectIsNeededToSubmitQuiz, selectQuestion, selectQuestionsAndAnswerList, selectQuizProgress } from "@/store/quizAttemptSlice";
-import { Tooltip, Card, Progress, Button, Typography, Divider } from "antd"
+import { Tooltip, Card, Progress, Button, Typography, Divider, Modal } from "antd"
 import { useReduxDispatch } from "@/hooks/reduxHook/useReduxDispatch";
 import useAntDesignTheme from "@/hooks/common/useAntDesignTheme";
 import useIsMobile from "@/hooks/common/useIsMobile";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { ExclamationCircleOutlined } from "@ant-design/icons";
 
 
 const { Title, Text } = Typography;
@@ -21,6 +22,8 @@ const QuestionBoard: React.FC<QuestionBoardProps> = ({ isSubmitting, onSubmit })
     const dispatch = useReduxDispatch();
     const { isMobile } = useIsMobile();
     const isNeededToSubmit = useReduxSelector(selectIsNeededToSubmitQuiz);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
     useEffect(() => {
         if (isNeededToSubmit) {
             onSubmit();
@@ -29,6 +32,19 @@ const QuestionBoard: React.FC<QuestionBoardProps> = ({ isSubmitting, onSubmit })
 
     const handleQuestionSelect = (id: string) => {
         dispatch(selectQuestion(id));
+    }
+
+    const showConfirmModal = () => {
+        setIsModalOpen(true);
+    }
+
+    const handleConfirmSubmit = () => {
+        setIsModalOpen(false);
+        onSubmit();
+    }
+
+    const handleCancelSubmit = () => {
+        setIsModalOpen(false);
     }
 
     return (
@@ -158,11 +174,60 @@ const QuestionBoard: React.FC<QuestionBoardProps> = ({ isSubmitting, onSubmit })
                         fontWeight: 600,
                         height: "44px"
                     }}
-                    onClick={onSubmit}
+                    onClick={showConfirmModal}
+                    disabled={isSubmitting}
                 >
                     {isSubmitting ? "Submitting Quiz..." : "Submit Quiz"}
                 </Button>
             </div>
+
+            {/* Confirmation Modal */}
+            <Modal
+                title={
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <ExclamationCircleOutlined style={{ color: "#faad14", fontSize: "20px" }} />
+                        <span style={{ fontFamily: '"Courier New", monospace', fontWeight: 600 }}>
+                            Confirm Quiz Submission
+                        </span>
+                    </div>
+                }
+                open={isModalOpen}
+                onOk={handleConfirmSubmit}
+                onCancel={handleCancelSubmit}
+                okText="Submit"
+                cancelText="Review Again"
+                okButtonProps={{
+                    style: {
+                        fontFamily: '"Courier New", monospace',
+                        fontWeight: 600,
+                    },
+                }}
+                cancelButtonProps={{
+                    style: {
+                        fontFamily: '"Courier New", monospace',
+                        fontWeight: 600,
+                    },
+                }}
+                centered
+            >
+                <div style={{ 
+                    fontFamily: '"Courier New", monospace', 
+                    padding: "16px 0",
+                    lineHeight: "1.6"
+                }}>
+                    <p style={{ marginBottom: "12px" }}>
+                        You have answered <strong>{answeredCount}</strong> out of <strong>{totalQuestions}</strong> questions.
+                    </p>
+                    {answeredCount < totalQuestions && (
+                        <p style={{ color: "#faad14", marginBottom: "12px" }}>
+                            ⚠️ You have <strong>{totalQuestions - answeredCount}</strong> unanswered question(s).
+                        </p>
+                    )}
+                    <p style={{ marginBottom: "0" }}>
+                        Are you sure you want to submit your quiz?
+                    </p>
+                </div>
+            </Modal>
         </Card>
     )
 }
