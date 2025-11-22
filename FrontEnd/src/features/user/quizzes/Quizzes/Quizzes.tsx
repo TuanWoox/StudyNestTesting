@@ -5,11 +5,14 @@ import { EmptyState } from "@/components/EmptyState/EmptyState";
 import useGetAllQuiz from "@/hooks/quizHook/useGetAllQuiz";
 import useDeleteQuiz from "@/hooks/quizHook/useDeleteQuiz";
 import useDebounce from "@/hooks/common/useDebounce";
+import { SortOrderType } from "@/constants/sortOrderType";
+import { Dayjs } from "dayjs";
 import QuizHeader from "./components/QuizHeader";
-import QuizStats from "./components/QuizStats";
+import QuizSearchControls from "./components/QuizSearchControls";
 import QuizGrid from "./components/QuizGrid";
 import QuizDeleteModal from "./components/QuizDeleteModal";
 import QuizPagination from "./components/QuizPagination";
+import QuizFilterModal from "./components/QuizFilterModal";
 
 const { Text } = Typography;
 const { useToken } = theme;
@@ -23,6 +26,13 @@ const Quizzes: React.FC = () => {
   const [deletingQuizId, setDeletingQuizId] = useState<string | null>(null);
   const [quizToDelete, setQuizToDelete] = useState<any>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  
+  // Filter & Sort states
+  const [createdFilterRange, setCreatedFilterRange] = useState<[Dayjs | null, Dayjs | null]>([null, null]);
+  const [sortField, setSortField] = useState<"dateCreated" | "title">("dateCreated");
+  const [sortOrder, setSortOrder] = useState<SortOrderType>(SortOrderType.DESC);
+  
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   const {
@@ -34,8 +44,10 @@ const Quizzes: React.FC = () => {
   } = useGetAllQuiz({
     pageNumber: page - 1,
     pageSize,
-    sortByNewest: true,
     searchTerm: debouncedSearchTerm,
+    sortField,
+    sortOrder,
+    createdRange: createdFilterRange,
   });
 
   const { deleteQuizAsync, isLoading: isDeleting } = useDeleteQuiz();
@@ -110,12 +122,13 @@ const Quizzes: React.FC = () => {
       }}
     >
       <div style={{ width: "100%" }}>
-        <QuizHeader
+        <QuizHeader />
+        
+        <QuizSearchControls
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
+          onOpenFilter={() => setIsFilterModalOpen(true)}
         />
-
-        <QuizStats totalQuizzes={totalElements} />
 
         <QuizGrid
           quizzes={quizzes}
@@ -136,6 +149,21 @@ const Quizzes: React.FC = () => {
           />
         )}
       </div>
+
+      <QuizFilterModal
+        open={isFilterModalOpen}
+        defaultSortBy={sortField}
+        defaultSortOrder={sortOrder}
+        defaultCreatedRange={createdFilterRange}
+        onCancel={() => setIsFilterModalOpen(false)}
+        onApply={({ sortBy, sortOrder: order, createdRange }) => {
+          setSortField((sortBy as "dateCreated" | "title") ?? "dateCreated");
+          setSortOrder((order as SortOrderType) ?? SortOrderType.DESC);
+          setCreatedFilterRange(createdRange ?? [null, null]);
+          setPage(1);
+          setIsFilterModalOpen(false);
+        }}
+      />
 
       <QuizDeleteModal
         visible={showDeleteModal}

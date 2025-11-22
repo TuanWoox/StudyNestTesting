@@ -1,6 +1,6 @@
 import React from "react";
-import { Radio, Space, Card, Typography, theme } from "antd";
-import { BulbOutlined } from "@ant-design/icons";
+import { Radio, Space, Card, Typography, theme, Tooltip } from "antd";
+import { BulbOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import SettingsSection from "./SettingsSection";
 
 const { Text } = Typography;
@@ -10,6 +10,7 @@ interface DifficultyOption {
   value: string;
   label: string;
   desc: string;
+  tooltip: React.ReactNode;
   color: string;
 }
 
@@ -51,21 +52,62 @@ export const QuizDifficultySelect: React.FC<QuizDifficultySelectProps> = ({
               onClick={() => onChange(opt.value)}
             >
               <Radio value={opt.value} style={{ width: "100%" }}>
-                <Space>
-                  <div>
-                    <Text strong style={{ fontFamily: "monospace" }}>
+                <div style={{ width: "100%" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                    <Text strong style={{ fontFamily: "monospace", color: opt.color }}>
                       {opt.label}
                     </Text>
-                    <div>
-                      <Text
-                        type="secondary"
-                        style={{ fontSize: 13, fontFamily: "monospace" }}
-                      >
-                        {opt.desc}
-                      </Text>
-                    </div>
+                    <Tooltip 
+                      title={
+                        <div style={{ 
+                          padding: "8px 4px",
+                          fontFamily: "monospace",
+                          fontSize: 13,
+                          lineHeight: 1.6
+                        }}>
+                          {opt.tooltip}
+                        </div>
+                      }
+                      placement="right"
+                      overlayStyle={{ 
+                        maxWidth: 350,
+                      }}
+                      overlayInnerStyle={{
+                        borderRadius: 0,
+                        padding: 0,
+                        backgroundColor: token.colorBgElevated,
+                        border: `1px solid ${token.colorBorder}`,
+                        boxShadow: `2px 2px 0px ${token.colorPrimary}33`,
+                      }}
+                    >
+                      <InfoCircleOutlined 
+                        style={{ 
+                          color: token.colorPrimary,
+                          fontSize: 14,
+                          cursor: "help",
+                          transition: "all 0.2s"
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.color = token.colorPrimaryHover;
+                          e.currentTarget.style.transform = "scale(1.15)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.color = token.colorPrimary;
+                          e.currentTarget.style.transform = "scale(1)";
+                        }}
+                      />
+                    </Tooltip>
                   </div>
-                </Space>
+                  <div>
+                    <Text
+                      type="secondary"
+                      style={{ fontSize: 13, fontFamily: "monospace" }}
+                    >
+                      {opt.desc}
+                    </Text>
+                  </div>
+                </div>
               </Radio>
             </Card>
           ))}

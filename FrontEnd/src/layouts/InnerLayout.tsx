@@ -19,7 +19,8 @@ import { SunIcon, MoonIcon } from "@heroicons/react/24/outline";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 
-import logo from "@/assets/react.svg";
+import logo from "@/assets/logo.svg";
+import logoDarkmode from "@/assets/logo_darkmode.svg";
 import { ERole } from "@/utils/enums/ERole";
 import { adminMenus, userMenus } from "@/constants/menus";
 import { resetAuthState } from "@/store/authSlice";
@@ -134,7 +135,7 @@ const InnerLayout: React.FC<InnerLayoutProps> = ({
       >
         <ProLayout
           title={layoutTitle}
-          logo={logo}
+          logo={darkMode ? logoDarkmode : logo}
           fixSiderbar
           layout="mix"
           navTheme={darkMode ? "realDark" : "light"}

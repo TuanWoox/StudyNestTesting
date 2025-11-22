@@ -16,6 +16,7 @@ namespace StudyNest.Common.DbEntities.Entities
     {
         [Required]
         public string Title { get; set; } = string.Empty;
+        public string Difficulty { get; set; } = "medium";
         public string OwnerId { get; set; }
         [JsonIgnore]
         public ApplicationUser Owner { get; set; }
