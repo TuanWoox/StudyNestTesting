@@ -77,6 +77,7 @@ const QuizCard: React.FC<QuizCardProps> = ({
       <QuizCardInfo
         totalQuestions={quiz.totalQuestion}
         dateCreated={formatDMY(quiz.dateCreated)}
+        difficulty={quiz.difficulty}
       />
 
       <div

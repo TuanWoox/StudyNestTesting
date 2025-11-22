@@ -34,7 +34,7 @@ namespace StudyNest.Common.Llm
                 var (prompt, images) = _pipe.BuildPrompt(request);
                 var raw = await _client.GenerateAsync(prompt, images);
 
-                var quizEntity = _pipe.ParseToQuiz(raw, userId, request.NoteId);
+                var quizEntity = _pipe.ParseToQuiz(raw, userId, request.NoteId, request.Difficulty);
 
                 if (quizEntity.Questions == null || quizEntity.Questions.Count == 0)
                     return quizEntity;

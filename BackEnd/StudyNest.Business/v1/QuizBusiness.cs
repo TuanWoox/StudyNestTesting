@@ -96,6 +96,7 @@ namespace StudyNest.Business.v1
                 connection.SetJobParameter(hangfireJobId, "UserId", _userContext.UserId);
                 connection.SetJobParameter(hangfireJobId, "NoteId", dto.NoteId.ToString());
                 connection.SetJobParameter(hangfireJobId, "NoteTitle", note.Title);
+                connection.SetJobParameter(hangfireJobId, "Difficulty", dto.Difficulty);
                 connection.SetJobParameter(hangfireJobId, "Timestamp", timestamp.ToString("o"));
 
                 // Notify client that creation has started
@@ -136,7 +137,7 @@ namespace StudyNest.Business.v1
                         jobId, false, null, "Note is insufficient or meaningless.");
                     return;
                 }
-
+                newQuiz.Difficulty = dto.Difficulty.ToLower().Trim();
                 // Save quiz
                 newQuiz.IsBeingConvertToSnapShot = true;
                 await _context.AddAsync(newQuiz);
@@ -242,7 +243,6 @@ namespace StudyNest.Business.v1
                 }
 
                 existingQuiz.Title = request.Title?.Trim() ?? existingQuiz.Title;
-
                 var incomingQuestions = request.Questions;
 
                 // ---- REMOVE questions not present anymore (by Id) ----

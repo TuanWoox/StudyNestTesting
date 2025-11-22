@@ -59,19 +59,43 @@ export function OptionsPanel({ initial, setCreateQuiz }: OptionsPanelProps) {
     {
       value: "easy",
       label: "Easy",
-      desc: "Basic concepts & definitions",
+      desc: "Recall & basic understanding",
+      tooltip: (
+        <div>
+          <div style={{ marginBottom: 8, fontWeight: 600, color: token.colorSuccess }}>Easy Level</div>
+          <div style={{ marginBottom: 4, fontSize: 12, color: token.colorText }}>• Direct questions from note content</div>
+          <div style={{ marginBottom: 4, fontSize: 12, color: token.colorText }}>• Definitions, keywords, basic concepts</div>
+          <div style={{ marginBottom: 4, fontSize: 12, color: token.colorText }}>• No traps or complex reasoning</div>
+        </div>
+      ),
       color: token.colorSuccess,
     },
     {
       value: "medium",
       label: "Medium",
-      desc: "Application & analysis",
+      desc: "Understanding & application",
+      tooltip: (
+        <div>
+          <div style={{ marginBottom: 8, fontWeight: 600, color: token.colorWarning }}>Medium Level</div>
+          <div style={{ marginBottom: 4, fontSize: 12, color: token.colorText }}>• Requires understanding & applying</div>
+          <div style={{ marginBottom: 4, fontSize: 12, color: token.colorText }}>• One-step reasoning needed</div>
+          <div style={{ marginBottom: 4, fontSize: 12, color: token.colorText }}>• Reasonable distractors included</div>
+        </div>
+      ),
       color: token.colorWarning,
     },
     {
       value: "hard",
       label: "Hard",
-      desc: "Complex problem solving",
+      desc: "Analysis & multi-step reasoning",
+      tooltip: (
+        <div>
+          <div style={{ marginBottom: 8, fontWeight: 600, color: token.colorError }}>Hard Level</div>
+          <div style={{ marginBottom: 4, fontSize: 12, color: token.colorText }}>• Analysis & synthesis required</div>
+          <div style={{ marginBottom: 4, fontSize: 12, color: token.colorText }}>• Scenario-based questions</div>
+          <div style={{ marginBottom: 4, fontSize: 12, color: token.colorText }}>• Similar distractors (deep understanding)</div>
+        </div>
+      ),
       color: token.colorError,
     },
   ];

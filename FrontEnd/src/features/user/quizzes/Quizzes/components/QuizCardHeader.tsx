@@ -40,6 +40,7 @@ const QuizCardHeader: React.FC<QuizCardHeaderProps> = ({
             overflow: "hidden",
             fontFamily: "monospace",
             fontWeight: 600,
+            height: "2.8em", // Fixed height for 2 lines
           }}
         >
           {title}
@@ -51,6 +52,9 @@ const QuizCardHeader: React.FC<QuizCardHeaderProps> = ({
             display: "block",
             marginBottom: 4,
             fontFamily: "monospace",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
           }}
         >
           Source: {noteTitle}

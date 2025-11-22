@@ -7,7 +7,7 @@ const useValidateToken = (options?: { enabled?: boolean }) => {
     return useQuery({
         queryKey: ["validateToken"],
         enabled: enabled,
-        queryFn: () => authService.validateToken()
+        queryFn: () => authService.validateToken(),
     })
 }
 

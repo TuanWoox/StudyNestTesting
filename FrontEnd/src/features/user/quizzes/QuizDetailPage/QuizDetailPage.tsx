@@ -155,6 +155,7 @@ const QuizDetailPage: React.FC = () => {
           <QuizMetadataCard
             questionCount={quiz?.questions?.length ?? 0}
             dateCreated={quiz.dateCreated}
+            difficulty={quiz.difficulty}
           />
         </div>
       </div>
