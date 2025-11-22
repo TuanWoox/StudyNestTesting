@@ -220,9 +220,16 @@ const SettingsConfig: React.FC = () => {
             sortDirections: ["ascend", "descend"] as SortOrder[],
             filterDropdown: customFilterDropdown("value"),
             filteredValue: tableControls.filters.find(f => f.prop === "value") ? [tableControls.filters.find(f => f.prop === "value")!.value] : null,
-            render: (v: any) => (
-                <pre style={{ margin: 0, whiteSpace: "pre-wrap" }}>{v}</pre>
-            ),
+            render: (v: any) => {
+                const text = String(v ?? "");
+                const displayText = text.length > 50 ? text.slice(0, 50) + "..." : text;
+
+                return (
+                    <pre style={{ margin: 0, whiteSpace: "pre-wrap" }}>
+                        {displayText}
+                    </pre>
+                );
+            },
         },
         {
             title: "Description",

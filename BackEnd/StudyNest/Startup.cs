@@ -250,6 +250,12 @@ namespace StudyNest
             .AddSignInManager<SignInManager<ApplicationUser>>()
             .AddDefaultTokenProviders();
 
+            // Configure password-reset token lifespan to 5 minutes
+            services.Configure<DataProtectionTokenProviderOptions>(opts =>
+            {
+                opts.TokenLifespan = TimeSpan.FromMinutes(5);
+            });
+
             services.AddSignalR(hubOptions =>
             {
                 hubOptions.EnableDetailedErrors = true;
