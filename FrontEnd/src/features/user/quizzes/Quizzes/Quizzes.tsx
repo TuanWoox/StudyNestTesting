@@ -35,6 +35,7 @@ const Quizzes: React.FC = () => {
   const [createdFilterRange, setCreatedFilterRange] = useState<[Dayjs | null, Dayjs | null]>([null, null]);
   const [sortField, setSortField] = useState<"dateCreated" | "title">("dateCreated");
   const [sortOrder, setSortOrder] = useState<SortOrderType>(SortOrderType.DESC);
+  const [difficulty, setDifficulty] = useState<string | undefined>(undefined);
   
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
@@ -51,6 +52,7 @@ const Quizzes: React.FC = () => {
     sortField,
     sortOrder,
     createdRange: createdFilterRange,
+    difficulty,
   });
 
   const { deleteQuizAsync, isLoading: isDeleting } = useDeleteQuiz();
@@ -190,11 +192,13 @@ const Quizzes: React.FC = () => {
         defaultSortBy={sortField}
         defaultSortOrder={sortOrder}
         defaultCreatedRange={createdFilterRange}
+        defaultDifficulty={difficulty || "all"}
         onCancel={() => setIsFilterModalOpen(false)}
-        onApply={({ sortBy, sortOrder: order, createdRange }) => {
+        onApply={({ sortBy, sortOrder: order, createdRange, difficulty: diff }) => {
           setSortField((sortBy as "dateCreated" | "title") ?? "dateCreated");
           setSortOrder((order as SortOrderType) ?? SortOrderType.DESC);
           setCreatedFilterRange(createdRange ?? [null, null]);
+          setDifficulty(diff);
           setPage(1);
           setIsFilterModalOpen(false);
         }}
