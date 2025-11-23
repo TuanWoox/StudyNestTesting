@@ -21,11 +21,11 @@ import { LandingPage } from "./features/guest/HomePage/HomePage";
 import UserLayout from "./layouts/UserLayout";
 import AdminLayout from "./layouts/AdminLayout";
 import EntryComponent from "./features/guest/Entry/EntryComponent";
-import ProfilePage from "./features/user/profile/ProfilePage";
-import ChangePassword from "./features/user/ChangePassword";
+import ChangePassword from "./features/user/changePassword/ChangePassword";
 import ForgotPassword from "./features/guest/ForgotPassword/ForgotPassword";
 import ResetPassword from "./features/guest/ResetPassword/ResetPassword";
-import Feedbacks from "./features/user/feedbacks/Feedbacks/FeedBacks";
+import Feedbacks from "./features/user/feedbacks/Feedbacks/Feedbacks";
+import { NotFoundPage } from "./components/NotFoundPage/NotFoundPage";
 
 export const router = createBrowserRouter([
   {
@@ -66,5 +66,8 @@ export const router = createBrowserRouter([
   },
   {
     path: "/homepage", element: <LandingPage />,
+  },
+  {
+    path: "*", element: <NotFoundPage />
   }
 ]);

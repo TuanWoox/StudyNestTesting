@@ -85,12 +85,6 @@ const InnerLayout: React.FC<InnerLayoutProps> = ({
           onClick: () => navigate(`/${path}/change-password`),
         },
         {
-          key: "settings",
-          icon: <SettingOutlined />,
-          label: "Settings",
-          onClick: () => navigate("/settings"),
-        },
-        {
           key: "logout",
           icon: <LogoutOutlined />,
           label: "Logout",

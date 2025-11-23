@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useLocation } from "react-router-dom";
-import authService from "@/services/authService";
 import { useAntDesignTheme } from "@/hooks/common";
 import useResetPassword from "@/hooks/authHook/useResetPassword";
 import { ResetPasswordDTO } from "@/types/auth/ResetPasswordDTO";
@@ -21,15 +20,10 @@ const ResetPassword: React.FC = () => {
     const { token, borderColor, shadowColor, bgColor, textColor } = useAntDesignTheme();
 
     const { register, handleSubmit, watch, formState: { errors, isValid } } = useForm<FormInputs>({ mode: "onChange" });
-    // const [loading, setLoading] = useState(false);
-    // const [info, setInfo] = useState<string | null>(null);
-    // const [error, setError] = useState<string | null>(null);
 
     const {
         resetPasswordAsync,
-        isLoading,
-        error: hookError,
-        data
+        isLoading
     } = useResetPassword();
 
 
