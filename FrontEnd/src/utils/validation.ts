@@ -1,4 +1,4 @@
-// Validation utilities matching backend validation rules
+// Validation utilities matching backend QuestionBusiness.ValidateQuestion
 
 import type { Choice } from "@/types/quiz/quiz";
 
@@ -8,7 +8,7 @@ export interface ValidationError {
 }
 
 /**
- * Count words in a string (matching backend logic)
+ * Count words in a string (matching backend CountWords logic)
  */
 const countWords = (text: string): number => {
   if (!text || !text.trim()) return 0;
@@ -37,132 +37,76 @@ export const validateQuizTitle = (title: string): string | null => {
 };
 
 /**
- * Validate question name
+ * Ensure choice count matches expected (backend: EnsureChoiceCount)
  */
-export const validateQuestionName = (name: string): string | null => {
-  const trimmed = name.trim();
-
-  if (!trimmed) {
-    return "Question title is required";
-  }
-
-  if (trimmed.length > 300) {
-    return "Question title must not exceed 300 characters";
-  }
-
-  return null;
+const ensureChoiceCount = (
+  choices: Choice[],
+  expectedCount: number,
+  message: string
+): string | null => {
+  return choices.length === expectedCount ? null : message;
 };
 
 /**
- * Validate explanation (optional field)
- */
-export const validateExplanation = (explanation: string): string | null => {
-  if (!explanation || !explanation.trim()) return null; // Optional field
-
-  const wordCount = countWords(explanation);
-
-  if (wordCount > 200) {
-    return "Explanation should be concise (maximum 200 words)";
-  }
-
-  return null;
-};
-
-/**
- * Validate choice text
- */
-export const validateChoiceText = (text: string): string | null => {
-  const trimmed = text.trim();
-
-  if (!trimmed) {
-    return "Each choice must have text content";
-  }
-
-  if (trimmed.length > 200) {
-    return "Choice text must not exceed 200 characters";
-  }
-
-  return null;
-};
-
-/**
- * Check for duplicate choices (case-insensitive)
- */
-export const findDuplicateChoices = (choices: Choice[]): string[] => {
-  const groups: { [key: string]: number } = {};
-
-  choices.forEach((choice) => {
-    const key = (choice.text || "").trim().toLowerCase();
-    groups[key] = (groups[key] || 0) + 1;
-  });
-
-  return Object.keys(groups).filter((key) => groups[key] > 1);
-};
-
-/**
- * Validate MCQ choices
+ * Validate MCQ choices (backend: ValidateMcq)
  */
 const validateMcq = (choices: Choice[]): string | null => {
-  if (choices.length !== 4) {
-    return "MCQ must have exactly 4 choices";
-  }
+  const err = ensureChoiceCount(choices, 4, "MCQ must have exactly 4 choices.");
+  if (err) return err;
 
   const correctCount = choices.filter((c) => c.isCorrect).length;
   if (correctCount !== 1) {
-    return "MCQ must have exactly 1 correct answer";
+    return "MCQ must have exactly 1 correct answer.";
   }
 
   return null;
 };
 
 /**
- * Validate MSQ choices
+ * Validate MSQ choices (backend: ValidateMsq)
  */
 const validateMsq = (choices: Choice[]): string | null => {
-  if (choices.length !== 4) {
-    return "MSQ must have exactly 4 choices";
-  }
+  const err = ensureChoiceCount(choices, 4, "MSQ must have exactly 4 choices.");
+  if (err) return err;
 
   const correctCount = choices.filter((c) => c.isCorrect).length;
   if (correctCount < 2) {
-    return "MSQ must have at least 2 correct answers";
+    return "MSQ must have at least 2 correct answers.";
   }
 
   return null;
 };
 
 /**
- * Validate TF choices
+ * Validate TF choices (backend: ValidateTf)
  */
 const validateTf = (choices: Choice[]): string | null => {
-  if (choices.length !== 2) {
-    return "TF question must have exactly 2 choices: True and False";
-  }
+  const err = ensureChoiceCount(
+    choices,
+    2,
+    "TF question must have exactly 2 choices: True and False."
+  );
+  if (err) return err;
 
   const hasTrue = choices.some((c) => c.text?.trim().toLowerCase() === "true");
-  const hasFalse = choices.some(
-    (c) => c.text?.trim().toLowerCase() === "false"
-  );
+  const hasFalse = choices.some((c) => c.text?.trim().toLowerCase() === "false");
 
   if (!hasTrue || !hasFalse) {
-    return "TF question must contain only 'True' and 'False' as choices";
+    return "TF question must contain only 'True' and 'False' as choices.";
   }
 
   const correctCount = choices.filter((c) => c.isCorrect).length;
   if (correctCount !== 1) {
-    return "TF question must have exactly 1 correct answer";
+    return "TF question must have exactly 1 correct answer.";
   }
 
   return null;
 };
 
 /**
- * Validate choices by type
+ * Validate choices by type (backend: ValidateChoiceByType)
  */
-const validateChoiceByType = (
-  type: string,
-  choices: Choice[]
-): string | null => {
+const validateChoiceByType = (type: string, choices: Choice[]): string | null => {
   const typeUpper = type.trim().toUpperCase();
 
   switch (typeUpper) {
@@ -173,47 +117,75 @@ const validateChoiceByType = (
     case "TF":
       return validateTf(choices);
     default:
-      return "Invalid question type. Supported types: MCQ, MSQ, TF";
+      return "Invalid question type. Supported types: MCQ, MSQ, TF.";
   }
 };
 
 /**
- * Validate complete question (matching backend ValidateQuestion)
+ * Validate complete question (matching backend QuestionBusiness.ValidateQuestion)
+ * @param name Question title
+ * @param type Question type (MCQ, MSQ, TF)
+ * @param explanation Optional explanation
+ * @param choices List of choices
+ * @param isUpdate Whether this is an update operation
+ * @param questionId Current question ID (for update validation)
  */
 export const validateQuestion = (
   name: string,
   type: string,
   explanation: string,
-  choices: Choice[]
+  choices: Choice[],
+  isUpdate: boolean = false,
+  questionId?: string
 ): string | null => {
-  // Validate name
-  const nameError = validateQuestionName(name);
-  if (nameError) return nameError;
-
-  // Validate type
-  if (!type || !type.trim()) {
-    return "Question type is missing. Please select MCQ, MSQ, or TF";
+  // Validate question title (backend: string.IsNullOrWhiteSpace(name) || name.Trim().Length > 300)
+  if (!name || name.trim().length === 0) {
+    return "Question title is required and must not exceed 300 characters.";
+  }
+  if (name.trim().length > 300) {
+    return "Question title is required and must not exceed 300 characters.";
   }
 
-  // Validate each choice text
+  // Validate question type (backend: string.IsNullOrWhiteSpace(type))
+  if (!type || type.trim().length === 0) {
+    return "Question type is missing. Please select MCQ, MSQ, or TF.";
+  }
+
+  // Validate each choice text (backend: foreach(var c in choices))
   for (const choice of choices) {
-    const choiceError = validateChoiceText(choice.text);
-    if (choiceError) return choiceError;
+    if (!choice.text || choice.text.trim().length === 0) {
+      return "Each choice must have text content.";
+    }
+    if (choice.text.trim().length > 200) {
+      return "Choice text must not exceed 200 characters.";
+    }
   }
 
-  // Check for duplicates
-  const duplicates = findDuplicateChoices(choices);
+  // Check for duplicate choice texts (backend: GroupBy + Where)
+  const textMap = new Map<string, number>();
+  for (const choice of choices) {
+    const normalizedText = (choice.text || "").trim().toLowerCase();
+    textMap.set(normalizedText, (textMap.get(normalizedText) || 0) + 1);
+  }
+  const duplicates = Array.from(textMap.entries())
+    .filter(([_, count]) => count > 1)
+    .map(([text]) => text);
+
   if (duplicates.length > 0) {
-    return `Duplicate choice texts found: ${duplicates.join(", ")}`;
+    return `Duplicate choice texts found: ${duplicates.join(", ")}.`;
   }
 
-  // Validate choices by type
+  // Validate choices by type (backend: ValidateChoiceByType)
   const typeError = validateChoiceByType(type, choices);
   if (typeError) return typeError;
 
-  // Validate explanation
-  const explanationError = validateExplanation(explanation);
-  if (explanationError) return explanationError;
+  // Validate explanation word count (backend: CountWords(explanation) > 200)
+  if (explanation && explanation.trim().length > 0) {
+    const wordCount = countWords(explanation);
+    if (wordCount > 200) {
+      return "Explanation should be concise (maximum 200 words).";
+    }
+  }
 
   return null;
 };
