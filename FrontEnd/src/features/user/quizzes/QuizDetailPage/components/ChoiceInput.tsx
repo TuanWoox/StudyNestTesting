@@ -28,6 +28,11 @@ export const ChoiceInput: React.FC<ChoiceInputProps> = ({
 }) => {
   const { token } = useToken();
 
+  // Validation states
+  const isEmpty = !choice.text || choice.text.trim().length === 0;
+  const isTooLong = choice.text && choice.text.trim().length > 200;
+  const hasError = isEmpty || isTooLong;
+
   return (
     <div
       style={{
@@ -37,15 +42,23 @@ export const ChoiceInput: React.FC<ChoiceInputProps> = ({
         padding: "12px 16px",
         backgroundColor: choice.isCorrect
           ? token.colorSuccessBg
+          : hasError
+          ? token.colorErrorBg
           : token.colorFillAlter,
         borderRadius: 0,
-        border: choice.isCorrect
+        border: hasError
+          ? `2px solid ${token.colorError}`
+          : choice.isCorrect
           ? `2px solid ${token.colorSuccess}`
           : `1px solid ${token.colorBorder}`,
-        boxShadow: choice.isCorrect
+        boxShadow: hasError
+          ? `4px 4px 0px ${token.colorError}55`
+          : choice.isCorrect
           ? `4px 4px 0px ${token.colorSuccess}55`
           : "none",
-        borderLeft: choice.isCorrect
+        borderLeft: hasError
+          ? `4px solid ${token.colorError}`
+          : choice.isCorrect
           ? `4px solid ${token.colorSuccess}`
           : `4px solid ${token.colorFillSecondary}`,
       }}
@@ -76,11 +89,25 @@ export const ChoiceInput: React.FC<ChoiceInputProps> = ({
         maxLength={200}
         showCount={!disabled && type !== "TF"}
         style={{ flex: 1, fontFamily: "monospace" }}
-        status={!choice.text.trim() ? "error" : undefined}
+        status={hasError ? "error" : undefined}
       />
 
-      {/* Correct label */}
-      {choice.isCorrect && (
+      {/* Validation or Correct label */}
+      {hasError ? (
+        <Text
+          type="danger"
+          style={{
+            fontSize: 12,
+            fontWeight: 600,
+            flexShrink: 0,
+            minWidth: 60,
+            textAlign: "right",
+            fontFamily: "monospace",
+          }}
+        >
+          {isEmpty ? "⚠ Empty" : "⚠ Too long"}
+        </Text>
+      ) : choice.isCorrect ? (
         <Text
           type="success"
           style={{
@@ -94,7 +121,7 @@ export const ChoiceInput: React.FC<ChoiceInputProps> = ({
         >
           ✓ Correct
         </Text>
-      )}
+      ) : null}
     </div>
   );
 };

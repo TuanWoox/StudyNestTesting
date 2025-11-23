@@ -8,6 +8,7 @@ import { QuestionTypeSelector } from "./QuestionTypeSelector";
 import { QuestionTextInput } from "./QuestionTextInput";
 import { ExplanationInput } from "./ExplanationInput";
 import { FormActions } from "./FormActions";
+import { QuestionFormValidation } from "./QuestionFormValidation";
 import {
   validateQuestion,
   getDefaultChoices,
@@ -43,6 +44,9 @@ export const QuestionForm: React.FC<QuestionFormProps> = ({
   const [originalChoicesBeforeTF, setOriginalChoicesBeforeTF] = useState<
     Choice[] | null
   >(null);
+
+  // Show real-time validation after first interaction
+  const [showValidation, setShowValidation] = useState(false);
 
   // Track previous type to detect changes
   const prevTypeRef = useRef<"MCQ" | "MSQ" | "TF">(questionType);
@@ -111,12 +115,14 @@ export const QuestionForm: React.FC<QuestionFormProps> = ({
       const name = values.name?.trim() || "";
       const explanation = values.explanation?.trim() || "";
 
-      // Validate using backend-matching validation
+      // Validate using backend-matching validation (QuestionBusiness.ValidateQuestion)
       const validationError = validateQuestion(
         name,
         questionType,
         explanation,
-        choices
+        choices,
+        !!question, // isUpdate
+        question?.id // questionId for update validation
       );
 
       if (validationError) {
@@ -171,7 +177,19 @@ export const QuestionForm: React.FC<QuestionFormProps> = ({
           type: question?.type || "MCQ",
           explanation: question?.explanation || "",
         }}
+        onChange={() => setShowValidation(true)}
       >
+        {/* Real-time Validation Feedback */}
+        <QuestionFormValidation
+          name={form.getFieldValue("name") || ""}
+          type={questionType}
+          explanation={form.getFieldValue("explanation") || ""}
+          choices={choices}
+          isUpdate={!!question}
+          questionId={question?.id}
+          showValidation={showValidation}
+        />
+
         {/* Question Name */}
         <Form.Item
           name="name"

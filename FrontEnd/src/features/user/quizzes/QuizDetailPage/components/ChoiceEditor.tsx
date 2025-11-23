@@ -46,6 +46,8 @@ export const ChoiceEditor: React.FC<ChoiceEditorProps> = ({
     onChange(newChoices);
   };
 
+  const correctCount = choices.filter((c) => c.isCorrect).length;
+
   return (
     <Space direction="vertical" style={{ width: "100%" }} size={12}>
       <div
@@ -62,9 +64,9 @@ export const ChoiceEditor: React.FC<ChoiceEditorProps> = ({
           type="secondary"
           style={{ fontSize: 12, fontFamily: "monospace" }}
         >
-          {type === "MCQ" && "Select 1 correct answer"}
-          {type === "MSQ" && "Select 2-3 correct answers"}
-          {type === "TF" && "Select 1 correct answer"}
+          {type === "MCQ" && `Select 1 correct answer (${correctCount} selected)`}
+          {type === "MSQ" && `Select 2+ correct answers (${correctCount} selected)`}
+          {type === "TF" && `Select 1 correct answer (${correctCount} selected)`}
         </Text>
       </div>
 
@@ -81,7 +83,7 @@ export const ChoiceEditor: React.FC<ChoiceEditorProps> = ({
       ))}
 
       {/* Validation hints */}
-      <ChoiceValidationHint type={type} />
+      <ChoiceValidationHint type={type} choices={choices} />
     </Space>
   );
 };
