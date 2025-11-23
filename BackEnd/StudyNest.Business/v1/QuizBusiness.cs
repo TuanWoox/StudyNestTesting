@@ -8,6 +8,7 @@ using StudyNest.Business.Hubs;
 using StudyNest.Business.Repository;
 using StudyNest.Common.DbEntities.Entities;
 using StudyNest.Common.Interfaces;
+using StudyNest.Common.Llm;
 using StudyNest.Common.Models.DTOs.CoreDTO;
 using StudyNest.Common.Models.DTOs.EntityDTO.Choice;
 using StudyNest.Common.Models.DTOs.EntityDTO.Question;
@@ -16,11 +17,13 @@ using StudyNest.Common.Models.Paging;
 using StudyNest.Common.Utils.Extensions;
 using StudyNest.Common.Utils.Helper;
 using StudyNest.Data;
+using System.Diagnostics;
 
 namespace StudyNest.Business.v1
 {
     public class QuizBusiness : IQuizBusiness
     {
+        const int MAX_LENGTH = 20000;
         private readonly ILlmQuizGenerator _llm;
         private readonly ApplicationDbContext _context;
         private readonly IUserContext _userContext;
@@ -440,5 +443,34 @@ namespace StudyNest.Business.v1
             }
             return rs;
         }
+
+        public async Task<ReturnResult<bool>> ValidateNoteContent(string noteId)
+        {
+            var rs = new ReturnResult<bool>();
+            try
+            {
+                var note = await _context.Notes
+                    .FirstOrDefaultAsync(n => n.Id == noteId && n.OwnerId == _userContext.UserId);
+
+                if (note is null)
+                {
+                    rs.Message = "The selected note could not be found. Please check and try again.";
+                    return rs;
+                }
+                var (markdown, _) = QuizGenerationPipeline.FlattenEditorJsNote(note.Content, true);
+                rs.Result = markdown.Length <= MAX_LENGTH;
+                if(!rs.Result)
+                {
+                    rs.Message = "The note content is reach 20.000 characters, Please choose another note!";
+                }
+            }
+            catch (Exception ex)
+            {
+                StudyNestLogger.Instance.Error(ex);
+                rs.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
+            }
+            return rs;
+        }   
+
     }
 }

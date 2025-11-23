@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Card, Form, theme } from "antd";
+import { Card, Form, theme, Alert } from "antd";
 import {
   FileOutlined,
   SettingOutlined,
@@ -19,6 +19,7 @@ import type { CreateQuizDTO } from "@/types/quiz/createQuizDTO";
 import useGenerateQuiz from "@/hooks/quizHook/useGenerateQuiz";
 import useGetAllNote from "@/hooks/noteHook/useGetAllNote";
 import { useCollapsibleHeader } from "@/hooks/common/useCollapsibleHeader";
+import useValidateNoteLength from "@/hooks/quizHook/useValidateNoteLength";
 
 const { useToken } = theme;
 
@@ -53,6 +54,9 @@ const QuizGeneration: React.FC = () => {
   // Selection & search state
   const [selectedNoteId, setSelectedNoteId] = useState<string | undefined>();
   const [query, setQuery] = useState("");
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  const { validateNoteLengthAsync, isLoading: isValidating } = useValidateNoteLength();
 
   // Get notes data for selected note
   const { data: notesData } = useGetAllNote();
@@ -64,10 +68,24 @@ const QuizGeneration: React.FC = () => {
   // Navigation
   const next = async () => {
     if (current === 0) {
-      // Ensure a note is selected
-      await form.validateFields(); // validates hidden noteId
+      await form.validateFields();
 
-      // Persist selected note ID and content into createQuiz
+      try {
+        const isValid = await validateNoteLengthAsync(selectedNoteId!);
+        if (!isValid) {
+          setValidationError("The note content is reach 20,000 characters. Please choose another note!");
+          scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+          return;
+        }
+        setValidationError(null);
+      } catch (error: any) {
+        const errorMessage = error?.response?.data?.message || 
+                            "Failed to validate note content. Please try again.";
+        setValidationError(errorMessage);
+        scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
       setCreateQuiz((prev) => ({
         ...prev,
         noteId: selectedNoteId || "",
@@ -150,6 +168,36 @@ const QuizGeneration: React.FC = () => {
 
       {/* Main Content */}
       <div>
+        {/* Info Note - Always visible on step 0 */}
+        {current === 0 && (
+          <Alert
+            message=" Note: Quiz generation only supports notes with content under 20,000 characters."
+            type="info"
+            showIcon={false}
+            style={{
+              margin: "16px 32px",
+              fontFamily: '"Courier New", monospace',
+              fontSize: 15,
+            }}
+          />
+        )}
+
+        {/* Validation Error Alert */}
+        {validationError && current === 0 && (
+          <Alert
+            message="Cannot Generate Quiz"
+            description={validationError}
+            type="error"
+            showIcon
+            closable
+            onClose={() => setValidationError(null)}
+            style={{
+              margin: "16px 32px",
+              fontFamily: '"Courier New", monospace',
+            }}
+          />
+        )}
+
         <Card
           style={{
             width: "100%",
@@ -177,7 +225,7 @@ const QuizGeneration: React.FC = () => {
           <QuizGenerationActions
             current={current}
             totalSteps={steps.length}
-            isLoading={isLoading}
+            isLoading={isLoading || isValidating}
             isMobile={isMobile}
             onPrev={prev}
             onNext={next}
