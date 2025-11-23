@@ -39,6 +39,7 @@ namespace StudyNest.Business.Repository
             services.AddScoped<IQuestionBusiness, QuestionBusiness>();
             services.AddScoped<IQuizJobBusiness, QuizJobBusiness>();
             services.AddScoped<IQuizStatisticsBusiness, QuizStatisticsBusiness>();
+            services.AddScoped<IFeedBackBusiness, FeedBackBusiness>();
             return services;
         }
     }

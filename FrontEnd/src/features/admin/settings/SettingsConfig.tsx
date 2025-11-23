@@ -28,6 +28,8 @@ import useDeleteSelectedSettings from "@/hooks/settingHook/useDeleteSelectedSett
 import { Page } from "@/types/common/page";
 import { useTableControls } from "@/hooks/common/useTableControls";
 import SmartTable from "@/components/SmartTable/SmartTable";
+import CustomFilterDropDown from "@/components/CustomFilterDropDown/CustomFilterDropDown";
+import { getFilteredValue } from "@/utils/getFilteredValue";
 
 const SettingsConfig: React.FC = () => {
     const { borderColor, shadowColor, bgColor, textColor } = useAntDesignTheme();
@@ -89,10 +91,10 @@ const SettingsConfig: React.FC = () => {
             const values = await form.validateFields();
 
             if (editing) {
-                let payload: UpdateSettingDTO = { id: editing.id, ...values };
+                const payload: UpdateSettingDTO = { id: editing.id, ...values };
                 updateSetting(payload, { onSuccess: () => setIsModalOpen(false) });
             } else {
-                let payload: CreateSettingDTO = { id: "", ...values };
+                const payload: CreateSettingDTO = { id: "", ...values };
                 createSetting(payload, { onSuccess: () => setIsModalOpen(false) });
             }
 
@@ -149,47 +151,6 @@ const SettingsConfig: React.FC = () => {
         }
     };
 
-    /** ---------------- TABLE COLUMNS ---------------- */
-    const customFilterDropdown =
-        (dataIndex: string) =>
-            (props: FilterDropdownProps) => {
-                const { setSelectedKeys, selectedKeys, confirm, clearFilters } = props;
-
-                return (
-                    <div style={{ padding: 8 }}>
-                        <Input
-                            placeholder={`Search ${dataIndex}`}
-                            value={selectedKeys?.[0] as string}
-                            onChange={(e) =>
-                                setSelectedKeys(e.target.value ? [e.target.value] : [])
-                            }
-                            onPressEnter={() => confirm()}
-                            style={{ width: 188, marginBottom: 8, display: "block" }}
-                        />
-                        <Space>
-                            <Button
-                                type="primary"
-                                onClick={() => confirm()}
-                                size="small"
-                                style={{ width: 90 }}
-                            >
-                                Search
-                            </Button>
-                            <Button
-                                onClick={() => {
-                                    clearFilters?.();
-                                    confirm();
-                                }}
-                                size="small"
-                                style={{ width: 90 }}
-                            >
-                                Reset
-                            </Button>
-                        </Space>
-                    </div>
-                );
-            };
-
     // ----------------- FULL COLUMNS (typed) -----------------
     const columns: ColumnsType<SettingDTO> = [
         {
@@ -199,8 +160,10 @@ const SettingsConfig: React.FC = () => {
             width: 240,
             sorter: (a, b) => a.group.localeCompare(b.group),
             sortDirections: ["ascend", "descend"] as SortOrder[],
-            filterDropdown: customFilterDropdown("key"),
-            filteredValue: tableControls.filters.find(f => f.prop === "key") ? [tableControls.filters.find(f => f.prop === "key")!.value] : null,
+            filterDropdown: (props) => (
+                <CustomFilterDropDown {...props} dataIndex="key" />
+            ),
+            filteredValue: getFilteredValue(tableControls.filters, "key"),
         },
         {
             title: "Group",
@@ -209,8 +172,10 @@ const SettingsConfig: React.FC = () => {
             width: 160,
             sorter: (a, b) => a.group.localeCompare(b.group),
             sortDirections: ["ascend", "descend"] as SortOrder[],
-            filterDropdown: customFilterDropdown("group"),
-            filteredValue: tableControls.filters.find(f => f.prop === "group") ? [tableControls.filters.find(f => f.prop === "group")!.value] : null,
+            filterDropdown: (props) => (
+                <CustomFilterDropDown {...props} dataIndex="group" />
+            ),
+            filteredValue: getFilteredValue(tableControls.filters, "group")
         },
         {
             title: "Value",
@@ -218,8 +183,10 @@ const SettingsConfig: React.FC = () => {
             key: "value",
             sorter: (a, b) => (a.value ?? "").localeCompare(b.value ?? ""),
             sortDirections: ["ascend", "descend"] as SortOrder[],
-            filterDropdown: customFilterDropdown("value"),
-            filteredValue: tableControls.filters.find(f => f.prop === "value") ? [tableControls.filters.find(f => f.prop === "value")!.value] : null,
+            filterDropdown: (props) => (
+                <CustomFilterDropDown {...props} dataIndex="value" />
+            ),
+            filteredValue: getFilteredValue(tableControls.filters, "value"),
             render: (v: any) => (
                 <pre style={{ margin: 0, whiteSpace: "pre-wrap" }}>{v}</pre>
             ),
@@ -231,8 +198,10 @@ const SettingsConfig: React.FC = () => {
             sorter: (a, b) =>
                 (a.description ?? "").localeCompare(b.description ?? ""),
             sortDirections: ["ascend", "descend"] as SortOrder[],
-            filterDropdown: customFilterDropdown("description"),
-            filteredValue: tableControls.filters.find(f => f.prop === "description") ? [tableControls.filters.find(f => f.prop === "description")!.value] : null,
+            filterDropdown: (props) => (
+                <CustomFilterDropDown {...props} dataIndex="description" />
+            ),
+            filteredValue: getFilteredValue(tableControls.filters, "description"),
         },
         {
             title: "Level",
