@@ -1,16 +1,19 @@
 import React from "react";
 import { Card, Space, Button, Typography, ConfigProvider, theme } from "antd";
-import { ExclamationCircleOutlined, HomeOutlined, MoonOutlined, SunOutlined } from "@ant-design/icons";
+import { HomeOutlined, MoonOutlined, SunOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
 import { useReduxDispatch } from "@/hooks/reduxHook/useReduxDispatch";
 import { toggleDarkMode, selectDarkMode } from "@/store/themeSlice";
 import useAntDesignTheme from "@/hooks/common/useAntDesignTheme";
+import logo from "@/assets/404.svg";
+import logoDarkMode from "@/assets/404_darkmode.svg";
 
 const { Title, Text } = Typography;
 
 const NotFoundComponent: React.FC = () => {
     const { primaryColor, borderColor, shadowColor, bgColor } = useAntDesignTheme();
+    const darkMode = useReduxSelector(selectDarkMode);
     const navigate = useNavigate();
 
     return (
@@ -39,7 +42,15 @@ const NotFoundComponent: React.FC = () => {
                         className="w-full text-center py-10 sm:py-12 lg:py-16"
                         style={{ alignItems: "center" }}
                     >
-                        <ExclamationCircleOutlined style={{ fontSize: 64, color: primaryColor }} />
+                        <img
+                            src={darkMode ? logoDarkMode : logo}
+                            alt="404"
+                            style={{
+                                width: 120,
+                                height: "auto",
+                                userSelect: "none",
+                            }}
+                        />
                         <div style={{ maxWidth: 720 }}>
                             <Title
                                 level={2}
@@ -49,7 +60,7 @@ const NotFoundComponent: React.FC = () => {
                                     fontWeight: 600,
                                 }}
                             >
-                                404 — Page Not Found
+                                Page Not Found
                             </Title>
                             <Text
                                 type="secondary"
