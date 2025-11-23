@@ -57,6 +57,7 @@ const QuizStatistics = forwardRef<QuizStatisticsRef, QuizStatisticsProps>(
                 onClose={() => setIsOpen(false)}
                 cancelText="Close"
                 customStyles={customModalStyles}
+                width="95%"
             >
                 <div className="m-4 space-y-4">
                     {/* Ant Design Title + Subtitle */}

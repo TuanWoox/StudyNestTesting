@@ -8,9 +8,12 @@ import { useReduxDispatch } from "@/hooks/reduxHook/useReduxDispatch";
 import { useNavigate } from "react-router-dom";
 import { ERole } from "@/utils/enums/ERole";
 import { useAntDesignTheme } from "@/hooks/common";
+import logo from "@/assets/logo.svg";
+import logoDarkmode from "@/assets/logo_darkmode.svg";
 
 const HomePage: React.FC = () => {
-    const { token, borderColor, shadowColor, bgColor } = useAntDesignTheme();
+    const { token, borderColor, shadowColor, bgColor, textColor } = useAntDesignTheme();
+    const darkMode = useReduxSelector(selectDarkMode);
     const role = useReduxSelector(selectRole); // nếu user logged in, role tồn tại
     const navigate = useNavigate();
 
@@ -41,8 +44,8 @@ const HomePage: React.FC = () => {
             className="w-full flex flex-col items-center justify-center"
             style={{
                 fontFamily: "'IBM Plex Mono', monospace",
-                backgroundColor: token.colorBgLayout,
-                color: token.colorText
+                backgroundColor: bgColor,
+                color: textColor
             }}
         >
 
@@ -53,24 +56,24 @@ const HomePage: React.FC = () => {
                     position: "sticky",
                     top: 0,
                     zIndex: 50,
-                    borderBottom: `1.5px solid ${token.colorPrimary}E0`,
+                    borderBottom: `1.5px solid ${borderColor}`,
                     backgroundColor: `${token.colorBgLayout}DD`,
                 }}
             >
                 {/* Logo */}
                 <div className="flex items-center space-x-2">
                     <div
-                        className="flex items-center justify-center w-8 h-8 text-white"
-                        style={{
-                            backgroundColor: token.colorPrimary,
-                            boxShadow: `2px 2px 0 ${token.colorPrimary}55`,
-                        }}
+                        className="flex items-center justify-center w-7 h-7 overflow-hidden"
                     >
-                        <RobotOutlined />
+                        <img
+                            src={darkMode ? logoDarkmode : logo}
+                            alt="logo"
+                            className="w-full h-full object-contain"
+                        />
                     </div>
                     <h1
                         className="text-xl sm:text-2xl font-bold"
-                        style={{ color: token.colorPrimary }}
+                        style={{ color: token.colorText }}
                     >
                         Study Nest
                     </h1>

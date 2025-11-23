@@ -21,9 +21,9 @@ import QuizDetailPage from "./features/user/quizzes/QuizDetailPage/QuizDetailPag
 import QuizView from "./features/user/quizzes/QuizAttempt/QuizAttemptView";
 import QuizResultView from "./features/user/quizzes/QuizAttemptResult/QuizResultView";
 import QuizHistory from "./features/user/quizzes/QuizHistory/QuizHistory";
-import ProfilePage from "./features/user/profile/ProfilePage";
-import ChangePassword from "./features/user/ChangePassword";
-import Feedbacks from "./features/user/feedbacks/Feedbacks/FeedBacks";
+import ChangePassword from "./features/user/changePassword/ChangePassword";
+import Feedbacks from "./features/user/feedbacks/Feedbacks/Feedbacks";
+import { NotFoundPage } from "./components/NotFoundPage/NotFoundPage";
 
 // Admin features
 import SettingsConfig from "./features/admin/settings/SettingsConfig";
@@ -67,7 +67,9 @@ export const router = createBrowserRouter([
     ],
   },
   {
-    path: "/homepage",
-    element: <LandingPage />,
+    path: "/homepage", element: <LandingPage />,
   },
+  {
+    path: "*", element: <NotFoundPage />
+  }
 ]);
