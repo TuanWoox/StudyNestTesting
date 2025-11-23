@@ -5,7 +5,7 @@ import useAuthRedirect from "@/hooks/authHook/useAuthRedirect";
 const AdminLayout = () => {
     const canRender = useAuthRedirect(ERole.Admin);
 
-    if (!canRender) return null;
+    if (!canRender) return <div />;
 
     return <InnerLayout role={ERole.Admin} />;
 };

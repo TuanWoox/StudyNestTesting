@@ -11,9 +11,11 @@ const useUpdateFeedback = () => {
     const mutation = useMutation<FeedBackDTO, AxiosError, UpdateFeedBackDTO>({
         mutationKey: ["updateFeedback"],
         mutationFn: (payload) => feedbackService.updateFeedBack(payload),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["feedbacks"] });
-            toast.success("Feedback successfully updated!");
+        onSuccess: (data) => {
+            if (data) {
+                queryClient.invalidateQueries({ queryKey: ["feedbacks"] });
+                toast.success("Feedback successfully updated!");
+            }
         },
         onError: (err) => {
             console.error("Error updating feedback:", err);
