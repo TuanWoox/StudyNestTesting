@@ -102,8 +102,6 @@ const NotesPage: React.FC = () => {
 
     const [isEditorVisible, setIsEditorVisible] = useState(false);
 
-    if (errorNotes || errorFolders || errorTags) return <div className="p-4 text-red-500">Failed to load folders.</div>;
-
     const handleCreateNote = (folder?: Folder) => {
         const newNote: Note = {
             id: `note-${Date.now()}`,
@@ -176,7 +174,7 @@ const NotesPage: React.FC = () => {
         }
     }, [tagData, tagPage, tagPageSize]);
 
-
+    if (errorNotes || errorFolders || errorTags) return <div className="p-4 text-red-500">Failed to load folders.</div>;
     return (
         <div
             className={`flex flex-1 min-h-0 overflow-hidden transition-colors duration-300 ${darkMode ? "bg-[#0f0f0f] text-gray-100" : "bg-gray-50 text-gray-900"
