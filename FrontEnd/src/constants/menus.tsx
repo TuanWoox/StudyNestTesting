@@ -8,10 +8,9 @@ import {
 } from '@ant-design/icons';
 
 export const adminMenus = [
-    { path: '/admin/dashboard', name: 'Dashboard', icon: <DashboardOutlined /> },
-    { path: '/admin/users', name: 'Users', icon: <UserOutlined /> },
-    { path: '/admin/feedback', name: 'Feedback', icon: <MessageOutlined /> },
     { path: '/admin/settings', name: 'Settings', icon: <SettingOutlined /> },
+    { path: '/admin/feedbacks', name: 'Feedback', icon: <MessageOutlined /> },
+
 ];
 
 export const userMenus = [

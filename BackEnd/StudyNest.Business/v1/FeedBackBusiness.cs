@@ -37,7 +37,12 @@ namespace StudyNest.Business.v1
             ReturnResult<PagedData<SelectFeedBackDTO,string>> result = new ReturnResult<PagedData<SelectFeedBackDTO,string>>();
             try
             {
-                var query = _context.FeedBacks.Where(x => x.UserId == _userContext.UserId);
+                var query = _context.FeedBacks.AsQueryable().AsNoTracking();
+                if (!this._userContext.IsAdmin)
+                {
+                    query = _context.FeedBacks.Where(x => x.UserId == _userContext.UserId);
+                }
+                query = query.Include(x => x.User);
                 result.Result = await _repository.GetPagingAsync<Page<string>, SelectFeedBackDTO>(query,page,isExported);
             }
             catch(Exception ex)
@@ -83,10 +88,24 @@ namespace StudyNest.Business.v1
             ReturnResult<FeedBackDTO> result = new ReturnResult<FeedBackDTO>();
             try
             {
-                var existingFeedBack = await _context.FeedBacks.Where(x => x.Id == updateFeedBackDTO.Id 
-                                                                        && x.UserId == _userContext.UserId
-                                                                        && x.Status == FeedBackStatus.Pending
-                                                                        ).FirstOrDefaultAsync();
+                if (_userContext.IsAdmin
+                    && updateFeedBackDTO.Status == FeedBackStatus.Rejected
+                    && string.IsNullOrEmpty(updateFeedBackDTO.RejectedReason))
+                {
+                    result.Message  = "Rejected reason cannot be empty";
+                    return result;
+                }
+
+                var existingFeedBackQuery = _context.FeedBacks.Where(x => x.Id == updateFeedBackDTO.Id).AsQueryable();
+                
+                if(!this._userContext.IsAdmin)
+                {
+                    existingFeedBackQuery.Where(x => x.UserId == _userContext.UserId
+                                                     && x.Status == FeedBackStatus.Pending);
+                }
+
+                var existingFeedBack = await existingFeedBackQuery.FirstOrDefaultAsync();
+
                 if (existingFeedBack == null)
                 {
                     result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "feedback", updateFeedBackDTO.Id);
@@ -96,6 +115,12 @@ namespace StudyNest.Business.v1
                     existingFeedBack.Rating = updateFeedBackDTO.Rating;
                     existingFeedBack.Category = updateFeedBackDTO.Category;
                     existingFeedBack.Description = updateFeedBackDTO.Description;
+                    if(this._userContext.IsAdmin)
+                    {
+                        //Only admin can update these field
+                        existingFeedBack.Status = updateFeedBackDTO.Status!;
+                        existingFeedBack.RejectedReason = updateFeedBackDTO.RejectedReason;
+                    }
                     var updatedResult = await _repository.UpdateAsync(existingFeedBack);
                     if (updatedResult.Message == null)
                     {
@@ -119,10 +144,12 @@ namespace StudyNest.Business.v1
             ReturnResult<bool> result = new ReturnResult<bool>();
             try
             {
-                var existingFeedBack = await _context.FeedBacks.Where(x => x.Id == id
-                                                                && x.UserId == _userContext.UserId 
-                                                                && x.Status == FeedBackStatus.Pending)
-                                                                .FirstOrDefaultAsync();
+                var existingFeedBackQuery = _context.FeedBacks.Where(x => x.Id == id).AsNoTracking().AsQueryable();
+                if (!this._userContext.IsAdmin)
+                {
+                    existingFeedBackQuery = existingFeedBackQuery.Where(x => x.Status == FeedBackStatus.Pending && x.UserId == _userContext.UserId);
+                }
+                var existingFeedBack = await existingFeedBackQuery.FirstOrDefaultAsync();
                 if (existingFeedBack == null)
                 {
                     result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "feedback", id);
@@ -144,17 +171,19 @@ namespace StudyNest.Business.v1
             ReturnResult<int> result = new ReturnResult<int>();
             try
             {
-                var existingFeedBacks = await _context.FeedBacks.Where(x => ids.Contains(x.Id) 
-                                                                && x.UserId == _userContext.UserId
-                                                                && x.Status == FeedBackStatus.Pending
-                                                                ).ToListAsync();
+                var existingFeedBacksQuery = _context.FeedBacks.Where(x => ids.Contains(x.Id)).AsNoTracking().AsQueryable();
+                if(!this._userContext.IsAdmin)
+                {
+                    existingFeedBacksQuery = existingFeedBacksQuery.Where(x => x.Status == FeedBackStatus.Pending && x.UserId == _userContext.UserId);
+                }
+                var existingFeedBacks = await existingFeedBacksQuery.ToListAsync();
                 if (!existingFeedBacks.Any())
                 {
                     result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "feedback", string.Join(", ", ids));
                 }
                 else
                 {
-                    result = await _repository.DeleteByIdsAsync(ids);
+                    result = await _repository.DeleteByIdsAsync(existingFeedBacks.Select(x => x.Id).ToList());
                 }
             }
             catch(Exception ex)

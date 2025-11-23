@@ -1,4 +1,5 @@
 ﻿using StudyNest.Common.Attributes;
+using StudyNest.Common.Utils.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,5 +17,8 @@ namespace StudyNest.Common.Models.DTOs.EntityDTO.FeedBack
         public string Category { get; set; }
         [TrimmedRequired]
         public string Description { get; set; }
+        public FeedBackStatus Status { get; set; } = FeedBackStatus.Pending;
+        [Trim]
+        public string? RejectedReason { get; set; }
     }
 }
