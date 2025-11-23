@@ -37,7 +37,9 @@ const StudynestModal: React.FC<StudynestModalProps> = ({
             onCancel={onClose}
             footer={
                 customFooter ? (
-                    customFooter
+                    <div className="flex justify-end gap-2 mb-4 mr-4 ml-4">
+                        {customFooter}
+                    </div>
                 ) : (
                     <StudynestModalDefaultFooter
                         onClose={onClose}

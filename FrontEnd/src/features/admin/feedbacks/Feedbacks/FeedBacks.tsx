@@ -15,6 +15,8 @@ import { SortOrderType } from "@/constants/sortOrderType";
 import { EFeedBackStatus } from "@/utils/enums/EFeedBackStatus";
 import FeedBackCreateEdit, { FeedBackCreateEditRef } from "./component/FeedBackCreateEdit";
 import useUpdateFeedback from "@/hooks/feedbackHook/useUpdateFeedBack";
+import { UpdateFeedBackDTO } from "@/types/feedback/updateFeedBackDTO";
+import FeedBackRejectReason, { FeedBackRejectModalRef } from "./component/FeedBackRejectReason";
 import FeedBackDeleteModal, { FeedBackDeleteRef } from "./component/FeedBackDeleteModal";
 import FeedBackBulkDeleteModal, { FeedBackBulkDeleteRef } from "./component/FeedBackBulkDeleteModal";
 
@@ -28,6 +30,7 @@ const Feedbacks = () => {
     const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
     const tableControls = useTableControls();
 
+    const rejectModalRef = useRef<FeedBackRejectModalRef>(null);
     const createEditModalRef = useRef<FeedBackCreateEditRef>(null);
     const deleteRef = useRef<FeedBackDeleteRef>(null);
     const bulkDeleteRef = useRef<FeedBackBulkDeleteRef>(null);
@@ -45,6 +48,9 @@ const Feedbacks = () => {
             setTotal(settingData.page.totalElements);
         }
     }, [settingData]);
+
+    /** ---------------- HOOKS: CRUD ---------------- */
+    const { updateFeedback } = useUpdateFeedback();
 
     /** ---------------- TABLE COLUMNS ---------------- */
     const columns: ColumnsType<FeedBackDTO> = [
@@ -92,8 +98,17 @@ const Feedbacks = () => {
             sorter: (a, b) => a.status - b.status,
             sortDirections: ["ascend", "descend"] as SortOrder[],
             render: (status: EFeedBackStatus, record: FeedBackDTO) => {
+                const handleChange = (value: EFeedBackStatus) => {
+                    if (value === EFeedBackStatus.Rejected) {
+                        rejectModalRef.current?.open(record); // use record from closure
+                    } else {
+                        const payload: UpdateFeedBackDTO = { ...record, status: value };
+                        updateFeedback(payload);
+                    }
+                };
+
                 return (
-                    <Select value={status} style={{ width: 120 }} disabled={true}>
+                    <Select value={status} style={{ width: 120 }} onChange={handleChange}>
                         <Option value={EFeedBackStatus.Pending}>Pending</Option>
                         <Option value={EFeedBackStatus.InQueue}>In Queue</Option>
                         <Option value={EFeedBackStatus.Done}>Done</Option>
@@ -179,6 +194,10 @@ const Feedbacks = () => {
                 ref={bulkDeleteRef}
                 totalItems={total}
                 tableControls={tableControls}
+            />
+
+            <FeedBackRejectReason
+                ref={rejectModalRef}
             />
         </div>
     );

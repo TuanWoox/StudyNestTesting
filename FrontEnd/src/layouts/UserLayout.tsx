@@ -5,7 +5,7 @@ import useAuthRedirect from "@/hooks/authHook/useAuthRedirect";
 const UserLayout = () => {
     const canRender = useAuthRedirect(ERole.User);
 
-    if (!canRender) return null;
+    if (!canRender) return <div />;
 
     return <InnerLayout role={ERole.User} />;
 };

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using StudyNest.Common.DbEntities.BaseEntity;
+using StudyNest.Common.DbEntities.Identities;
 using StudyNest.Common.Utils.Enums;
 using System;
 using System.Collections.Generic;
@@ -17,6 +18,13 @@ namespace StudyNest.Common.Models.DTOs.EntityDTO.FeedBack
         public string Description { get; set; }
         public string UserId { get; set; }
         public FeedBackStatus Status { get; set; } = FeedBackStatus.Pending;
+        public ApplicationUserDTO User { get; set; }
         public string? RejectedReason { get; set; }
+    }
+
+    [AutoMap(typeof(ApplicationUser), ReverseMap = true, PreserveReferences = true)]
+    public class ApplicationUserDTO
+    {
+        public string Email { get; set; }
     }
 }

@@ -1,31 +1,33 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 
+// Layouts
 import CenterLayout from "./layouts/CenterLayout";
+import UserLayout from "./layouts/UserLayout";
+import AdminLayout from "./layouts/AdminLayout";
 
-// Auth features
+// Guest features
+import EntryComponent from "./features/guest/Entry/EntryComponent";
 import Login from "./features/guest/Login/Login";
 import Register from "./features/guest/Register/Register";
+import ForgotPassword from "./features/guest/ForgotPassword/ForgotPassword";
+import ResetPassword from "./features/guest/ResetPassword/ResetPassword";
+import { LandingPage } from "./features/guest/HomePage/HomePage";
 
 // User features
 import NotesPage from "./features/user/notes/Notes/NotesPage";
 import Quizzes from "./features/user/quizzes/Quizzes/Quizzes";
-// Admin features
-import AdminFeedback from "./features/admin/ManageFeedback";
-import SettingsConfig from "./features/admin/settings/SettingsConfig";
 import QuizGeneration from "./features/user/quizzes/QuizGeneration/QuizGeneration";
 import QuizDetailPage from "./features/user/quizzes/QuizDetailPage/QuizDetailPage";
 import QuizView from "./features/user/quizzes/QuizAttempt/QuizAttemptView";
 import QuizResultView from "./features/user/quizzes/QuizAttemptResult/QuizResultView";
 import QuizHistory from "./features/user/quizzes/QuizHistory/QuizHistory";
-import { LandingPage } from "./features/guest/HomePage/HomePage";
-import UserLayout from "./layouts/UserLayout";
-import AdminLayout from "./layouts/AdminLayout";
-import EntryComponent from "./features/guest/Entry/EntryComponent";
 import ProfilePage from "./features/user/profile/ProfilePage";
 import ChangePassword from "./features/user/ChangePassword";
-import ForgotPassword from "./features/guest/ForgotPassword/ForgotPassword";
-import ResetPassword from "./features/guest/ResetPassword/ResetPassword";
 import Feedbacks from "./features/user/feedbacks/Feedbacks/FeedBacks";
+
+// Admin features
+import SettingsConfig from "./features/admin/settings/SettingsConfig";
+import AdminFeedBacks from "./features/admin/feedbacks/Feedbacks/FeedBacks";
 
 export const router = createBrowserRouter([
   {
@@ -61,10 +63,11 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/admin/settings" /> },
       { path: "settings", element: <SettingsConfig /> },
-      { path: "feedback", element: <AdminFeedback /> },
+      { path: "feedbacks", element: <AdminFeedBacks /> },
     ],
   },
   {
-    path: "/homepage", element: <LandingPage />,
-  }
+    path: "/homepage",
+    element: <LandingPage />,
+  },
 ]);

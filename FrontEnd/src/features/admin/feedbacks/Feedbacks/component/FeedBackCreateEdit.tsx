@@ -80,25 +80,20 @@ const FeedBackCreateEdit = forwardRef<FeedBackCreateEditRef, FeedBackCreateEditP
             }
         }, [currentEditing, form]);
 
-        const isEditable = !currentEditing || currentEditing.status === EFeedBackStatus.Pending;
-
         return (
             <StudynestModal
                 title={currentEditing ? "Edit Feedback" : "Create New Feedback"}
                 visible={visible}
                 onClose={() => setVisible(false)}
                 customFooter={
-                    isEditable ? (
-                        <ActionButtons
-                            onSave={handleSave}
-                            onClose={() => setVisible(false)}
-                            isCreating={isCreating}
-                            isUpdating={isUpdating}
-                            confirmBeforeClose
-                        />
-                    ) : null
+                    <ActionButtons
+                        onSave={handleSave}
+                        onClose={() => setVisible(false)}
+                        isCreating={isCreating}
+                        isUpdating={isUpdating}
+                        confirmBeforeClose
+                    />
                 }
-                cancelText="Close"
                 customStyles={customStyles}
             >
                 <Form form={form} layout="vertical">
@@ -107,7 +102,7 @@ const FeedBackCreateEdit = forwardRef<FeedBackCreateEditRef, FeedBackCreateEditP
                         name="category"
                         rules={[{ required: true, message: "Please select a category" }]}
                     >
-                        <Select placeholder="Select a category" disabled={!isEditable}>
+                        <Select placeholder="Select a category">
                             {categories.map((cat) => (
                                 <Select.Option key={cat} value={cat}>
                                     {cat}
@@ -121,7 +116,7 @@ const FeedBackCreateEdit = forwardRef<FeedBackCreateEditRef, FeedBackCreateEditP
                         name="rating"
                         rules={[{ required: true, message: "Please provide a rating" }]}
                     >
-                        <Rate disabled={!isEditable} />
+                        <Rate />
                     </Form.Item>
 
                     <Form.Item
@@ -129,22 +124,38 @@ const FeedBackCreateEdit = forwardRef<FeedBackCreateEditRef, FeedBackCreateEditP
                         name="description"
                         rules={[{ required: true, message: "Please enter a description" }]}
                     >
-                        <Input.TextArea
-                            rows={4}
-                            placeholder="Enter feedback description"
-                            disabled={!isEditable}
-                        />
+                        <Input.TextArea rows={4} placeholder="Enter feedback description" />
                     </Form.Item>
 
-                    {currentEditing?.status === EFeedBackStatus.Rejected && (
-                        <Form.Item label="Rejected Reason" name="rejectedReason">
-                            <Input.TextArea
-                                rows={2}
-                                placeholder="Enter rejected reason"
-                                style={{ color: "#DC2626" }}
-                                disabled
-                            />
-                        </Form.Item>
+                    {currentEditing && (
+                        <>
+                            <Form.Item label="Status" name="status">
+                                <Select
+                                    value={status}
+                                    onChange={(value: EFeedBackStatus) => setStatus(value)}
+                                    placeholder="Select status"
+                                >
+                                    <Select.Option value={EFeedBackStatus.Pending}>Pending</Select.Option>
+                                    <Select.Option value={EFeedBackStatus.InQueue}>In Queue</Select.Option>
+                                    <Select.Option value={EFeedBackStatus.Done}>Done</Select.Option>
+                                    <Select.Option value={EFeedBackStatus.Rejected}>Rejected</Select.Option>
+                                </Select>
+                            </Form.Item>
+
+                            {status === EFeedBackStatus.Rejected && (
+                                <Form.Item
+                                    label="Rejected Reason"
+                                    name="rejectedReason"
+                                    rules={[{ required: true, message: "Please provide a rejected reason" }]}
+                                >
+                                    <Input.TextArea
+                                        rows={2}
+                                        placeholder="Enter rejected reason"
+                                        style={{ color: "#DC2626" }}
+                                    />
+                                </Form.Item>
+                            )}
+                        </>
                     )}
                 </Form>
             </StudynestModal>

@@ -7,5 +7,11 @@ export interface FeedBackDTO extends BaseEntity<string> {
     description: string;
     userId: string;
     status: EFeedBackStatus;
+    user: ApplicationUserDTO;
     rejectedReason?: string;
+}
+
+
+interface ApplicationUserDTO {
+    email: string;
 }
