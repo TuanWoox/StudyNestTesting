@@ -26,6 +26,10 @@ import { LandingPage } from "./features/guest/HomePage/HomePage";
 import UserLayout from "./layouts/UserLayout";
 import AdminLayout from "./layouts/AdminLayout";
 import EntryComponent from "./features/guest/Entry/EntryComponent";
+import ProfilePage from "./features/user/profile/ProfilePage";
+import ChangePassword from "./features/user/ChangePassword";
+import ForgotPassword from "./features/guest/ForgotPassword/ForgotPassword";
+import ResetPassword from "./features/guest/ResetPassword/ResetPassword";
 
 export const router = createBrowserRouter([
   {
@@ -35,6 +39,8 @@ export const router = createBrowserRouter([
       { index: true, element: <EntryComponent /> },
       { path: "login", element: <Login /> },
       { path: "register", element: <Register /> },
+      { path: "forgot-password", element: <ForgotPassword /> },
+      { path: "reset-password", element: <ResetPassword /> },
     ],
   },
   {
@@ -51,6 +57,7 @@ export const router = createBrowserRouter([
       { path: "quiz/quizAttemptResult/:id", element: <QuizResultView /> },
       { path: "analytics", element: <Analytics /> },
       { path: "feedback", element: <Feedback /> },
+      { path: "change-password", element: <ChangePassword /> },
     ],
   },
   {

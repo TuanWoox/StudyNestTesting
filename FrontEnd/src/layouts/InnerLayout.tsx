@@ -4,6 +4,7 @@ import {
   UserOutlined,
   SettingOutlined,
   LogoutOutlined,
+  LockOutlined,
 } from "@ant-design/icons";
 import {
   Avatar,
@@ -65,6 +66,7 @@ const InnerLayout: React.FC<InnerLayoutProps> = ({
 
   const layoutTitle = role === ERole.Admin ? "Admin Panel" : "Study Nest";
   const menus = role === ERole.Admin ? adminMenus : userMenus;
+  const path = role === ERole.Admin ? "admin" : "user";
 
   const handleLogout = () => {
     dispatch(logOut());
@@ -77,10 +79,10 @@ const InnerLayout: React.FC<InnerLayoutProps> = ({
     <Menu
       items={[
         {
-          key: "profile",
-          icon: <UserOutlined />,
-          label: "Profile",
-          onClick: () => navigate("/profile"),
+          key: "change-password",
+          icon: <LockOutlined />,
+          label: "Change Password",
+          onClick: () => navigate(`/${path}/change-password`),
         },
         {
           key: "settings",
@@ -104,7 +106,7 @@ const InnerLayout: React.FC<InnerLayoutProps> = ({
       theme={{
         algorithm: darkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
         token: {
-          fontFamily: "'Courier New', monospace",
+          fontFamily: "monospace",
           colorPrimary: darkMode ? "#818CF8" : "#3b5bdb",
           colorPrimaryBg: darkMode ? "#1A1A1A" : "#FCFCFC",
           colorText: darkMode ? "#E5E7EB" : "#3b5bdb",
