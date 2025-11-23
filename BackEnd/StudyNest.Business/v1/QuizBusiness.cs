@@ -458,7 +458,6 @@ namespace StudyNest.Business.v1
                     return rs;
                 }
                 var (markdown, _) = QuizGenerationPipeline.FlattenEditorJsNote(note.Content, true);
-                Debug.WriteLine(markdown);
                 rs.Result = markdown.Length <= MAX_LENGTH;
                 if(!rs.Result)
                 {

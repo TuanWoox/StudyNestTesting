@@ -494,9 +494,8 @@ namespace StudyNest.Common.Llm
                                 {
                                     if (compact)
                                     {
-                                        // Compact: Rút gọn code, chỉ lấy vài dòng đầu
                                         var lines = code.Split('\n');
-                                        var preview = string.Join(" ");
+                                        var preview = string.Join(" ", lines);
                                         sb.Append($"Code: {preview}{blockSeparator}");
                                     }
                                     else
