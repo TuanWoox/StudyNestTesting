@@ -299,13 +299,12 @@ namespace StudyNest.Common.Llm
         }
 
         /// <summary>Flatten Editor.js JSON into markdown text + collect image URLs.</summary>
-        public static (string markdown, List<string> imageUrls) FlattenEditorJsNote(string noteJson)
+        public static (string markdown, List<string> imageUrls) FlattenEditorJsNote(string noteJson, bool compact = false)
         {
             if (string.IsNullOrWhiteSpace(noteJson))
                 return ("", new());
-            var trimmed = noteJson.Trim();
 
-            // 1) Nếu không mở đầu bằng { hoặc [, coi như plain text
+            var trimmed = noteJson.Trim();
             if (trimmed.Length == 0 || (trimmed[0] != '{' && trimmed[0] != '['))
                 return (trimmed, new());
 
@@ -315,12 +314,13 @@ namespace StudyNest.Common.Llm
                 if (!doc.RootElement.TryGetProperty("blocks", out var blocks) ||
                     blocks.ValueKind != JsonValueKind.Array)
                 {
-                    // Không đúng format Editor.js → coi như plain text
                     return (trimmed, new());
                 }
 
                 var sb = new StringBuilder();
                 var images = new List<string>();
+
+                string blockSeparator = compact ? "\n" : "\n\n";
 
                 foreach (var block in blocks.EnumerateArray())
                 {
@@ -333,68 +333,61 @@ namespace StudyNest.Common.Llm
                             {
                                 var level = data.TryGetProperty("level", out var lvl) ? Math.Clamp(lvl.GetInt32(), 1, 6) : 2;
                                 var content = CleanInlineHtml(data.GetProperty("text").GetString() ?? "");
-                                sb.AppendLine(new string('#', level) + " " + content);
-                                sb.AppendLine();
+
+                                if (compact)
+                                    sb.Append($"H{level}: {content}{blockSeparator}");
+                                else
+                                    sb.Append($"{new string('#', level)} {content}{blockSeparator}");
                                 break;
                             }
+
                         case "paragraph":
                             {
                                 var content = CleanInlineHtml(data.GetProperty("text").GetString() ?? "");
                                 if (!string.IsNullOrWhiteSpace(content))
-                                {
-                                    sb.AppendLine(content);
-                                    sb.AppendLine();
-                                }
+                                    sb.Append($"{content}{blockSeparator}");
                                 break;
                             }
+
                         case "quote":
                             {
                                 var content = CleanInlineHtml(data.GetProperty("text").GetString() ?? "");
                                 var caption = data.TryGetProperty("caption", out var c) ? CleanInlineHtml(c.GetString() ?? "") : "";
-                                
+
                                 if (!string.IsNullOrWhiteSpace(content))
                                 {
-                                    sb.AppendLine($"> {content}");
-                                    if (!string.IsNullOrWhiteSpace(caption))
-                                        sb.AppendLine($"> — {caption}");
-                                    sb.AppendLine();
+                                    if (compact)
+                                    {
+                                        var fullQuote = string.IsNullOrWhiteSpace(caption)
+                                            ? content
+                                            : $"{content} — {caption}";
+                                        sb.Append($"Quote: {fullQuote}{blockSeparator}");
+                                    }
+                                    else
+                                    {
+                                        sb.Append($"> {content}\n");
+                                        if (!string.IsNullOrWhiteSpace(caption))
+                                            sb.Append($"> — {caption}\n");
+                                        sb.Append(blockSeparator);
+                                    }
                                 }
                                 break;
                             }
+
                         case "warning":
+                        case "alert":
                             {
                                 var title = data.TryGetProperty("title", out var t) ? CleanInlineHtml(t.GetString() ?? "") : "";
                                 var message = data.TryGetProperty("message", out var m) ? CleanInlineHtml(m.GetString() ?? "") : "";
-                                
+
                                 if (!string.IsNullOrWhiteSpace(title) || !string.IsNullOrWhiteSpace(message))
                                 {
-                                    sb.AppendLine($"WARNING: {title}");
-                                    if (!string.IsNullOrWhiteSpace(message))
-                                        sb.AppendLine(message);
-                                    sb.AppendLine();
+                                    var combined = string.IsNullOrWhiteSpace(title) ? message : $"{title}: {message}";
+                                    sb.Append($"{combined}{blockSeparator}");
                                 }
                                 break;
                             }
-                        case "alert":
-                            {
-                                var alertType = data.TryGetProperty("type", out var t) ? t.GetString() ?? "info" : "info";
-                                var message = data.TryGetProperty("message", out var m) ? CleanInlineHtml(m.GetString() ?? "") : "";
-                                
-                                if (!string.IsNullOrWhiteSpace(message))
-                                {
-                                    var prefix = alertType.ToLowerInvariant() switch
-                                    {
-                                        "info" => "INFO",
-                                        "warning" => "WARNING",
-                                        "danger" => "DANGER",
-                                        "success" => "SUCCESS",
-                                        _ => "ALERT"
-                                    };
-                                    sb.AppendLine($"{prefix}: {message}");
-                                    sb.AppendLine();
-                                }
-                                break;
-                            }
+
                         case "list":
                             {
                                 var style = data.TryGetProperty("style", out var s) ? s.GetString() : "unordered";
@@ -403,21 +396,20 @@ namespace StudyNest.Common.Llm
                                     int i = 1;
                                     foreach (var item in items.EnumerateArray())
                                     {
-                                        // Handle both old format (string) and new format (object with content)
                                         string itemText;
                                         bool? isChecked = null;
-                                        
+
                                         if (item.ValueKind == JsonValueKind.String)
                                         {
                                             itemText = CleanInlineHtml(item.GetString() ?? "");
                                         }
                                         else if (item.ValueKind == JsonValueKind.Object)
                                         {
-                                            itemText = item.TryGetProperty("content", out var content) 
-                                                ? CleanInlineHtml(content.GetString() ?? "") 
+                                            itemText = item.TryGetProperty("content", out var content)
+                                                ? CleanInlineHtml(content.GetString() ?? "")
                                                 : "";
-                                            
-                                            if (item.TryGetProperty("meta", out var meta) && 
+
+                                            if (item.TryGetProperty("meta", out var meta) &&
                                                 meta.TryGetProperty("checked", out var checkedProp))
                                             {
                                                 isChecked = checkedProp.GetBoolean();
@@ -430,91 +422,124 @@ namespace StudyNest.Common.Llm
 
                                         if (!string.IsNullOrWhiteSpace(itemText))
                                         {
-                                            if (style == "ordered")
-                                                sb.AppendLine($"{i}. {itemText}");
-                                            else if (style == "checklist")
-                                                sb.AppendLine($"- [{(isChecked == true ? "x" : " ")}] {itemText}");
+                                            if (compact)
+                                            {
+                                                sb.Append($"{itemText}\n");
+                                            }
                                             else
-                                                sb.AppendLine($"- {itemText}");
+                                            {
+                                                if (style == "ordered")
+                                                    sb.Append($"{i}. {itemText}\n");
+                                                else if (style == "checklist")
+                                                    sb.Append($"- [{(isChecked == true ? "x" : " ")}] {itemText}\n");
+                                                else
+                                                    sb.Append($"- {itemText}\n");
+                                            }
                                             i++;
                                         }
                                     }
-                                    sb.AppendLine();
+                                    sb.Append(blockSeparator);
                                 }
                                 break;
                             }
+
                         case "table":
                             {
                                 if (data.TryGetProperty("content", out var content) && content.ValueKind == JsonValueKind.Array)
                                 {
-                                    sb.AppendLine("**Table:**");
-                                    foreach (var row in content.EnumerateArray())
+                                    if (compact)
                                     {
-                                        if (row.ValueKind == JsonValueKind.Array)
+                                        var allCells = new List<string>();
+                                        foreach (var row in content.EnumerateArray())
                                         {
-                                            var cells = new List<string>();
-                                            foreach (var cell in row.EnumerateArray())
+                                            if (row.ValueKind == JsonValueKind.Array)
                                             {
-                                                cells.Add(CleanInlineHtml(cell.GetString() ?? ""));
+                                                foreach (var cell in row.EnumerateArray())
+                                                {
+                                                    var cellText = CleanInlineHtml(cell.GetString() ?? "");
+                                                    if (!string.IsNullOrWhiteSpace(cellText))
+                                                        allCells.Add(cellText);
+                                                }
                                             }
-                                            sb.AppendLine("| " + string.Join(" | ", cells) + " |");
                                         }
+                                        if (allCells.Any())
+                                            sb.Append($"Table: {string.Join(", ", allCells)}{blockSeparator}");
                                     }
-                                    sb.AppendLine();
+                                    else
+                                    {
+                                        sb.Append("**Table:**\n");
+                                        foreach (var row in content.EnumerateArray())
+                                        {
+                                            if (row.ValueKind == JsonValueKind.Array)
+                                            {
+                                                var cells = new List<string>();
+                                                foreach (var cell in row.EnumerateArray())
+                                                {
+                                                    cells.Add(CleanInlineHtml(cell.GetString() ?? ""));
+                                                }
+                                                sb.Append($"| {string.Join(" | ", cells)} |\n");
+                                            }
+                                        }
+                                        sb.Append(blockSeparator);
+                                    }
                                 }
                                 break;
                             }
+
                         case "code":
                             {
                                 var code = data.TryGetProperty("code", out var c) ? c.GetString() ?? "" : "";
-                                var language = data.TryGetProperty("language", out var l) ? l.GetString() ?? "" : "";
-                                
+
                                 if (!string.IsNullOrWhiteSpace(code))
                                 {
-                                    sb.AppendLine($"```{language}");
-                                    sb.AppendLine(code);
-                                    sb.AppendLine("```");
-                                    sb.AppendLine();
+                                    if (compact)
+                                    {
+                                        // Compact: Rút gọn code, chỉ lấy vài dòng đầu
+                                        var lines = code.Split('\n');
+                                        var preview = string.Join(" ");
+                                        sb.Append($"Code: {preview}{blockSeparator}");
+                                    }
+                                    else
+                                    {
+                                        var language = data.TryGetProperty("language", out var l) ? l.GetString() ?? "" : "";
+                                        sb.Append($"```{language}\n{code}\n```{blockSeparator}");
+                                    }
                                 }
                                 break;
                             }
+
                         case "math":
                             {
                                 var math = data.TryGetProperty("math", out var m) ? m.GetString() ?? "" : "";
-                                
                                 if (!string.IsNullOrWhiteSpace(math))
-                                {
-                                    sb.AppendLine($"Math formula: {math}");
-                                    sb.AppendLine();
-                                }
+                                    sb.Append($"Math: {math}{blockSeparator}");
                                 break;
                             }
+
                         case "image":
                             {
-                                string? url = null;
-                                if (data.TryGetProperty("file", out var file) && file.TryGetProperty("url", out var u))
-                                    url = u.GetString();
-
-                                if (!string.IsNullOrWhiteSpace(url)) images.Add(url);
-
-                                var caption = data.TryGetProperty("caption", out var c) ? CleanInlineHtml(c.GetString() ?? "") : "";
-                                if (!string.IsNullOrWhiteSpace(caption))
+                                if (data.TryGetProperty("file", out var file) &&
+                                    file.TryGetProperty("url", out var u))
                                 {
-                                    sb.AppendLine($"Image caption: {caption}");
-                                    sb.AppendLine();
+                                    var url = u.GetString();
+                                    if (!string.IsNullOrWhiteSpace(url)) images.Add(url);
+                                }
+
+                                if (!compact)
+                                {
+                                    var caption = data.TryGetProperty("caption", out var c) ? CleanInlineHtml(c.GetString() ?? "") : "";
+                                    if (!string.IsNullOrWhiteSpace(caption))
+                                        sb.Append($"Image: {caption}{blockSeparator}");
                                 }
                                 break;
                             }
+
                         default:
-                            // For unknown block types, try to extract any text content
                             if (data.TryGetProperty("text", out var text))
                             {
                                 var t = CleanInlineHtml(text.GetString() ?? "");
                                 if (!string.IsNullOrWhiteSpace(t))
-                                {
-                                    sb.AppendLine(t);
-                                    sb.AppendLine();
-                                }
+                                    sb.Append($"{t}{blockSeparator}");
                             }
                             break;
                     }
@@ -524,7 +549,6 @@ namespace StudyNest.Common.Llm
             }
             catch (JsonException)
             {
-                // 3) JSON lỗi → plain text
                 return (trimmed, new());
             }
         }
@@ -532,9 +556,48 @@ namespace StudyNest.Common.Llm
         private static string CleanInlineHtml(string s)
         {
             if (string.IsNullOrEmpty(s)) return s;
-            return Regex.Replace(s, "<.*?>", string.Empty)
-                        .Replace("&nbsp;", " ")
-                        .Trim();
+            
+            // Remove script and style tags with their content
+            s = Regex.Replace(s, "<script[^>]*?>.*?</script>", "", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            s = Regex.Replace(s, "<style[^>]*?>.*?</style>", "", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            
+            // Remove all HTML tags (including nested ones)
+            s = Regex.Replace(s, "<[^>]+>", string.Empty);
+            
+            // Decode common HTML entities
+            s = s.Replace("&nbsp;", " ")
+                 .Replace("&lt;", "<")
+                 .Replace("&gt;", ">")
+                 .Replace("&amp;", "&")
+                 .Replace("&quot;", "\"")
+                 .Replace("&#39;", "'")
+                 .Replace("&apos;", "'")
+                 .Replace("&mdash;", "—")
+                 .Replace("&ndash;", "–")
+                 .Replace("&hellip;", "…")
+                 .Replace("&copy;", "©")
+                 .Replace("&reg;", "®")
+                 .Replace("&trade;", "™");
+            
+            // Decode numeric HTML entities (&#123; or &#xAB;)
+            s = Regex.Replace(s, @"&#(\d+);", m => 
+            {
+                if (int.TryParse(m.Groups[1].Value, out int code))
+                    return ((char)code).ToString();
+                return m.Value;
+            });
+            
+            s = Regex.Replace(s, @"&#x([0-9A-Fa-f]+);", m => 
+            {
+                if (int.TryParse(m.Groups[1].Value, System.Globalization.NumberStyles.HexNumber, null, out int code))
+                    return ((char)code).ToString();
+                return m.Value;
+            });
+            
+            // Normalize whitespace
+            s = Regex.Replace(s, @"\s+", " ");
+            
+            return s.Trim();
         }
         private static string NormalizeBooleanLiterals(string json)
         {

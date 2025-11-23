@@ -21,6 +21,7 @@ namespace StudyNest.Common.Interfaces
         Task<ReturnResult<string>> CreateQuizFromScratch(CreateManualQuizDTO dto);
         Task<ReturnResult<bool>> UpdateQuiz(UpdateQuizDTO request);
         Task<ReturnResult<bool>> DeleteById(string id);
+        Task<ReturnResult<bool>> ValidateNoteContent(string noteId);
     }
 }
     

@@ -110,5 +110,19 @@ namespace StudyNest.Controllers
             }
             return Ok(rs);
         }
+        [HttpGet("validate-note-length")]
+        public async Task<IActionResult> ValidateNoteLength(string noteId)
+        {
+            var rs = new ReturnResult<bool>();
+            try
+            {
+                rs = await _quizBusiness.ValidateNoteContent(noteId);
+            }
+            catch (Exception ex)
+            {
+                StudyNestLogger.Instance.Error(ex);
+            }
+            return Ok(rs);
+        }
     }
 }

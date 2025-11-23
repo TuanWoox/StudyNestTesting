@@ -54,6 +54,12 @@ const quizService = {
     );
     return data.result === true;
   },
+  validateNoteLength: async (nodeId: string): Promise<boolean> => {
+    const { data } = await instance.get<ReturnResult<boolean>>(
+      `/Quiz/validate-note-length?noteId=${nodeId}`
+    );
+    return data.result === true;
+  }
 };
 
 export default quizService;
