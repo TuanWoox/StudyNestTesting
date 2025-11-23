@@ -6,9 +6,6 @@ interface Props extends FilterDropdownProps {
     dataIndex: string;
 }
 
-// --------------------------
-// Component
-// --------------------------
 const CustomFilterDropDown: React.FC<Props> = ({
     dataIndex,
     setSelectedKeys,
