@@ -18,6 +18,7 @@ namespace StudyNest.Common.Interfaces
         Task<ReturnResult<Quiz>> GetQuizDetail(string id);
         Task<ReturnResult<CreateQuizJobResponseDTO>> EnqueueGenerateAsync(CreateQuizDTO dto);
         Task GenerateQuizInBackground(string jobId, CreateQuizDTO dto, string userId);
+        Task<ReturnResult<string>> CreateQuizFromScratch(CreateManualQuizDTO dto);
         Task<ReturnResult<bool>> UpdateQuiz(UpdateQuizDTO request);
         Task<ReturnResult<bool>> DeleteById(string id);
     }

@@ -1,10 +1,7 @@
 import { QuestionUpsertDTO } from "../question/questionUpsertDTO";
 
-export interface UpdateQuizDTO {
-  id: string;
+export interface CreateManualQuizDTO {
   title: string;
-  dateCreated?: string;
-  dateModified?: string;
-  deleted?: boolean;
+  difficulty: string;
   questions: QuestionUpsertDTO[];
 }
