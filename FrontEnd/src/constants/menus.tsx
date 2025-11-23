@@ -17,5 +17,5 @@ export const adminMenus = [
 export const userMenus = [
     { path: '/user/notes', name: 'Notes', icon: <FileTextOutlined /> },
     { path: '/user/quiz', name: 'Quiz', icon: <EditOutlined /> },
-    { path: '/user/feedback', name: 'Feedback', icon: <MessageOutlined /> },
+    { path: '/user/feedbacks', name: 'Feedback', icon: <MessageOutlined /> },
 ];

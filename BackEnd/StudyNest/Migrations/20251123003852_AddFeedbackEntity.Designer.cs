@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using StudyNest.Data;
@@ -11,9 +12,11 @@ using StudyNest.Data;
 namespace StudyNest.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251123003852_AddFeedbackEntity")]
+    partial class AddFeedbackEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -409,6 +412,7 @@ namespace StudyNest.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("NoteId")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("OwnerId")
@@ -1024,7 +1028,9 @@ namespace StudyNest.Migrations
                 {
                     b.HasOne("StudyNest.Common.DbEntities.Entities.Note", "Note")
                         .WithMany("Quizzes")
-                        .HasForeignKey("NoteId");
+                        .HasForeignKey("NoteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("StudyNest.Common.DbEntities.Identities.ApplicationUser", "Owner")
                         .WithMany()

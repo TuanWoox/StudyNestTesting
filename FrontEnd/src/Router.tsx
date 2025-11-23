@@ -9,12 +9,7 @@ import Register from "./features/guest/Register/Register";
 // User features
 import NotesPage from "./features/user/notes/Notes/NotesPage";
 import Quizzes from "./features/user/quizzes/Quizzes/Quizzes";
-import Analytics from "./features/user/Analytics";
-import Feedback from "./features/user/Feedback";
-
 // Admin features
-import Dashboard from "./features/admin/Dashboard";
-import ManageUser from "./features/admin/ManageUser";
 import AdminFeedback from "./features/admin/ManageFeedback";
 import SettingsConfig from "./features/admin/settings/SettingsConfig";
 import QuizGeneration from "./features/user/quizzes/QuizGeneration/QuizGeneration";
@@ -30,6 +25,7 @@ import ProfilePage from "./features/user/profile/ProfilePage";
 import ChangePassword from "./features/user/ChangePassword";
 import ForgotPassword from "./features/guest/ForgotPassword/ForgotPassword";
 import ResetPassword from "./features/guest/ResetPassword/ResetPassword";
+import Feedbacks from "./features/user/feedbacks/Feedbacks/FeedBacks";
 
 export const router = createBrowserRouter([
   {
@@ -55,8 +51,7 @@ export const router = createBrowserRouter([
       { path: "quiz/history/:id", element: <QuizHistory /> },
       { path: "quiz/quizAttempt/:id", element: <QuizView /> },
       { path: "quiz/quizAttemptResult/:id", element: <QuizResultView /> },
-      { path: "analytics", element: <Analytics /> },
-      { path: "feedback", element: <Feedback /> },
+      { path: "feedbacks", element: <Feedbacks /> },
       { path: "change-password", element: <ChangePassword /> },
     ],
   },
@@ -64,11 +59,9 @@ export const router = createBrowserRouter([
     path: "/admin",
     element: <AdminLayout />,
     children: [
-      { index: true, element: <Navigate to="/admin/dashboard" /> },
-      { path: "dashboard", element: <Dashboard /> },
-      { path: "users", element: <ManageUser /> },
-      { path: "feedback", element: <AdminFeedback /> },
+      { index: true, element: <Navigate to="/admin/settings" /> },
       { path: "settings", element: <SettingsConfig /> },
+      { path: "feedback", element: <AdminFeedback /> },
     ],
   },
   {

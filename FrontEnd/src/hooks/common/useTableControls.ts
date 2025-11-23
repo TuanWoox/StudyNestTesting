@@ -28,6 +28,7 @@ export const useTableControls = () => {
         // Filters
         const nextFilters: Array<{ prop: string; value: string }> = [];
         Object.keys(tableFilters).forEach((key) => {
+            console.log(tableFilters);
             const val = tableFilters[key]?.[0];
             if (val) nextFilters.push({ prop: key, value: val });
         });
