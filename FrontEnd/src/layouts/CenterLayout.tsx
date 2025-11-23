@@ -16,7 +16,7 @@ const CenterLayout: React.FC = () => {
       theme={{
         algorithm: darkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
         token: {
-          fontFamily: "'Courier New', monospace",
+          fontFamily: "monospace",
           colorPrimary: darkMode ? "#818CF8" : "#3b5bdb",
           colorPrimaryBg: darkMode ? "#1A1A1A" : "#FCFCFC",
           colorText: darkMode ? "#E5E7EB" : "#3b5bdb",

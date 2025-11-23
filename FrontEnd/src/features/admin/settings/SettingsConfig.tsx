@@ -187,9 +187,16 @@ const SettingsConfig: React.FC = () => {
                 <CustomFilterDropDown {...props} dataIndex="value" />
             ),
             filteredValue: getFilteredValue(tableControls.filters, "value"),
-            render: (v: any) => (
-                <pre style={{ margin: 0, whiteSpace: "pre-wrap" }}>{v}</pre>
-            ),
+            render: (v: any) => {
+                const text = String(v ?? "");
+                const displayText = text.length > 50 ? text.slice(0, 50) + "..." : text;
+
+                return (
+                    <pre style={{ margin: 0, whiteSpace: "pre-wrap" }}>
+                        {displayText}
+                    </pre>
+                );
+            },
         },
         {
             title: "Description",
