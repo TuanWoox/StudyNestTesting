@@ -25,7 +25,7 @@ const Feedbacks = () => {
 
     /** ---------------- STATE ---------------- */
     const [total, setTotal] = useState(0);
-    const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([])
+    const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
     const tableControls = useTableControls();
 
     const createEditModalRef = useRef<FeedBackCreateEditRef>(null);
@@ -45,9 +45,6 @@ const Feedbacks = () => {
             setTotal(settingData.page.totalElements);
         }
     }, [settingData]);
-
-    /** ---------------- HOOKS: CRUD ---------------- */
-    const { updateFeedback } = useUpdateFeedback();
 
     /** ---------------- TABLE COLUMNS ---------------- */
     const columns: ColumnsType<FeedBackDTO> = [

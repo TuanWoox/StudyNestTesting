@@ -1,6 +1,6 @@
 import React from "react";
-import { Button, Flex, Typography, Space, Input, theme, Grid } from "antd";
-import { DeleteOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from "@ant-design/icons";
+import { Button, Flex, Typography, Space, theme, Grid } from "antd";
+import { DeleteOutlined, PlusOutlined, ReloadOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 const { useToken } = theme;

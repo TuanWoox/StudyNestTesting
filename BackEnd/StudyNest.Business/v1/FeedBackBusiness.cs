@@ -100,8 +100,8 @@ namespace StudyNest.Business.v1
                 
                 if(!this._userContext.IsAdmin)
                 {
-                    existingFeedBackQuery.Where(x => x.UserId == _userContext.UserId
-                                                     && x.Status == FeedBackStatus.Pending);
+                    existingFeedBackQuery = existingFeedBackQuery.Where(x => x.UserId == _userContext.UserId
+                                                                        && x.Status == FeedBackStatus.Pending);
                 }
 
                 var existingFeedBack = await existingFeedBackQuery.FirstOrDefaultAsync();

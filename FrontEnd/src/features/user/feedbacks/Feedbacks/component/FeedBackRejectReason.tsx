@@ -15,7 +15,7 @@ export interface FeedBackRejectModalRef {
 
 const FeedBackRejectModal = forwardRef<FeedBackRejectModalRef>((_, ref) => {
     const { bgColor, borderColor, shadowColor, textColor } = useAntDesignTheme();
-    const { updateFeedback, isLoading: updating } = useUpdateFeedback();
+    const { updateFeedback } = useUpdateFeedback();
 
     const [visible, setVisible] = useState(false);
     const [current, setCurrent] = useState<FeedBackDTO | null>(null);

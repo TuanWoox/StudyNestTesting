@@ -27,7 +27,7 @@ const Feedbacks = () => {
 
     /** ---------------- STATE ---------------- */
     const [total, setTotal] = useState(0);
-    const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([])
+    const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
     const tableControls = useTableControls();
 
     const rejectModalRef = useRef<FeedBackRejectModalRef>(null);
