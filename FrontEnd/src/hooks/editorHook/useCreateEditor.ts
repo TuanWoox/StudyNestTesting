@@ -53,12 +53,14 @@ export interface InputForCreateEditor {
     holderElementId?: string;
     data?: OutputBlockData[];
     onChangeOutside?: (outputData: OutputData) => void;
+    readOnly?: boolean;
 }
 
 export function useCreateEditor({
     holderElementId = 'editorJs',
     data = [],
     onChangeOutside,
+    readOnly = false,
 }: InputForCreateEditor) {
     const editorRef = useRef<EditorJS | null>(null);
 
@@ -69,6 +71,7 @@ export function useCreateEditor({
                 autofocus: false,
                 placeholder: 'Type something amazing...',
                 data: { blocks: data },
+                readOnly: readOnly,
 
                 tools: {
                     // ── Text & Typography ────────────────────────────────

@@ -36,6 +36,8 @@ namespace StudyNest.Business.v1
                                             .Include(x => x.Notes)
                                                 .ThenInclude(x => x.NoteTags)
                                                     .ThenInclude(x => x.Tag)
+                                             .Include(x => x.Notes)
+                                                  .ThenInclude(x => x.NoteVersions)
                                             .AsNoTracking()
                                             .AsQueryable();
                 result.Result = await _repository.GetPagingAsync<Page<string>, SelectFolderDTO>(query, page);

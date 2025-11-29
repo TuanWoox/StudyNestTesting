@@ -9,7 +9,7 @@ interface EditorWrapperProps {
     noteId: string;
     content: string;
     onChange: (content: string) => void;
-    // darkMode: boolean;
+    versionKey?: number;
 }
 
 const parseContentToBlocks = (content: string): OutputBlockData[] => {
@@ -26,6 +26,7 @@ const EditorWrapper: React.FC<EditorWrapperProps> = ({
     noteId,
     content,
     onChange,
+    versionKey = 0,
     // darkMode
 }) => {
     const darkMode = useReduxSelector(selectDarkMode);
@@ -67,6 +68,7 @@ const EditorWrapper: React.FC<EditorWrapperProps> = ({
                 }}
             >
                 <Editor
+                    key={`editor-${noteId}-${versionKey}`}
                     holderElementId={`editorjs-${noteId}`}
                     data={parseContentToBlocks(content)}
                     onChangeOutside={(outputData) => onChange(JSON.stringify(outputData))}
