@@ -55,8 +55,8 @@ const Feedbacks = () => {
             width: 240,
             sorter: (a, b) => a.category.localeCompare(b.category),
             sortDirections: ["ascend", "descend"] as SortOrder[],
-            filterDropdown: (props) => <CustomFilterDropDown {...props} dataIndex="key" />,
-            filteredValue: getFilteredValue(tableControls.filters, "key"),
+            filterDropdown: (props) => <CustomFilterDropDown {...props} dataIndex="category" />,
+            filteredValue: getFilteredValue(tableControls.filters, "category"),
         },
         {
             title: "Rating",
@@ -72,8 +72,8 @@ const Feedbacks = () => {
             key: "description",
             sorter: (a, b) => a.description.localeCompare(b.description),
             sortDirections: ["ascend", "descend"] as SortOrder[],
-            filterDropdown: (props) => <CustomFilterDropDown {...props} dataIndex="group" />,
-            filteredValue: getFilteredValue(tableControls.filters, "group"),
+            filterDropdown: (props) => <CustomFilterDropDown {...props} dataIndex="description" />,
+            filteredValue: getFilteredValue(tableControls.filters, "description"),
         },
         {
             title: "From",

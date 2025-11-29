@@ -89,24 +89,6 @@ const FeedBacksHeader: React.FC<SettingsHeaderProps> = ({
                     }}
                 />
 
-                {/* Create New Setting */}
-                <Button
-                    type="primary"
-                    icon={<PlusOutlined />}
-                    size="large"
-                    onClick={onCreate}
-                    style={{
-                        borderRadius: 0,
-                        fontFamily: "monospace",
-                        border: borderColor,
-                        fontWeight: 600,
-                        paddingInline: screens.xs ? 12 : 20,
-                        whiteSpace: "nowrap",
-                    }}
-                >
-                    {screens.lg ? "New FeedBack" : ""}
-                </Button>
-
                 {/* Delete selected: only render if handler provided */}
                 {onBulkDelete && (
                     <Button
