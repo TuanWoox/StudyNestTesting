@@ -170,7 +170,7 @@ namespace StudyNest.Business.v1
                         DateCreated = DateTime.UtcNow
                     };
 
-                    //Delete the oldest 20 version
+                    //Delete the oldest 20 versions
                     var versionsToDelete = await _dbContext.NoteVersions.Where(x => x.NoteId == newEntity.Id)
                                                                         .OrderByDescending(x => x.DateCreated)  
                                                                         .Skip(19)                

@@ -71,7 +71,7 @@ export function useCreateEditor({
                 autofocus: false,
                 placeholder: 'Type something amazing...',
                 data: { blocks: data },
-                readOnly: readOnly,
+                readOnly,
 
                 tools: {
                     // ── Text & Typography ────────────────────────────────

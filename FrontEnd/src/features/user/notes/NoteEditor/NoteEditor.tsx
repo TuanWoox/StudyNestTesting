@@ -12,7 +12,6 @@ import useUpdateNote from "@/hooks/noteHook/useUpdateNote";
 import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
 import { selectDarkMode } from "@/store/themeSlice";
 import NoteVersionSelect from "./components/NoteVersionSelect";
-import Spinner from "@/components/Spinner/Spinner";
 import SpinnerFull from "@/components/SpinnerFull/SpinnerFull";
 
 interface NoteEditorProps {
@@ -193,7 +192,7 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
                     {note?.noteVersions?.length > 0 ? (
                         <div className="flex flex-wrap gap-4">
                             <NoteVersionSelect
-                                noteVerions={note.noteVersions}
+                                noteVersions={note.noteVersions}
                                 onSelectVersion={(content) => {
                                     setContent(content);
                                     setVersionKey((prev) => prev + 1);
@@ -201,7 +200,7 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
                             />
                         </div>
                     ) : (
-                        <></>
+                        null
                     )}
 
 

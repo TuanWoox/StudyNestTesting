@@ -8,7 +8,7 @@ import Editor from "@/components/Editor/Editor";
 import { OutputBlockData } from "@editorjs/editorjs";
 
 interface NoteVersionSelectProps {
-    noteVerions: NoteVersion[];
+    noteVersions: NoteVersion[];
     onSelectVersion: (content: string) => void;
 }
 
@@ -22,7 +22,7 @@ const parseContentToBlocks = (content: string): OutputBlockData[] => {
     return [];
 };
 
-const NoteVersionSelect: React.FC<NoteVersionSelectProps> = ({ noteVerions, onSelectVersion }) => {
+const NoteVersionSelect: React.FC<NoteVersionSelectProps> = ({ noteVersions, onSelectVersion }) => {
     const darkMode = useReduxSelector(selectDarkMode);
     const { token: antToken } = theme.useToken();
     const [selectedVersionId, setSelectedVersionId] = useState<string | undefined>(undefined);
@@ -31,7 +31,7 @@ const NoteVersionSelect: React.FC<NoteVersionSelectProps> = ({ noteVerions, onSe
     const [tempSelectedVersion, setTempSelectedVersion] = useState<NoteVersion | null>(null);
 
     // Sort versions by date (newest first)
-    const sortedVersions = [...noteVerions].sort((a, b) => {
+    const sortedVersions = [...noteVersions].sort((a, b) => {
         const dateA = new Date(a.dateCreated || 0).getTime();
         const dateB = new Date(b.dateCreated || 0).getTime();
         return dateB - dateA;
@@ -85,7 +85,7 @@ const NoteVersionSelect: React.FC<NoteVersionSelectProps> = ({ noteVerions, onSe
     const shadowColor = `${antToken.colorPrimary}55`;
     const backgroundColor = darkMode ? "#1E1E1E" : "#FFFDF8";
 
-    if (!noteVerions || noteVerions.length === 0) {
+    if (!noteVersions || noteVersions.length === 0) {
         return null;
     }
 
