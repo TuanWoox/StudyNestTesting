@@ -10,14 +10,15 @@ const useCreateTag = () => {
     const mutation = useMutation<Tag, AxiosError, CreateTagDTO>({
         mutationKey: ["createTag"],
         mutationFn: (payload) => tagService.createTag(payload),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["tags"] });
+        onSuccess: (data) => {
+            if (data) {
+                queryClient.invalidateQueries({ queryKey: ["tags"] });
 
-            toast.success("Tag successfully created!");
+                toast.success("Tag successfully created!");
+            }
         },
         onError: (err) => {
             console.log("err", err);
-            toast.error(err?.message ?? "Failed to create new tag");
         },
     });
 

@@ -11,13 +11,14 @@ const useCreateFeedback = () => {
     const mutation = useMutation<FeedBackDTO, AxiosError, CreateFeedBackDTO>({
         mutationKey: ["createFeedback"],
         mutationFn: (payload) => feedbackService.createFeedBack(payload),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["feedbacks"] });
-            toast.success("Feedback successfully created!");
+        onSuccess: (data) => {
+            if (data) {
+                queryClient.invalidateQueries({ queryKey: ["feedbacks"] });
+                toast.success("Feedback successfully created!");
+            }
         },
         onError: (err) => {
             console.error("Error creating feedback:", err);
-            toast.error(err?.message ?? "Failed to create feedback");
         },
     });
 

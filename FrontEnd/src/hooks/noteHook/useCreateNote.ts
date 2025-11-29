@@ -10,16 +10,17 @@ const useCreateNote = () => {
     const mutation = useMutation<Note, AxiosError, CreateNoteDTO>({
         mutationKey: ["createNote"],
         mutationFn: (payload) => noteService.createNote(payload),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["notes"] });
-            queryClient.invalidateQueries({ queryKey: ["folders"] });
-            queryClient.invalidateQueries({ queryKey: ["tags"] });
+        onSuccess: (res) => {
+            if (res) {
+                queryClient.invalidateQueries({ queryKey: ["notes"] });
+                queryClient.invalidateQueries({ queryKey: ["folders"] });
+                queryClient.invalidateQueries({ queryKey: ["tags"] });
 
-            toast.success("Note successfully created!");
+                toast.success("Note successfully created!");
+            }
         },
         onError: (err) => {
             console.log("err", err);
-            toast.error(err?.message ?? "Failed to create new note");
         },
     });
 

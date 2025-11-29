@@ -10,15 +10,16 @@ const useUpdateTag = () => {
     const mutation = useMutation<Tag, AxiosError, UpdateTagDTO>({
         mutationKey: ["updateTag"],
         mutationFn: (payload) => tagService.updateTag(payload),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["tags"] });
-            queryClient.invalidateQueries({ queryKey: ["folders"] });
-            queryClient.invalidateQueries({ queryKey: ["notes"] });
-            toast.success("Tag successfully updated");
+        onSuccess: (data) => {
+            if (data) {
+                queryClient.invalidateQueries({ queryKey: ["tags"] });
+                queryClient.invalidateQueries({ queryKey: ["folders"] });
+                queryClient.invalidateQueries({ queryKey: ["notes"] });
+                toast.success("Tag successfully updated");
+            }
         },
         onError: (err) => {
             console.log("err", err);
-            toast.error(err?.message ?? "Failed to update tag");
         },
     });
 

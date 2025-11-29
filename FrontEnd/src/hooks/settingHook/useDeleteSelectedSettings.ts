@@ -9,18 +9,15 @@ const useDeleteSelectedSettings = () => {
 
     const mutation = useMutation<number, AxiosError, Page<string>>({
         mutationKey: ["deleteSettings"],
-        mutationFn: async (payload) => {
-            const deletedCount = await settingService.deleteSettings(payload);
-            if (deletedCount <= 0) throw new Error("Delete failed");
-            return deletedCount;
-        },
+        mutationFn: (payload) => settingService.deleteSettings(payload),
         onSuccess: (deletedCount) => {
-            queryClient.invalidateQueries({ queryKey: ["settings"] });
-            toast.success(`${deletedCount} setting(s) deleted successfully`);
+            if (deletedCount > 0) {
+                queryClient.invalidateQueries({ queryKey: ["settings"] });
+                toast.success(`${deletedCount} setting(s) deleted successfully`);
+            }
         },
         onError: (err) => {
             console.log("err", err);
-            toast.error(err?.message ?? "Failed to delete settings");
         },
     });
 

@@ -10,15 +10,19 @@ const useCreateSetting = () => {
 
     const mutation = useMutation<SettingDTO, AxiosError, CreateSettingDTO>({
         mutationKey: ["createSetting"],
-        mutationFn: (payload) => settingService.createSetting(payload),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["settings"] });
+        mutationFn: async (payload) => {
+            const res = await settingService.createSetting(payload);
+            return res;
+        },
+        onSuccess: (res) => {
+            if (res) {
+                queryClient.invalidateQueries({ queryKey: ["settings"] });
 
-            toast.success("Setting successfully created!");
+                toast.success("Setting successfully created!");
+            }
         },
         onError: (err) => {
             console.log("err", err);
-            toast.error(err?.message ?? "Failed to create new setting");
         },
     });
 
