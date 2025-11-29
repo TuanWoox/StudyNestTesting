@@ -13,6 +13,7 @@ import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
 import { selectDarkMode } from "@/store/themeSlice";
 import NoteVersionSelect from "./components/NoteVersionSelect";
 import SpinnerFull from "@/components/SpinnerFull/SpinnerFull";
+import deepEqual from "fast-deep-equal";
 
 interface NoteEditorProps {
     visible: boolean;
@@ -110,14 +111,22 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
         }
     };
 
-    const hasUnsavedChanges = () => {
-        return (
-            title !== note?.title ||
-            content !== note?.content ||
-            selectedFolder?.id !== note?.folder?.id ||
-            JSON.stringify(selectedTags.map((t) => t.id).sort()) !==
-            JSON.stringify(note?.noteTags?.map((nt) => nt.tag.id).sort())
-        );
+    const hasUnsavedChanges = (): boolean => {
+        try {
+            const currentContent = JSON.parse(content);
+            const oldContent = note?.content ? JSON.parse(note.content) : { blocks: [] };
+            return (
+                title !== note?.title ||
+                !deepEqual(currentContent?.blocks, oldContent?.blocks) ||
+                selectedFolder?.id !== note?.folder?.id ||
+                JSON.stringify(selectedTags.map((t) => t.id).sort()) !==
+                JSON.stringify(note?.noteTags?.map((nt) => nt.tag.id).sort())
+            );
+        }
+        catch (err) {
+            console.error(err);
+            return false;
+        }
     };
 
     if (!visible || !note) return null;
@@ -225,7 +234,7 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
                             // darkMode={darkMode}
                             isCreating={creatingNote}
                             isUpdating={updatingNote}
-                            confirmBeforeClose={hasUnsavedChanges()}
+                            confirmBeforeClose={hasUnsavedChanges}
                         />
                     </div>
                 </div>
