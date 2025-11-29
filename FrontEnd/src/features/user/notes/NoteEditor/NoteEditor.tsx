@@ -11,6 +11,8 @@ import useCreateFolder from "@/hooks/folderHook/useCreateFolder";
 import useUpdateNote from "@/hooks/noteHook/useUpdateNote";
 import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
 import { selectDarkMode } from "@/store/themeSlice";
+import NoteVersionSelect from "./components/NoteVersionSelect";
+import SpinnerFull from "@/components/SpinnerFull/SpinnerFull";
 
 interface NoteEditorProps {
     visible: boolean;
@@ -39,6 +41,7 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
     const [selectedFolder, setSelectedFolder] = useState<Folder | undefined>(undefined);
     const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
     const [content, setContent] = useState("");
+    const [versionKey, setVersionKey] = useState(0);
 
     // === Retro color tokens ===
     const borderColor = `${token.colorPrimary}E0`; // 88%
@@ -52,8 +55,18 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
             setSelectedFolder(note.folder);
             setSelectedTags(note.noteTags?.map((nt) => nt.tag) || []);
             setContent(note.content);
+            setVersionKey(0);
+        } else {
+            setContent("");
         }
-    }, [note?.id]);
+    }, [note]);
+
+    useEffect(() => {
+        if (!visible) {
+            // Reset version key when modal closes
+            setVersionKey(0);
+        }
+    }, [visible]);
 
     const handleSave = async () => {
         if (!note) return;
@@ -176,15 +189,33 @@ const NoteEditor: React.FC<NoteEditorProps> = ({
                         />
                     </div>
 
+                    {note?.noteVersions?.length > 0 ? (
+                        <div className="flex flex-wrap gap-4">
+                            <NoteVersionSelect
+                                noteVersions={note.noteVersions}
+                                onSelectVersion={(content) => {
+                                    setContent(content);
+                                    setVersionKey((prev) => prev + 1);
+                                }}
+                            />
+                        </div>
+                    ) : (
+                        null
+                    )}
+
+
                     {/* Editor */}
-                    <div className="flex-1 min-h-0">
-                        <EditorWrapper
-                            noteId={note?.id || ""}
-                            content={note?.content}
-                            onChange={setContent}
-                        // darkMode={darkMode}
-                        />
-                    </div>
+                    {note?.content && !content ? <SpinnerFull /> :
+                        <div className="flex-1 min-h-0">
+                            <EditorWrapper
+                                noteId={note?.id || ""}
+                                content={content}
+                                onChange={setContent}
+                                versionKey={versionKey}
+                            />
+                        </div>
+                    }
+
 
                     {/* Action Buttons */}
                     <div className="mt-2 flex justify-end">
