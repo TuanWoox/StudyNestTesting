@@ -158,7 +158,7 @@ const SettingsConfig: React.FC = () => {
             dataIndex: "key",
             key: "key",
             width: 240,
-            sorter: (a, b) => a.group.localeCompare(b.group),
+            sorter: (a, b) => a.key.localeCompare(b.key),
             sortDirections: ["ascend", "descend"] as SortOrder[],
             filterDropdown: (props) => (
                 <CustomFilterDropDown {...props} dataIndex="key" />
