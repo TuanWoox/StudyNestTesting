@@ -164,6 +164,24 @@ const SettingsConfig: React.FC = () => {
                 <CustomFilterDropDown {...props} dataIndex="key" />
             ),
             filteredValue: getFilteredValue(tableControls.filters, "key"),
+            render: (text: string) => {
+                const needsTooltip = text && text.length > 30;
+                return (
+                    <Tooltip
+                        title={needsTooltip ? text : null}
+                        overlayStyle={{ maxWidth: '400px', wordWrap: 'break-word' }}
+                    >
+                        <div style={{
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "220px"
+                        }}>
+                            {text}
+                        </div>
+                    </Tooltip>
+                );
+            },
         },
         {
             title: "Group",
@@ -175,7 +193,25 @@ const SettingsConfig: React.FC = () => {
             filterDropdown: (props) => (
                 <CustomFilterDropDown {...props} dataIndex="group" />
             ),
-            filteredValue: getFilteredValue(tableControls.filters, "group")
+            filteredValue: getFilteredValue(tableControls.filters, "group"),
+            render: (text: string) => {
+                const needsTooltip = text && text.length > 20;
+                return (
+                    <Tooltip
+                        title={needsTooltip ? text : null}
+                        overlayStyle={{ maxWidth: '400px', wordWrap: 'break-word' }}
+                    >
+                        <div style={{
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "140px"
+                        }}>
+                            {text}
+                        </div>
+                    </Tooltip>
+                );
+            },
         },
         {
             title: "Value",
@@ -189,12 +225,21 @@ const SettingsConfig: React.FC = () => {
             filteredValue: getFilteredValue(tableControls.filters, "value"),
             render: (v: any) => {
                 const text = String(v ?? "");
-                const displayText = text.length > 50 ? text.slice(0, 50) + "..." : text;
-
+                const needsTooltip = text && text.length > 35;
                 return (
-                    <pre style={{ margin: 0, whiteSpace: "pre-wrap" }}>
-                        {displayText}
-                    </pre>
+                    <Tooltip
+                        title={needsTooltip ? text : null}
+                        overlayStyle={{ maxWidth: '500px', wordWrap: 'break-word' }}
+                    >
+                        <div style={{
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "250px"
+                        }}>
+                            {text}
+                        </div>
+                    </Tooltip>
                 );
             },
         },
@@ -209,6 +254,24 @@ const SettingsConfig: React.FC = () => {
                 <CustomFilterDropDown {...props} dataIndex="description" />
             ),
             filteredValue: getFilteredValue(tableControls.filters, "description"),
+            render: (text: string) => {
+                const needsTooltip = text && text.length > 40;
+                return (
+                    <Tooltip
+                        title={needsTooltip ? text : null}
+                        overlayStyle={{ maxWidth: '500px', wordWrap: 'break-word' }}
+                    >
+                        <div style={{
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            maxWidth: "300px"
+                        }}>
+                            {text}
+                        </div>
+                    </Tooltip>
+                );
+            },
         },
         {
             title: "Level",
