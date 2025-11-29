@@ -8,20 +8,17 @@ const useDeleteTag = () => {
 
     const mutation = useMutation<boolean, AxiosError, string>({
         mutationKey: ["deleteTag"],
-        mutationFn: async (tagId) => {
-            const ok = await tagService.deleteTag(tagId);
-            if (!ok) throw new Error("Delete failed");
-            return true;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["tags"] });
-            queryClient.invalidateQueries({ queryKey: ["folders"] });
-            queryClient.invalidateQueries({ queryKey: ["notes"] });
-            toast.success("Tag deleted successfully");
+        mutationFn: (tagId) => tagService.deleteTag(tagId),
+        onSuccess: (data) => {
+            if (data) {
+                queryClient.invalidateQueries({ queryKey: ["tags"] });
+                queryClient.invalidateQueries({ queryKey: ["folders"] });
+                queryClient.invalidateQueries({ queryKey: ["notes"] });
+                toast.success("Tag deleted successfully");
+            }
         },
         onError: (err) => {
             console.log("err", err);
-            toast.error(err?.message ?? "Failed to delete tag");
         },
     });
 

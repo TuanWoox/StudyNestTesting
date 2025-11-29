@@ -10,16 +10,17 @@ const useUpdateNote = () => {
     const mutation = useMutation<Note, AxiosError, UpdateNoteDTO>({
         mutationKey: ["updateNote"],
         mutationFn: (payload) => noteService.updateNote(payload),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["notes"] });
-            queryClient.invalidateQueries({ queryKey: ["folders"] });
-            queryClient.invalidateQueries({ queryKey: ["tags"] });
+        onSuccess: (res) => {
+            if (res) {
+                queryClient.invalidateQueries({ queryKey: ["notes"] });
+                queryClient.invalidateQueries({ queryKey: ["folders"] });
+                queryClient.invalidateQueries({ queryKey: ["tags"] });
 
-            toast.success("Note successfully updated!");
+                toast.success("Note successfully updated!");
+            }
         },
         onError: (err) => {
             console.log("err", err);
-            toast.error(err?.message ?? "Failed to update note");
         },
     });
 

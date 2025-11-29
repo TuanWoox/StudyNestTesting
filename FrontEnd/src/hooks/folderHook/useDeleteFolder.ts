@@ -8,21 +8,17 @@ const useDeleteFolder = () => {
 
     const mutation = useMutation<boolean, AxiosError, string>({
         mutationKey: ["deleteFolder"],
-        // hỏi lại cảnh
-        mutationFn: async (folderId: string) => {
-            const ok = await folderService.deleteFolder(folderId);
-            if (!ok) throw new Error("Delete failed.");
-            return true;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["folders"] });
-            queryClient.invalidateQueries({ queryKey: ["notes"] });
-            queryClient.invalidateQueries({ queryKey: ["tags"] });
-            toast.success("Folder deleted successfully");
+        mutationFn: (folderId: string) => folderService.deleteFolder(folderId),
+        onSuccess: (res) => {
+            if (res) {
+                queryClient.invalidateQueries({ queryKey: ["folders"] });
+                queryClient.invalidateQueries({ queryKey: ["notes"] });
+                queryClient.invalidateQueries({ queryKey: ["tags"] });
+                toast.success("Folder deleted successfully");
+            }
         },
         onError: (err) => {
             console.log("err", err);
-            toast.error(err?.message ?? "Failed to delete folder");
         },
     });
 

@@ -10,14 +10,15 @@ const useCreateFolder = () => {
     const mutation = useMutation<Folder, AxiosError, CreateFolderDTO>({
         mutationKey: ["createFolder"],
         mutationFn: (payload) => folderService.createFolder(payload),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["folders"] });
+        onSuccess: (data) => {
+            if (data) {
+                queryClient.invalidateQueries({ queryKey: ["folders"] });
 
-            toast.success("Folder successfully created!");
+                toast.success("Folder successfully created!");
+            }
         },
         onError: (err) => {
             console.log("err", err);
-            toast.error(err?.message ?? "Failed to create new folder");
         },
     });
 

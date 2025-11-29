@@ -10,15 +10,19 @@ const useUpdateSetting = () => {
 
     const mutation = useMutation<SettingDTO, AxiosError, UpdateSettingDTO>({
         mutationKey: ["updateSetting"],
-        mutationFn: (payload) => settingService.updateSetting(payload),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["settings"] });
+        mutationFn: async (payload) => {
+            const res = await settingService.updateSetting(payload);
+            return res;
+        },
+        onSuccess: (res) => {
+            if (res) {
+                queryClient.invalidateQueries({ queryKey: ["settings"] });
 
-            toast.success("Setting successfully updated!");
+                toast.success("Setting successfully updated!");
+            }
         },
         onError: (err) => {
             console.log("err", err);
-            toast.error(err?.message ?? "Failed to update setting");
         },
     });
 

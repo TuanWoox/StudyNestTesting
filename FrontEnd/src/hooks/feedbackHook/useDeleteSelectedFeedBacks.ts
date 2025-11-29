@@ -9,18 +9,15 @@ const useDeleteSelectedFeedbacks = () => {
 
     const mutation = useMutation<number, AxiosError, Page<string>>({
         mutationKey: ["deleteFeedbacks"],
-        mutationFn: async (payload) => {
-            const deletedCount = await feedbackService.deleteFeedBacks(payload);
-            if (deletedCount <= 0) throw new Error("Delete failed");
-            return deletedCount;
-        },
+        mutationFn: (payload) => feedbackService.deleteFeedBacks(payload),
         onSuccess: (deletedCount) => {
-            queryClient.invalidateQueries({ queryKey: ["feedbacks"] });
-            toast.success(`${deletedCount} feedback(s) deleted successfully`);
+            if (deletedCount > 0) {
+                queryClient.invalidateQueries({ queryKey: ["feedbacks"] });
+                toast.success(`${deletedCount} feedback(s) deleted successfully`);
+            }
         },
         onError: (err) => {
             console.log("err", err);
-            toast.error(err?.message ?? "Failed to delete feedback(s)");
         },
     });
 

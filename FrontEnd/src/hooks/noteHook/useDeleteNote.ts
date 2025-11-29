@@ -8,20 +8,17 @@ const useDeleteNote = () => {
 
     const mutation = useMutation<boolean, AxiosError, string>({
         mutationKey: ["deleteNote"],
-        mutationFn: async (noteId: string) => {
-            const ok = await noteService.deleteNote(noteId);
-            if (!ok) throw new Error("Delete failed");
-            return true;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["notes"] });
-            queryClient.invalidateQueries({ queryKey: ["folders"] });
-            queryClient.invalidateQueries({ queryKey: ["tags"] });
-            toast.success("Note deleted successfully");
+        mutationFn: (noteId: string) => noteService.deleteNote(noteId),
+        onSuccess: (res) => {
+            if (res) {
+                queryClient.invalidateQueries({ queryKey: ["notes"] });
+                queryClient.invalidateQueries({ queryKey: ["folders"] });
+                queryClient.invalidateQueries({ queryKey: ["tags"] });
+                toast.success("Note deleted successfully");
+            }
         },
         onError: (err) => {
             console.log("err", err);
-            toast.error(err?.message ?? "Failed to delete note");
         },
     });
 
