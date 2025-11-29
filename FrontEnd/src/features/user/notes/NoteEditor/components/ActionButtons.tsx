@@ -11,7 +11,7 @@ interface ActionButtonsProps {
     // darkMode: boolean;
     isCreating?: boolean;
     isUpdating?: boolean;
-    confirmBeforeClose?: boolean;
+    confirmBeforeClose?: boolean | (() => boolean);
 }
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({
@@ -62,6 +62,20 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
         onClose();
     };
 
+    // 🔍 Check and handle close action
+    const handleCloseClick = () => {
+        // Check if we need confirmation
+        const needsConfirmation = typeof confirmBeforeClose === 'function'
+            ? confirmBeforeClose()
+            : confirmBeforeClose;
+
+        if (needsConfirmation && !isLoading) {
+            showConfirmModal();
+        } else {
+            onClose();
+        }
+    };
+
 
     return (
         <>
@@ -89,11 +103,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
                 <Button
                     type="text"
                     icon={<CloseOutlined />}
-                    onClick={
-                        confirmBeforeClose && !isLoading
-                            ? showConfirmModal
-                            : onClose
-                    }
+                    onClick={handleCloseClick}
                     disabled={isLoading}
                     style={{
                         ...baseStyle,

@@ -1,4 +1,4 @@
-import React, { forwardRef, useImperativeHandle, useState, useEffect } from "react";
+import React, { forwardRef, useImperativeHandle, useState } from "react";
 import { Form, Input, Rate, Select, ModalProps } from "antd";
 import ActionButtons from "@/features/user/notes/NoteEditor/components/ActionButtons";
 import { CreateFeedBackDTO } from "@/types/feedback/createFeedBackDTO";
@@ -24,8 +24,8 @@ const FeedBackCreateEdit = forwardRef<FeedBackCreateEditRef, FeedBackCreateEditP
         const { bgColor, borderColor, shadowColor, textColor } = useAntDesignTheme();
         const [visible, setVisible] = useState(false);
         const [currentEditing, setCurrentEditing] = useState<FeedBackDTO | null>(null);
-        const [status, setStatus] = useState<EFeedBackStatus>(EFeedBackStatus.Pending);
         const [form] = Form.useForm();
+        const [initialFormValues, setInitialFormValues] = useState<any>(null);
 
         const { createFeedback, isLoading: isCreating } = useCreateFeedback();
         const { updateFeedback, isLoading: isUpdating } = useUpdateFeedback();
@@ -48,13 +48,17 @@ const FeedBackCreateEdit = forwardRef<FeedBackCreateEditRef, FeedBackCreateEditP
 
         useImperativeHandle(ref, () => ({
             open: (record?: FeedBackDTO | null) => {
+                const defaultValue = { rating: 0 };
                 setCurrentEditing(record || null);
                 form.resetFields();
-                form.setFieldsValue(record || { rating: 0 });
-                setStatus(record?.status ?? EFeedBackStatus.Pending);
+                form.setFieldsValue(record || defaultValue);
+                setInitialFormValues(record || defaultValue);
                 setVisible(true);
             },
-            close: () => setVisible(false),
+            close: () => {
+                setVisible(false);
+                setInitialFormValues(null);
+            },
         }));
 
         const handleSave = async () => {
@@ -62,23 +66,42 @@ const FeedBackCreateEdit = forwardRef<FeedBackCreateEditRef, FeedBackCreateEditP
                 const values = await form.validateFields();
 
                 if (currentEditing) {
-                    const payload: UpdateFeedBackDTO = { id: currentEditing.id, ...values };
-                    updateFeedback(payload, { onSuccess: () => setVisible(false) });
+                    const payload: UpdateFeedBackDTO = {
+                        id: currentEditing.id,
+                        ...values
+                    };
+                    updateFeedback(payload, {
+                        onSuccess: () => {
+                            setInitialFormValues(null);
+                            setVisible(false);
+                        }
+                    });
                 } else {
-                    const payload: CreateFeedBackDTO = { id: "", ...values };
-                    createFeedback(payload, { onSuccess: () => setVisible(false) });
+                    const payload: CreateFeedBackDTO = {
+                        id: "",
+                        ...values
+                    };
+                    createFeedback(payload, {
+                        onSuccess: () => {
+                            setInitialFormValues(null);
+                            setVisible(false);
+                        }
+                    });
                 }
             } catch (error) {
                 console.error("Validation failed:", error);
             }
         };
 
-        useEffect(() => {
-            if (currentEditing) {
-                setStatus(currentEditing.status);
-                form.setFieldsValue({ ...currentEditing });
-            }
-        }, [currentEditing, form]);
+        const hasUnsavedChanges = () => {
+            if (!initialFormValues) return false;
+            const currentValues = form.getFieldsValue();
+            const fieldsToCompare = ['category', 'rating', 'description', 'status'];
+
+            return fieldsToCompare.some(field =>
+                initialFormValues[field] !== currentValues[field]
+            );
+        };
 
         const isEditable = !currentEditing || currentEditing.status === EFeedBackStatus.Pending;
 
@@ -94,7 +117,7 @@ const FeedBackCreateEdit = forwardRef<FeedBackCreateEditRef, FeedBackCreateEditP
                             onClose={() => setVisible(false)}
                             isCreating={isCreating}
                             isUpdating={isUpdating}
-                            confirmBeforeClose
+                            confirmBeforeClose={hasUnsavedChanges}
                         />
                     ) : null
                 }

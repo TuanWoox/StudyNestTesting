@@ -43,6 +43,7 @@ const SettingsConfig: React.FC = () => {
     const [isModalBulkDeleteOpen, setIsModalBulkDeleteOpen] = useState(false);
     const [editing, setEditing] = useState<any>(null);
     const [form] = Form.useForm();
+    const [initialFormValues, setInitialFormValues] = useState<any>(null);
 
     /** ---------------- DATA: GET SETTINGS ---------------- */
     const tableControls = useTableControls();
@@ -71,13 +72,16 @@ const SettingsConfig: React.FC = () => {
     const openCreate = () => {
         setEditing(null);
         form.resetFields();
-        form.setFieldsValue({ settingLevel: 0 }); // default
+        const defaultValues = { settingLevel: 0 };
+        form.setFieldsValue(defaultValues);
+        setInitialFormValues(defaultValues);
         setIsModalOpen(true);
     };
 
     const openEdit = (record: any) => {
         setEditing(record);
         form.setFieldsValue(record);
+        setInitialFormValues(record);
         setIsModalOpen(true);
     };
 
@@ -92,16 +96,27 @@ const SettingsConfig: React.FC = () => {
 
             if (editing) {
                 const payload: UpdateSettingDTO = { id: editing.id, ...values };
-                updateSetting(payload, { onSuccess: () => setIsModalOpen(false) });
+                updateSetting(payload, {
+                    onSuccess: () => {
+                        setIsModalOpen(false);
+                        setInitialFormValues(null);
+                    }
+                });
             } else {
                 const payload: CreateSettingDTO = { id: "", ...values };
-                createSetting(payload, { onSuccess: () => setIsModalOpen(false) });
+                createSetting(payload, {
+                    onSuccess: () => {
+                        setIsModalOpen(false);
+                        setInitialFormValues(null);
+                    }
+                });
             }
 
         } catch (err: any) {
             console.error(err?.message ?? "Save failed");
         }
     };
+
 
     const handleDelete = (id: string) => {
         try {
@@ -305,6 +320,18 @@ const SettingsConfig: React.FC = () => {
         },
     ];
 
+    const hasUnsavedChanges = () => {
+        if (!initialFormValues) return false;
+        const currentValues = form.getFieldsValue();
+
+        // Only compare specific fields
+        const fieldsToCompare = ['group', 'key', 'settingLevel', 'value'];
+
+        return fieldsToCompare.some(field =>
+            initialFormValues[field] !== currentValues[field]
+        );
+    }
+
     /** ---------------- RENDER ---------------- */
     return (
         <div className="w-full h-full overflow-y-auto px-6 pt-4 pb-5"
@@ -416,10 +443,13 @@ const SettingsConfig: React.FC = () => {
                 <div className="mt-2 flex justify-end">
                     <ActionButtons
                         onSave={handleModalOk}
-                        onClose={() => setIsModalOpen(false)}
+                        onClose={() => {
+                            setIsModalOpen(false);
+                            setInitialFormValues(null);
+                        }}
                         isCreating={creating}
                         isUpdating={updating}
-                        confirmBeforeClose={true}
+                        confirmBeforeClose={hasUnsavedChanges}
                     />
                 </div>
             </Modal>
