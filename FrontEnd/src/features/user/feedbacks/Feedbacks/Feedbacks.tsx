@@ -57,6 +57,18 @@ const Feedbacks = () => {
             sortDirections: ["ascend", "descend"] as SortOrder[],
             filterDropdown: (props) => <CustomFilterDropDown {...props} dataIndex="category" />,
             filteredValue: getFilteredValue(tableControls.filters, "category"),
+            render: (text: string) => (
+                <Tooltip title={text}>
+                    <div style={{
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        maxWidth: "220px"
+                    }}>
+                        {text}
+                    </div>
+                </Tooltip>
+            ),
         },
         {
             title: "Rating",
@@ -74,6 +86,18 @@ const Feedbacks = () => {
             sortDirections: ["ascend", "descend"] as SortOrder[],
             filterDropdown: (props) => <CustomFilterDropDown {...props} dataIndex="description" />,
             filteredValue: getFilteredValue(tableControls.filters, "description"),
+            render: (text: string) => (
+                <Tooltip title={text}>
+                    <div style={{
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        maxWidth: "300px"
+                    }}>
+                        {text}
+                    </div>
+                </Tooltip>
+            ),
         },
         {
             title: "From",
