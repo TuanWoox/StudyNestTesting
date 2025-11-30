@@ -124,13 +124,49 @@ export function useCreateEditor({
                     },
 
                     // ── Inline Tools ───────────────────────────────────
+                    bold: {
+                        class: createGenericInlineTool({
+                            sanitize: { strong: {}, b: {} },
+                            shortcut: 'CMD+B',
+                            tagName: 'STRONG',
+                            toolboxIcon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M15.6 10.79c.97-.67 1.65-1.77 1.65-2.79 0-2.26-1.75-4-4-4H7v14h7.04c2.09 0 3.71-1.7 3.71-3.79 0-1.52-.86-2.82-2.15-3.42zM10 6.5h3c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5h-3v-3zm3.5 9H10v-3h3.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5z"/></svg>`,
+                        }),
+                        title: 'Bold',
+                    },
+                    italic: {
+                        class: createGenericInlineTool({
+                            sanitize: { i: {}, em: {} },
+                            shortcut: 'CMD+I',
+                            tagName: 'I',
+                            toolboxIcon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M10 4v3h2.21l-3.42 8H6v3h8v-3h-2.21l3.42-8H18V4h-8z"/></svg>`,
+                        }),
+                        title: 'Italic',
+                    },
+                    underline: {
+                        class: createGenericInlineTool({
+                            sanitize: { u: {} },
+                            shortcut: 'CMD+U',
+                            tagName: 'U',
+                            toolboxIcon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M12 17c3.31 0 6-2.69 6-6V3h-2.5v8c0 1.93-1.57 3.5-3.5 3.5S8.5 12.93 8.5 11V3H6v8c0 3.31 2.69 6 6 6zm-7 2v2h14v-2H5z"/></svg>`,
+                        }),
+                        title: 'Underline',
+                    },
+                    strikethrough: {
+                        class: Strikethrough,
+                        title: 'Strikethrough',
+                    },
+                    inlineCode: {
+                        class: InlineCode,
+                        title: 'Inline Code',
+                    },
                     Marker: {
                         class: ColorPlugin,
                         config: {
                             defaultColor: '#FFBF00',
                             type: 'marker',
-                            icon: `<svg fill="#000000" height="200px" width="200px" version="1.1" id="Icons" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 32 32" xml:space="preserve"><g><path d="M17.6,6L6.9,16.7c-0.2,0.2-0.3,0.4-0.3,0.6L6,23.9c0,0.3,0.1,0.6,0.3,0.8C6.5,24.9,6.7,25,7,25l6.6-0.6c0.2,0,0.5-0.1,0.6-0.3L25,13.4L17.6,6z"/><path d="M26.4,12l1.4-1.4c1.2-1.2,1.1-3.1-0.1-4.3l-3-3c-0.6-0.6-1.3-0.9-2.2-0.9c-0.8,0-1.6,0.3-2.2,0.9L19,4.6L26.4,12z"/></g><path d="M28,29H4c-0.6,0-1-0.4-1-1s0.4-1,1-1h24c0.6,0,1,0.4,1,1S28.6,29,28,29z"/></svg>`,
+                            icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M18.5 1.15c-.53 0-1.04.21-1.41.59l-1.68 1.68 3.54 3.54 1.68-1.68c.78-.78.78-2.05 0-2.83l-.71-.7c-.37-.38-.88-.6-1.42-.6zM15.31 4.5l-9.98 9.98c-.12.12-.21.28-.25.45l-.93 4.41c-.11.52.35.98.87.87l4.41-.93c.17-.04.33-.13.45-.25l9.99-9.98-3.56-3.55zM5 19H3v2h2v2h2v-2h2v-2H7v-2H5v2z"/></svg>`,
                         },
+                        title: 'Highlight',
                     },
                     Color: {
                         class: ColorPlugin,
@@ -143,33 +179,8 @@ export function useCreateEditor({
                             type: 'text',
                             customPicker: true,
                         },
+                        title: 'Text Color',
                     },
-                    inlineCode: InlineCode,
-                    bold: {
-                        class: createGenericInlineTool({
-                            sanitize: { strong: {} },
-                            shortcut: 'CMD+B',
-                            tagName: 'STRONG',
-                            toolboxIcon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18"><path d="M6 4h8a4 4 0 0 1 0 8H6zm0 8h9a4 4 0 0 1 0 8H6z"/></svg>`,
-                        }),
-                    },
-                    underline: {
-                        class: createGenericInlineTool({
-                            sanitize: { u: {} },
-                            shortcut: 'CMD+U',
-                            tagName: 'U',
-                            toolboxIcon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18"><path d="M6 4v6a6 6 0 0 0 12 0V4"/><line x1="4" y1="20" x2="20" y2="20"/></svg>`,
-                        }),
-                    },
-                    italic: {
-                        class: createGenericInlineTool({
-                            sanitize: { em: {} },
-                            shortcut: 'CMD+I',
-                            tagName: 'EM',
-                            toolboxIcon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18"><line x1="19" y1="4" x2="10" y2="4"/><line x1="14" y1="20" x2="5" y2="20"/><line x1="15" y1="4" x2="9" y2="20"/></svg>`,
-                        }),
-                    },
-                    strikethrough: Strikethrough,
 
                     // ── Block Tunes ─────────────────────────────────────
                     alignmentTune: AlignmentTuneTool,
