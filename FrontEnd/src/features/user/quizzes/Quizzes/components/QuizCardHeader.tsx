@@ -45,20 +45,22 @@ const QuizCardHeader: React.FC<QuizCardHeaderProps> = ({
         >
           {title}
         </Title>
-        <Text
-          type="secondary"
-          style={{
-            fontSize: 13,
-            display: "block",
-            marginBottom: 4,
-            fontFamily: "monospace",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-          }}
-        >
-          Source: {noteTitle}
-        </Text>
+        {
+          noteTitle ? <Text
+            type="secondary"
+            style={{
+              fontSize: 13,
+              display: "block",
+              marginBottom: 4,
+              fontFamily: "monospace",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            Source: {noteTitle}
+          </Text> : <></>
+        }
       </div>
       <Button
         danger

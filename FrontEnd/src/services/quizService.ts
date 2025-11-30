@@ -34,7 +34,7 @@ const quizService = {
     return data.result;
   },
   createManualQuiz: async (payload: CreateManualQuizDTO): Promise<string> => {
-    const {data} = await instance.post<ReturnResult<string>>(
+    const { data } = await instance.post<ReturnResult<string>>(
       "/Quiz/manual", payload
     )
 
@@ -59,6 +59,10 @@ const quizService = {
       `/Quiz/validate-note-length?noteId=${nodeId}`
     );
     return data.result === true;
+  },
+  forkQuiz: async (quizId: string): Promise<QuizDetail> => {
+    const { data } = await instance.post<ReturnResult<QuizDetail>>(`/Quiz/${quizId}/Fork`, {})
+    return data.result;
   }
 };
 

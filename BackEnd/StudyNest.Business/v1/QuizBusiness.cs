@@ -47,7 +47,6 @@ namespace StudyNest.Business.v1
             this._mapper = mapper;
             this._hubContext = hubContext;
         }
-
         public async Task<ReturnResult<CreateQuizJobResponseDTO>> EnqueueGenerateAsync(CreateQuizDTO dto)
         {
             var result = new ReturnResult<CreateQuizJobResponseDTO>();
@@ -123,12 +122,10 @@ namespace StudyNest.Business.v1
 
             return result;
         }
-
         public async Task GenerateQuizInBackground(string jobId, CreateQuizDTO dto, string userId)
         {
             await GenerateQuizInBackground(jobId, dto, userId, null);
         }
-
         public async Task GenerateQuizInBackground(string jobId, CreateQuizDTO dto, string userId, PerformContext context = null)
         {
             try
@@ -252,7 +249,6 @@ namespace StudyNest.Business.v1
             }
             return rs;
         }
-
         public async Task<ReturnResult<Quiz>> GetQuizDetail(string id)
         {
             var rs = new ReturnResult<Quiz>();
@@ -268,7 +264,7 @@ namespace StudyNest.Business.v1
                     .Include(q => q.Questions)
                         .ThenInclude(qn => qn.Choices)
                     .FirstOrDefaultAsync();
-                if (quiz is null)
+                if (quiz is null || !quiz.IsPublic || quiz.OwnerId != _userContext.UserId)
                 {
                     rs.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "quiz", id);
                     return rs;
@@ -285,7 +281,6 @@ namespace StudyNest.Business.v1
             }
             return rs;
         }
-
         public async Task<ReturnResult<bool>> UpdateQuiz(UpdateQuizDTO request)
         {
             var rs = new ReturnResult<bool>();
@@ -411,8 +406,6 @@ namespace StudyNest.Business.v1
             }
             return rs;
         }
-
-
         public async Task<ReturnResult<bool>> DeleteById(string id)
         {
             var rs = new ReturnResult<bool>();
@@ -443,7 +436,6 @@ namespace StudyNest.Business.v1
             }
             return rs;
         }
-
         public async Task<ReturnResult<bool>> ValidateNoteContent(string noteId)
         {
             var rs = new ReturnResult<bool>();
@@ -470,7 +462,108 @@ namespace StudyNest.Business.v1
                 rs.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
             }
             return rs;
-        }   
+        }
+        public async Task<ReturnResult<bool>> PublishQuiz(string quizId)
+        {
+            ReturnResult<bool> result = new ReturnResult<bool>();
+            try
+            {
+                var quiz = await _context.Quizzes.FirstOrDefaultAsync(q => q.Id == quizId && q.OwnerId == _userContext.UserId);
+                if (quiz != null)
+                {
+                    if (quiz.IsPublic)
+                    {
+                        result.Message = "Quiz is already published.";
+                        return result;
+                    }
+                    else
+                    {
+                        quiz.IsPublic = true;
+                        var saved = await _context.SaveChangesAsync();
+                        if (saved > 0)
+                        {
+                            result.Result = true;
+                        }
+                        else
+                        {
+                            result.Message = "Failed to publish quiz. Please try again.";
+                        }
+                    }
+                }
+                else
+                {
+                    result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "quiz", quizId);
+                }
 
+            }
+            catch (Exception ex)
+            {
+                result.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
+                StudyNestLogger.Instance.Error(ex);
+            }
+            return result;
+        }
+        public async Task<ReturnResult<Quiz>> ForkQuiz(string quizId)
+        {
+            var result = new ReturnResult<Quiz>();
+            try
+            {
+                var existingQuiz = await _context.Quizzes
+                    .Include(q => q.Questions)
+                        .ThenInclude(qn => qn.Choices)
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(q => q.Id == quizId && q.IsPublic == true);
+
+                if (existingQuiz == null || !existingQuiz.IsPublic)
+                {
+                    result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "quiz", quizId);
+                    return result;
+                }
+
+                if (_userContext.UserId == existingQuiz.OwnerId)
+                {
+                    result.Message = "You cannot fork your own quiz.";
+                    return result;
+                }
+
+                // Create a new quiz with forked content
+                var forkedQuiz = new Quiz
+                {
+                    Title = $"{existingQuiz.Title} (Forked)",
+                    Difficulty = existingQuiz.Difficulty,
+                    OwnerId = _userContext.UserId,
+                    NoteId = null,
+                    IsPublic = false,
+                    IsBeingConvertToSnapShot = false,
+                    Questions = existingQuiz.Questions.Select(q => new Question
+                    {
+                        Name = q.Name,
+                        Type = q.Type,
+                        Explanation = q.Explanation,
+                        Choices = q.Choices.Select(c => new Choice
+                        {
+                            Text = c.Text,
+                            IsCorrect = c.IsCorrect
+                        }).ToList()
+                    }).ToList()
+                };
+                _context.Quizzes.Add(forkedQuiz);
+
+                if(await _context.SaveChangesAsync() > 0 )
+                {
+                    result.Result = forkedQuiz; 
+                }
+                else
+                {
+                    result.Message = "Failed to fork quiz. Please try again.";
+                }
+            }
+            catch (Exception ex)
+            {
+                result.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
+                StudyNestLogger.Instance.Error(ex);
+            }
+            return result;
+        }
     }
 }

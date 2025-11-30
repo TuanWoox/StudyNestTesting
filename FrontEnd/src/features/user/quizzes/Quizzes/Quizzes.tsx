@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { theme } from "antd";
 import { useNavigate } from "react-router-dom";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
@@ -15,6 +15,7 @@ import QuizDeleteModal from "./components/QuizDeleteModal";
 import QuizPagination from "./components/QuizPagination";
 import QuizFilterModal from "./components/QuizFilterModal";
 import QuizCreateModal from "./components/QuizCreateModal";
+import ForkQuizModal, { ForkQuizModalRef } from "./components/ForkQuizModal";
 
 const { useToken } = theme;
 
@@ -30,13 +31,13 @@ const Quizzes: React.FC = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  
+
   // Filter & Sort states
   const [createdFilterRange, setCreatedFilterRange] = useState<[Dayjs | null, Dayjs | null]>([null, null]);
   const [sortField, setSortField] = useState<"dateCreated" | "title">("dateCreated");
   const [sortOrder, setSortOrder] = useState<SortOrderType>(SortOrderType.DESC);
   const [difficulty, setDifficulty] = useState<string | undefined>(undefined);
-  
+
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   const {
@@ -57,6 +58,7 @@ const Quizzes: React.FC = () => {
 
   const { deleteQuizAsync, isLoading: isDeleting } = useDeleteQuiz();
   const { createManualQuizAsync } = useCreateManualQuiz();
+  const forkQuizModalRef = useRef<ForkQuizModalRef>(null);
 
   const quizzes = quizData?.data || [];
   const totalElements = quizData?.page.totalElements || 0;
@@ -159,12 +161,13 @@ const Quizzes: React.FC = () => {
     >
       <div style={{ width: "100%" }}>
         <QuizHeader />
-        
+
         <QuizSearchControls
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
           onOpenFilter={() => setIsFilterModalOpen(true)}
           onCreateQuiz={() => setIsCreateModalOpen(true)}
+          onForkQuiz={() => forkQuizModalRef.current?.open()}
         />
 
         <QuizGrid
@@ -217,6 +220,10 @@ const Quizzes: React.FC = () => {
         onCancel={() => setIsCreateModalOpen(false)}
         onGenerateFromNote={handleGenerateFromNote}
         onCreateFromScratch={handleCreateFromScratch}
+      />
+
+      <ForkQuizModal
+        ref={forkQuizModalRef}
       />
     </div>
   );
