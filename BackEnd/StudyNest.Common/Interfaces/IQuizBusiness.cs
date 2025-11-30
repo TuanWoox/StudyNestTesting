@@ -24,6 +24,8 @@ namespace StudyNest.Common.Interfaces
         Task<ReturnResult<bool>> ValidateNoteContent(string noteId);
         Task<ReturnResult<bool>> PublishQuiz (string quizId);
         Task<ReturnResult<Quiz>> ForkQuiz(string quizId);
+        Task<ReturnResult<Quiz>> GetQuizDetailByFriendlyURL(string friendlyURL);
+        Task<ReturnResult<bool>> ChangeFriendlyUrl(string id, string newFriendlyUrl);
     }
 }
     

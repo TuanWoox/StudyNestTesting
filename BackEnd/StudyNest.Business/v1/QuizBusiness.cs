@@ -1,4 +1,4 @@
-﻿﻿using AutoMapper;
+﻿using AutoMapper;
 using Hangfire;
 using Hangfire.Server;
 using Hangfire.Storage;
@@ -260,11 +260,11 @@ namespace StudyNest.Business.v1
                     return rs;
                 }
                 var quiz = await _context.Quizzes
-                    .Where(q => q.Id == id)
+                    .Where(q => q.Id == id && q.OwnerId == _userContext.UserId)
                     .Include(q => q.Questions)
                         .ThenInclude(qn => qn.Choices)
                     .FirstOrDefaultAsync();
-                if (quiz is null || !quiz.IsPublic || quiz.OwnerId != _userContext.UserId)
+                if (quiz is null)
                 {
                     rs.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "quiz", id);
                     return rs;
@@ -466,6 +466,7 @@ namespace StudyNest.Business.v1
         public async Task<ReturnResult<bool>> PublishQuiz(string quizId)
         {
             ReturnResult<bool> result = new ReturnResult<bool>();
+            result.Result = false;
             try
             {
                 var quiz = await _context.Quizzes.FirstOrDefaultAsync(q => q.Id == quizId && q.OwnerId == _userContext.UserId);
@@ -473,20 +474,20 @@ namespace StudyNest.Business.v1
                 {
                     if (quiz.IsPublic)
                     {
-                        result.Message = "Quiz is already published.";
-                        return result;
+                        quiz.IsPublic = false;
+                        quiz.FriendlyURL = string.Empty;
+                        if (await _context.SaveChangesAsync() > 0)
+                        {
+                            result.Result = true;
+                        }
                     }
                     else
                     {
                         quiz.IsPublic = true;
-                        var saved = await _context.SaveChangesAsync();
-                        if (saved > 0)
+                        quiz.FriendlyURL = quiz.Id;
+                        if (await _context.SaveChangesAsync() > 0)
                         {
                             result.Result = true;
-                        }
-                        else
-                        {
-                            result.Message = "Failed to publish quiz. Please try again.";
                         }
                     }
                 }
@@ -494,7 +495,10 @@ namespace StudyNest.Business.v1
                 {
                     result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "quiz", quizId);
                 }
-
+                if(result.Result == false && result.Message != null)
+                {
+                    result.Message = "Fail to publish quiz, please try again";
+                }
             }
             catch (Exception ex)
             {
@@ -534,6 +538,7 @@ namespace StudyNest.Business.v1
                     OwnerId = _userContext.UserId,
                     NoteId = null,
                     IsPublic = false,
+                    FriendlyURL = string.Empty,
                     IsBeingConvertToSnapShot = false,
                     Questions = existingQuiz.Questions.Select(q => new Question
                     {
@@ -551,6 +556,8 @@ namespace StudyNest.Business.v1
 
                 if(await _context.SaveChangesAsync() > 0 )
                 {
+
+                    await _context.SaveChangesAsync();
                     result.Result = forkedQuiz; 
                 }
                 else
@@ -561,6 +568,77 @@ namespace StudyNest.Business.v1
             catch (Exception ex)
             {
                 result.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
+                StudyNestLogger.Instance.Error(ex);
+            }
+            return result;
+        }
+        public async Task<ReturnResult<Quiz>> GetQuizDetailByFriendlyURL(string friendlyURL)
+        {
+            ReturnResult<Quiz> result = new ReturnResult<Quiz>();
+            try
+            {
+                if (string.IsNullOrWhiteSpace(friendlyURL))
+                {
+                    result.Message = ResponseMessage.MESSAGE_ITEM_NOT_EXIST.Replace("{0}", "quiz url");
+                    return result;
+                }
+                var quiz = await _context.Quizzes
+                    .Where(q => q.FriendlyURL == friendlyURL)
+                    .Include(q => q.Questions)
+                        .ThenInclude(qn => qn.Choices)
+                    .FirstOrDefaultAsync();
+                if (quiz == null || !quiz.IsPublic)
+                {
+                    return result;
+                }
+                quiz.Questions = quiz.Questions
+                    .OrderByDescending(q => q.DateModified)
+                    .ToList();
+                result.Result = quiz;
+            }
+            catch (Exception ex)
+            {
+                result.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
+                StudyNestLogger.Instance.Error(ex);
+            }
+            return result;
+        }
+        public async Task<ReturnResult<bool>> ChangeFriendlyUrl(string id, string newFriendlyUrl)
+        {
+            ReturnResult<bool> result = new ReturnResult<bool>();
+            try
+            {
+                var existingQuiz = await _context.Quizzes.Where(x => x.Id == id.Trim() && x.OwnerId == _userContext.UserId)
+                                                         .FirstOrDefaultAsync();
+                if (existingQuiz != null)
+                {
+                    var existingQuizFriendlyUrl = await _context.Quizzes.Where(x => x.FriendlyURL == newFriendlyUrl.Trim())
+                                                                        .FirstOrDefaultAsync();
+                    if(existingQuizFriendlyUrl == null)
+                    {
+                        existingQuiz.FriendlyURL = newFriendlyUrl.Trim();
+                        if (await _context.SaveChangesAsync() > 0)
+                        {
+                            result.Result = true;
+                        }
+                        else 
+                        {
+                            result.Message = "Change Friendly Url fail, try again later";
+                        }
+                    }
+                    else
+                    {
+                        result.Message = "This friendly url has been used, consider to use another";
+                    }
+                }
+                else
+                {
+                    result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "quiz", id);
+                }
+            }
+            catch(Exception ex)
+            {
+                result.Message = ex.Message;
                 StudyNestLogger.Instance.Error(ex);
             }
             return result;

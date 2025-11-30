@@ -14,6 +14,8 @@ export interface QuizDetail {
   difficulty: string;
   dateCreated: string;
   questions: Question[];
+  isPublic: boolean;
+  friendlyUrl: string | undefined;
 }
 
 export interface Question {

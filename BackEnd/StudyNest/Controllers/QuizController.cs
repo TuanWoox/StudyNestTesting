@@ -124,7 +124,7 @@ namespace StudyNest.Controllers
             }
             return Ok(rs);
         }
-        [HttpPut("{id}/Publish")]
+        [HttpPut("Publish/{id}")]
         public async Task<IActionResult> PublishQuiz(string id)
         {
             var rs = new ReturnResult<bool>();
@@ -138,7 +138,7 @@ namespace StudyNest.Controllers
             }
             return Ok(rs);
         }
-        [HttpPost("{id}/Fork")]
+        [HttpPost("Fork/{id}")]
         public async Task<IActionResult> ForkQuiz(string id)
         {
             ReturnResult<Quiz> result = new ReturnResult<Quiz>();
@@ -146,11 +146,40 @@ namespace StudyNest.Controllers
             {
                 result = await _quizBusiness.ForkQuiz(id);
             }
+            catch (Exception ex)
+            {
+                StudyNestLogger.Instance.Error(ex);
+            }
+            return Ok(result);
+        }
+        [HttpGet("GetByFriendlyURL/{friendlyURL}")]
+        public async Task<IActionResult> GetQuizByFriendlyURL(string friendlyURL)
+        {
+            var rs = new ReturnResult<Quiz>();
+            try
+            {
+                rs = await _quizBusiness.GetQuizDetailByFriendlyURL(friendlyURL);
+            }
+            catch (Exception ex)
+            {
+                StudyNestLogger.Instance.Error(ex);
+            }
+            return Ok(rs);
+        }
+        [HttpPut("ChangeFriendlyURl/{id}")]
+        public async Task<IActionResult> ChangeFriendlyUrl(string id,[FromBody] string newFriendlyUrl)
+        {
+            ReturnResult<bool> result = new ReturnResult<bool>();
+            try
+            {
+                result = await _quizBusiness.ChangeFriendlyUrl(id, newFriendlyUrl);
+            }
             catch(Exception ex)
             {
                 StudyNestLogger.Instance.Error(ex);
             }
             return Ok(result);
         }
+
     }
 }

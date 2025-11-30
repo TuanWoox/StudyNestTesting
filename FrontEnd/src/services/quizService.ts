@@ -61,9 +61,17 @@ const quizService = {
     return data.result === true;
   },
   forkQuiz: async (quizId: string): Promise<QuizDetail> => {
-    const { data } = await instance.post<ReturnResult<QuizDetail>>(`/Quiz/${quizId}/Fork`, {})
+    const { data } = await instance.post<ReturnResult<QuizDetail>>(`/Quiz/Fork/${quizId}`, {})
     return data.result;
-  }
+  },
+  usePublishQuiz: async (quizId: string) => {
+    const { data } = await instance.put<ReturnResult<boolean>>(`/Quiz/Publish/${quizId}`)
+    return data.result
+  },
+  getQuizByFriendlyUrl: async (friendlyURL: string): Promise<QuizDetail> => {
+    const { data } = await instance.get<ReturnResult<QuizDetail>>(`/Quiz/GetByFriendlyURL/${friendlyURL}`)
+    return data.result;
+  },
 };
 
 export default quizService;

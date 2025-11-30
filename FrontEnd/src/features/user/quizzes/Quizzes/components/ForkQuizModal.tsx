@@ -22,6 +22,7 @@ import useGetQuizDetail from "@/hooks/quizHook/useGetQuizDetail";
 import Spinner from "@/components/Spinner/Spinner";
 import { QuestionItem } from "@/features/user/quizzes/QuizDetailPage/components/QuestionItem";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
+import useGetQuizDetailByFriendlyURL from "@/hooks/quizHook/useGetQuizDetailByFriendlyURL";
 
 const { Title, Text } = Typography;
 
@@ -36,26 +37,26 @@ interface ForkQuizModalProps {
 
 const ForkQuizModal = forwardRef<ForkQuizModalRef, ForkQuizModalProps>((props, ref) => {
     const [visible, setVisible] = useState(false);
-    const [quizId, setQuizId] = useState("");
-    const [quizToSearch, setQuizToSearch] = useState("");
+    const [quizFriendlyUrl, setQuizFriendlyUrl] = useState("");
+    const [quizFriendlyUrlToSearch, setQuizFriendlyUrlToSearch] = useState("");
     const [initialFetching, setInitialFetching] = useState(true);
     const { borderColor, shadowColor, modalStyles } = useAntDesignTheme();
     const { mutate: forkQuiz, isPending: isForking } = useForkQuiz();
-    const { data, refetch: fetchQuizDetail, isLoading: isFetching } = useGetQuizDetail(quizToSearch, { enabled: false });
+    const { data, refetch: fetchQuizDetail, isLoading: isFetching } = useGetQuizDetailByFriendlyURL(quizFriendlyUrlToSearch, { enabled: false });
 
     useImperativeHandle(ref, () => ({
         open: () => setVisible(true),
         close: () => {
             setVisible(false);
-            setQuizId("");
+            setQuizFriendlyUrl("");
         },
     }));
 
     useEffect(() => {
-        if (quizToSearch.trim()) {
+        if (quizFriendlyUrlToSearch.trim()) {
             fetchQuizDetail();
         }
-    }, [quizToSearch, fetchQuizDetail]);
+    }, [quizFriendlyUrlToSearch, fetchQuizDetail]);
 
     useEffect(() => {
         setInitialFetching(false)
@@ -71,13 +72,13 @@ const ForkQuizModal = forwardRef<ForkQuizModalRef, ForkQuizModalProps>((props, r
 
     const handleClose = () => {
         setVisible(false);
-        setQuizId("");
-        setQuizToSearch("");
+        setQuizFriendlyUrl("");
+        setQuizFriendlyUrlToSearch("");
         setInitialFetching(true);
     };
 
     const handleFork = () => {
-        forkQuiz(quizToSearch, {
+        forkQuiz(quizFriendlyUrlToSearch, {
             onSuccess: (data) => {
                 if (data) {
                     handleClose();
@@ -87,7 +88,7 @@ const ForkQuizModal = forwardRef<ForkQuizModalRef, ForkQuizModalProps>((props, r
     };
 
     const handleFetchQuiz = () => {
-        setQuizToSearch(quizId.trim());
+        setQuizFriendlyUrlToSearch(quizFriendlyUrl.trim());
     };
 
     const renderFooter = () => {
@@ -138,13 +139,15 @@ const ForkQuizModal = forwardRef<ForkQuizModalRef, ForkQuizModalProps>((props, r
                     Fork Quiz
                 </Title>
 
-                <label className="font-bold">Enter Quiz ID</label>
+                <Title level={4} style={{ marginTop: 0, marginBottom: 16 }}>
+                    Enter Quiz Friendly Url
+                </Title>
 
                 <Input
                     placeholder="Enter quiz ID to fork..."
                     prefix={<SearchOutlined />}
-                    value={quizId}
-                    onChange={(e) => setQuizId(e.target.value)}
+                    value={quizFriendlyUrl}
+                    onChange={(e) => setQuizFriendlyUrl(e.target.value)}
                     onPressEnter={handleFetchQuiz}
                     disabled={isFetching}
                     style={{

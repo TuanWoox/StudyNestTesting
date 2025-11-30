@@ -24,6 +24,7 @@ namespace StudyNest.Common.DbEntities.Entities
         public Note? Note { get; set; }
         public bool IsBeingConvertToSnapShot { get; set; } = false;
         public bool IsPublic { get; set; } = false;
+        public string? FriendlyURL { get; set; } = string.Empty;
         public ICollection<Question> Questions { get; set; } = new List<Question>();
         public ICollection<QuizAttemptSnapshot> QuizAttemptSnapshots { get; set; } = new List<QuizAttemptSnapshot>();
     }
