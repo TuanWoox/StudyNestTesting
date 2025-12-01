@@ -13,6 +13,7 @@ interface StudynestModalProps {
     customFooter?: React.ReactNode;
     customStyles?: ModalProps["styles"];
     width?: string; // optional width
+    isLoading?: boolean;
 }
 
 const StudynestModal: React.FC<StudynestModalProps> = ({
@@ -25,7 +26,8 @@ const StudynestModal: React.FC<StudynestModalProps> = ({
     cancelText,
     customFooter,
     customStyles,
-    width
+    width,
+    isLoading
 }) => {
     const { modalStyles } = useAntDesignTheme();
     const appliedStyles = customStyles ? customStyles : modalStyles;
@@ -46,6 +48,7 @@ const StudynestModal: React.FC<StudynestModalProps> = ({
                         onSave={onSave}
                         saveText={saveText}
                         cancelText={cancelText}
+                        isLoading={isLoading}
                     />
                 )
             }
@@ -66,6 +69,7 @@ interface StudynestModalDefaultFooterProps {
     onSave?: () => void;
     saveText?: string;
     cancelText?: string;
+    isLoading?: boolean;
 }
 
 const StudynestModalDefaultFooter: React.FC<StudynestModalDefaultFooterProps> = ({
@@ -73,12 +77,22 @@ const StudynestModalDefaultFooter: React.FC<StudynestModalDefaultFooterProps> = 
     onSave,
     saveText = "Save",
     cancelText = "Cancel",
+    isLoading,
 }) => {
     return (
         <div className="flex justify-end gap-2 mb-4 mr-4 ml-4">
-            <Button onClick={onClose}>{cancelText}</Button>
+            <Button
+                onClick={onClose}
+                disabled={isLoading}
+            >
+                {cancelText}
+            </Button>
             {onSave && (
-                <Button type="primary" onClick={onSave}>
+                <Button
+                    type="primary"
+                    onClick={onSave}
+                    disabled={isLoading}
+                >
                     {saveText}
                 </Button>
             )}

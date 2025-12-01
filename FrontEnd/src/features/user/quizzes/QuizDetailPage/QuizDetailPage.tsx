@@ -12,7 +12,7 @@ import { useUnsavedChanges } from "@/hooks/common/useUnsavedChanges";
 import { useCollapsibleHeader } from "@/hooks/common/useCollapsibleHeader";
 import QuizHeader from "./components/QuizHeader";
 import QuestionList from "./components/QuestionList";
-import { QuizMetadataCard, UnsavedChangesModal } from "./components";
+import { QuizMetadataCard, QuizPublishSettings, UnsavedChangesModal } from "./components";
 import { useQuizTimeLimit } from "@/hooks/quizAttempt/useQuizTimeLimit";
 const { useToken } = theme;
 
@@ -156,6 +156,11 @@ const QuizDetailPage: React.FC = () => {
             questionCount={quiz?.questions?.length ?? 0}
             dateCreated={quiz.dateCreated}
             difficulty={quiz.difficulty}
+          />
+          <QuizPublishSettings
+            quiz={quiz}
+            onDirtyChange={setIsDirty}
+            showConfirmDiscard={showConfirmDiscard}
           />
         </div>
       </div>

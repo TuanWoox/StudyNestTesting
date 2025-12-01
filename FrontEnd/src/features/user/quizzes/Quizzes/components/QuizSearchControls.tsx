@@ -1,12 +1,13 @@
 import React from "react";
 import { Input, Button, theme, Grid } from "antd";
-import { SearchOutlined, FilterOutlined, PlusOutlined } from "@ant-design/icons";
+import { SearchOutlined, FilterOutlined, PlusOutlined, ForkOutlined } from "@ant-design/icons";
 
 interface QuizSearchControlsProps {
     searchTerm: string;
     onSearchChange: (value: string) => void;
     onOpenFilter: () => void;
     onCreateQuiz: () => void;
+    onForkQuiz?: () => void;
 }
 
 const QuizSearchControls: React.FC<QuizSearchControlsProps> = ({
@@ -14,6 +15,7 @@ const QuizSearchControls: React.FC<QuizSearchControlsProps> = ({
     onSearchChange,
     onOpenFilter,
     onCreateQuiz,
+    onForkQuiz,
 }) => {
     const { token } = theme.useToken();
     const { useBreakpoint } = Grid;
@@ -27,7 +29,7 @@ const QuizSearchControls: React.FC<QuizSearchControlsProps> = ({
                 display: "flex",
                 gap: 12,
                 marginBottom: 24,
-                flexWrap: "nowrap",
+                flexWrap: "wrap",
                 alignItems: "center",
             }}
         >
@@ -48,41 +50,70 @@ const QuizSearchControls: React.FC<QuizSearchControlsProps> = ({
                 allowClear
             />
 
-            {/* Filter Button */}
-            <Button
-                type="default"
-                icon={<FilterOutlined />}
-                onClick={onOpenFilter}
+            {/* Button Group */}
+            <div
                 style={{
-                    fontWeight: 600,
-                    boxShadow: `2px 2px 0 ${shadowColor}`,
-                    border: `1px solid ${borderColor}`,
-                    borderRadius: 0,
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center"
+                    display: "flex",
+                    gap: 12,
+                    flexWrap: "nowrap",
                 }}
             >
-                {screens.sm ? "Filter" : ""}
-            </Button>
+                {/* Filter Button */}
+                <Button
+                    type="default"
+                    icon={<FilterOutlined />}
+                    onClick={onOpenFilter}
+                    style={{
+                        fontWeight: 600,
+                        boxShadow: `2px 2px 0 ${shadowColor}`,
+                        border: `1px solid ${borderColor}`,
+                        borderRadius: 0,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center"
+                    }}
+                >
+                    {screens.sm ? "Filter" : ""}
+                </Button>
 
-            {/* Create New Quiz Button */}
-            <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={onCreateQuiz}
-                style={{
-                    borderRadius: 0,
-                    border: `1px solid ${borderColor}`,
-                    fontWeight: 600,
-                    boxShadow: `2px 2px 0 ${shadowColor}`,
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center"
-                }}
-            >
-                {screens.sm ? "Create New Quiz" : ""}
-            </Button>
+                {/* Fork Quiz Button */}
+                {onForkQuiz && (
+                    <Button
+                        type="default"
+                        icon={<ForkOutlined />}
+                        onClick={onForkQuiz}
+                        style={{
+                            fontWeight: 600,
+                            boxShadow: `2px 2px 0 ${shadowColor}`,
+                            border: `1px solid ${borderColor}`,
+                            borderRadius: 0,
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center"
+                        }}
+                    >
+                        {screens.sm ? "Fork Quiz" : ""}
+                    </Button>
+                )}
+
+                {/* Create New Quiz Button */}
+                <Button
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    onClick={onCreateQuiz}
+                    style={{
+                        borderRadius: 0,
+                        border: `1px solid ${borderColor}`,
+                        fontWeight: 600,
+                        boxShadow: `2px 2px 0 ${shadowColor}`,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center"
+                    }}
+                >
+                    {screens.sm ? "Create New Quiz" : ""}
+                </Button>
+            </div>
         </div>
     );
 };

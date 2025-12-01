@@ -34,7 +34,7 @@ const quizService = {
     return data.result;
   },
   createManualQuiz: async (payload: CreateManualQuizDTO): Promise<string> => {
-    const {data} = await instance.post<ReturnResult<string>>(
+    const { data } = await instance.post<ReturnResult<string>>(
       "/Quiz/manual", payload
     )
 
@@ -59,6 +59,22 @@ const quizService = {
       `/Quiz/validate-note-length?noteId=${nodeId}`
     );
     return data.result === true;
+  },
+  forkQuiz: async (quizId: string): Promise<QuizDetail> => {
+    const { data } = await instance.post<ReturnResult<QuizDetail>>(`/Quiz/Fork/${quizId}`, {})
+    return data.result;
+  },
+  usePublishQuiz: async (quizId: string) => {
+    const { data } = await instance.put<ReturnResult<boolean>>(`/Quiz/Publish/${quizId}`)
+    return data.result
+  },
+  getQuizByFriendlyUrl: async (friendlyURL: string): Promise<QuizDetail> => {
+    const { data } = await instance.get<ReturnResult<QuizDetail>>(`/Quiz/GetByFriendlyUrl/${friendlyURL}`)
+    return data.result;
+  },
+  changeFriendlyUrl: async (quizId: string, newFriendlyUrl: string): Promise<boolean> => {
+    const { data } = await instance.put<ReturnResult<boolean>>(`/Quiz/ChangeFriendlyUrl/${quizId}?newFriendlyUrl=${newFriendlyUrl}`)
+    return data.result;
   }
 };
 

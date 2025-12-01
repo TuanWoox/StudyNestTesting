@@ -6,6 +6,7 @@ export { ChoiceList } from "./ChoiceList";
 
 // New components (QuizDetailPage refactoring)
 export { QuizMetadataCard } from "./QuizMetadataCard";
+export { QuizPublishSettings } from "./QuizPublishSettings";
 export { UnsavedChangesModal } from "./UnsavedChangesModal";
 export { QuestionFormValidation } from "./QuestionFormValidation";
 export { QuizTitleEditor } from "./QuizTitleEditor";

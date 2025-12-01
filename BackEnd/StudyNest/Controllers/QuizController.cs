@@ -28,7 +28,7 @@ namespace StudyNest.Controllers
         [HttpPost("GetPaging")]
         public async Task<IActionResult> GetAllQuizByUserId(Page<string> page, bool isExported = false)
         {
-            var rs = new ReturnResult<PagedData<QuizListDTO, string>> ();
+            var rs = new ReturnResult<PagedData<QuizListDTO, string>>();
             try
             {
                 rs = await _quizBusiness.GetAllQuizByUserId(page, isExported);
@@ -123,6 +123,62 @@ namespace StudyNest.Controllers
                 StudyNestLogger.Instance.Error(ex);
             }
             return Ok(rs);
+        }
+        [HttpPut("Publish/{id}")]
+        public async Task<IActionResult> PublishQuiz(string id)
+        {
+            var rs = new ReturnResult<bool>();
+            try
+            {
+                rs = await _quizBusiness.PublishQuiz(id);
+            }
+            catch (Exception ex)
+            {
+                StudyNestLogger.Instance.Error(ex);
+            }
+            return Ok(rs);
+        }
+        [HttpPost("Fork/{id}")]
+        public async Task<IActionResult> ForkQuiz(string id)
+        {
+            ReturnResult<Quiz> result = new ReturnResult<Quiz>();
+            try
+            {
+                result = await _quizBusiness.ForkQuiz(id);
+            }
+            catch (Exception ex)
+            {
+                StudyNestLogger.Instance.Error(ex);
+            }
+            return Ok(result);
+        }
+        [HttpGet("GetByFriendlyUrl/{friendlyURL}")]
+        public async Task<IActionResult> GetQuizByFriendlyURL(string friendlyURL)
+        {
+            var rs = new ReturnResult<QuizDTO>();
+            try
+            {
+                rs = await _quizBusiness.GetQuizDetailByFriendlyURL(friendlyURL);
+            }
+            catch (Exception ex)
+            {
+                StudyNestLogger.Instance.Error(ex);
+            }
+            return Ok(rs);
+        }
+        [HttpPut("ChangeFriendlyUrl/{id}")]
+        public async Task<IActionResult> ChangeFriendlyUrl(string id, [FromQuery] string newFriendlyUrl)
+        {
+            ReturnResult<bool> result = new ReturnResult<bool>();
+            try
+            {
+                result = await _quizBusiness.ChangeFriendlyUrl(id, newFriendlyUrl);
+            }
+            catch(Exception ex)
+            {
+                StudyNestLogger.Instance.Error(ex);
+            }
+            return Ok(result);
         }
     }
 }
