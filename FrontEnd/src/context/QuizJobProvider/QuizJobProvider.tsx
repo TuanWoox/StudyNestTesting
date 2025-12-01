@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import * as signalR from "@microsoft/signalr";
 import { message } from "antd";
@@ -24,7 +24,9 @@ const STORAGE_KEY = "studynest_quiz_jobs_cache";
 
 const saveJobsToCache = (jobs: QuizJob[]) => {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(jobs));
+    const oneHourAgo = Date.now() - 60 * 60 * 1000;
+    const activeJobs = jobs.filter((job) => job.createdAt > oneHourAgo);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(activeJobs));
   } catch (error) {
     console.error("Failed to save jobs to cache:", error);
   }
@@ -38,6 +40,7 @@ const loadJobsFromCache = (): QuizJob[] => {
     const oneHourAgo = Date.now() - 60 * 60 * 1000;
     return jobs.filter((job) => job.createdAt > oneHourAgo);
   } catch (error) {
+    console.error("Failed to load jobs from cache:", error);
     return [];
   }
 };
@@ -220,9 +223,9 @@ export const QuizJobProvider = ({ children, hubUrl }: ProviderProps) => {
     return () => clearInterval(id);
   }, [dispatch, shouldFetchData]);
 
-  const markAsViewed = (jobId: string) => {
+  const markAsViewed = useCallback((jobId: string) => {
     dispatch(updateJob({ jobId, updates: { isViewed: true } }));
-  };
+  }, [dispatch]);
 
   const value = useMemo(
     () => ({
@@ -232,7 +235,8 @@ export const QuizJobProvider = ({ children, hubUrl }: ProviderProps) => {
       connectionStatus,
       isLoading: connectionStatus === "connecting" || connectionStatus === "reconnecting",
     }),
-    [jobs, unreadCount, connectionStatus]
+    // 2. Keep markAsViewed in the dependency array
+    [jobs, unreadCount, connectionStatus, markAsViewed] 
   );
 
   return <QuizJobContext.Provider value={value}>{children}</QuizJobContext.Provider>;

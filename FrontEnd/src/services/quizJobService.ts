@@ -19,7 +19,7 @@ const quizJobService = {
       quizId: dto.quizId,
       errorMessage: dto.errorMessage,
       isViewed: false,
-      createdAt: new Date(dto.timestamp).getTime(),
+      createdAt: new Date(dto.createdAt).getTime(),
     }));
   },
 
@@ -38,7 +38,7 @@ const quizJobService = {
       quizId: dto.quizId,
       errorMessage: dto.errorMessage,
       isViewed: false,
-      createdAt: new Date(dto.timestamp).getTime(),
+      createdAt: new Date(dto.createdAt).getTime(),
     }));
   },
 };

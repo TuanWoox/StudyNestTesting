@@ -42,7 +42,7 @@ namespace StudyNest.Business.v1
                         JobId = x.Id,
                         UserId = x.UserId,
                         NoteTitle = x.NoteTitle,
-                        Status = "processing",
+                        Status = x.Status == QuizJobStatus.Queued ? "queued" : "processing",
                         Timestamp = (x.DateCreated ?? DateTimeOffset.UtcNow).ToString("o"),
                         CreatedAt = (x.DateCreated ?? DateTimeOffset.UtcNow).DateTime
                     })
@@ -79,7 +79,7 @@ namespace StudyNest.Business.v1
                         JobId = x.Id,
                         UserId = x.UserId,
                         NoteTitle = x.NoteTitle,
-                        Status = x.Status == QuizJobStatus.Success ? "success" : "error",
+                        Status = x.Status == QuizJobStatus.Success ? "success" : "failed",
                         QuizId = x.ResultQuizId,
                         ErrorMessage = x.ErrorMessage,
                         Timestamp = (x.DateModified ?? DateTimeOffset.UtcNow).ToString("o"),

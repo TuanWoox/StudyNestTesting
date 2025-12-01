@@ -22,7 +22,6 @@ const quizJobSlice = createSlice({
       if (existingIndex >= 0) {
         state[existingIndex].status = action.payload.status;
         state[existingIndex].timestamp = action.payload.timestamp;
-        state[existingIndex].createdAt = Date.now();
       } else {
         state.push(action.payload);
       }
@@ -35,11 +34,15 @@ const quizJobSlice = createSlice({
       const job = state.find((j) => j.jobId === action.payload.jobId);
       if (job) {
         Object.assign(job, action.payload.updates);
-        if (action.payload.updates.status) {
-          job.createdAt = Date.now();
+        if (action.payload.updates.status && !action.payload.updates.timestamp) {
+          job.timestamp = new Date().toISOString();
         }
       }
-      state.sort((a, b) => b.createdAt - a.createdAt);
+      state.sort((a, b) => {
+        const timeA = new Date(a.timestamp).getTime();
+        const timeB = new Date(b.timestamp).getTime();
+        return timeB - timeA;
+      });
     },
     markViewed: (state, action: PayloadAction<string>) => {
       const job = state.find((j) => j.jobId === action.payload);

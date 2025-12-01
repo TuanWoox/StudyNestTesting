@@ -176,7 +176,7 @@ namespace StudyNest.Business.v1
             }
             catch (Exception ex)
             {
-                StudyNestLogger.Instance.Error($"Quiz generation failed for JobId {quizJobId}: {ex}");
+                StudyNestLogger.Instance.Error($"Quiz generation failed for QuizJobId {quizJobId}: {ex}");
 
                 var jobEntity = await _context.QuizJobs.FindAsync(quizJobId);
                 if (jobEntity != null)
