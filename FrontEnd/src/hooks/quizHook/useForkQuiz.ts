@@ -9,7 +9,7 @@ const useForkQuiz = () => {
         onSuccess: (data) => {
             if (data) {
                 queryClient.invalidateQueries({ queryKey: ["quizzes"] });
-                toast.success("Quiz Fork Successfully");
+                toast.success("Quiz Forked Successfully");
             }
         }
     })

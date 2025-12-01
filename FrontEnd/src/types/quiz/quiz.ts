@@ -16,7 +16,7 @@ export interface QuizDetail {
   questions: Question[];
   isPublic: boolean;
   friendlyUrl: string | undefined;
-  owner: Owner | undefined
+  owner: Owner | undefined;
 }
 
 export interface Question {

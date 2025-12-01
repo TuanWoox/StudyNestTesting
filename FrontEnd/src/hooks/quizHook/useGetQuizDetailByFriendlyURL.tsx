@@ -3,20 +3,20 @@ import { useQuery } from "@tanstack/react-query";
 import quizService from "@/services/quizService";
 import type { QuizDetail } from "@/types/quiz/quiz";
 
-const useGetQuizDetailByFriendlyURL = (
-    friendlyURl: string | undefined,
+const useGetQuizDetailByFriendlyUrl = (
+    friendlyUrl: string | undefined,
     options?: { enabled?: boolean }
 ) => {
-    const enabled = options?.enabled ?? !!friendlyURl;
+    const enabled = options?.enabled ?? !!friendlyUrl;
 
     return useQuery<QuizDetail>({
-        queryKey: ["quizFriendly", friendlyURl],
+        queryKey: ["quizFriendly", friendlyUrl],
         enabled,
-        queryFn: () => quizService.getQuizByFriendlyUrl(friendlyURl as string),
+        queryFn: () => quizService.getQuizByFriendlyUrl(friendlyUrl as string),
         staleTime: 5 * 60 * 1000,
         gcTime: 10 * 60 * 1000,
         retry: 1,
     });
 };
 
-export default useGetQuizDetailByFriendlyURL;
+export default useGetQuizDetailByFriendlyUrl;

@@ -22,8 +22,7 @@ import useForkQuiz from "@/hooks/quizHook/useForkQuiz";
 import Spinner from "@/components/Spinner/Spinner";
 import { QuestionItem } from "@/features/user/quizzes/QuizDetailPage/components/QuestionItem";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
-import useGetQuizDetailByFriendlyURL from "@/hooks/quizHook/useGetQuizDetailByFriendlyURL";
-
+import useGetQuizDetailByFriendlyUrl from "@/hooks/quizHook/useGetQuizDetailByFriendlyURL";
 const { Title, Text } = Typography;
 
 export interface QuizForkModalRef {
@@ -42,7 +41,7 @@ const QuizForkModal = forwardRef<QuizForkModalRef, QuizForkModalProps>((props, r
     const [initialFetching, setInitialFetching] = useState(true);
     const { borderColor, shadowColor, modalStyles } = useAntDesignTheme();
     const { mutate: forkQuiz, isPending: isForking } = useForkQuiz();
-    const { data, refetch: fetchQuizDetail, isLoading: isFetching } = useGetQuizDetailByFriendlyURL(quizFriendlyUrlToSearch, { enabled: false });
+    const { data, refetch: fetchQuizDetail, isLoading: isFetching } = useGetQuizDetailByFriendlyUrl(quizFriendlyUrlToSearch, { enabled: false });
 
     useImperativeHandle(ref, () => ({
         open: () => setVisible(true),
@@ -60,7 +59,7 @@ const QuizForkModal = forwardRef<QuizForkModalRef, QuizForkModalProps>((props, r
 
     useEffect(() => {
         setInitialFetching(false)
-    }, [isFetching])
+    }, [isFetching]);
 
     const customModalStyles: ModalProps["styles"] = {
         ...modalStyles,
@@ -146,7 +145,7 @@ const QuizForkModal = forwardRef<QuizForkModalRef, QuizForkModalProps>((props, r
                 </Title>
 
                 <Input
-                    placeholder="Enter quiz ID to fork..."
+                    placeholder="Enter quiz friendly URL..."
                     prefix={<SearchOutlined />}
                     value={quizFriendlyUrl}
                     onChange={(e) => setQuizFriendlyUrl(e.target.value)}

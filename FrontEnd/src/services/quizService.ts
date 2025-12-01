@@ -69,11 +69,11 @@ const quizService = {
     return data.result
   },
   getQuizByFriendlyUrl: async (friendlyURL: string): Promise<QuizDetail> => {
-    const { data } = await instance.get<ReturnResult<QuizDetail>>(`/Quiz/GetByFriendlyURL/${friendlyURL}`)
+    const { data } = await instance.get<ReturnResult<QuizDetail>>(`/Quiz/GetByFriendlyUrl/${friendlyURL}`)
     return data.result;
   },
-  changeFriendlyUrl: async (quizId: string, newFriendlyUrL: string): Promise<boolean> => {
-    const { data } = await instance.put<ReturnResult<boolean>>(`/Quiz/ChangeFriendlyURl/${quizId}?newFriendlyUrl=${newFriendlyUrL}`)
+  changeFriendlyUrl: async (quizId: string, newFriendlyUrl: string): Promise<boolean> => {
+    const { data } = await instance.put<ReturnResult<boolean>>(`/Quiz/ChangeFriendlyUrl/${quizId}?newFriendlyUrl=${newFriendlyUrl}`)
     return data.result;
   }
 };

@@ -523,7 +523,7 @@ namespace StudyNest.Business.v1
                 {
                     result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "quiz", quizId);
                 }
-                if (result.Result == false && result.Message != null)
+                if (!result.Result && result.Message == null)
                 {
                     result.Message = "Fail to publish quiz, please try again";
                 }
@@ -544,9 +544,9 @@ namespace StudyNest.Business.v1
                     .Include(q => q.Questions)
                         .ThenInclude(qn => qn.Choices)
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(q => q.Id == quizId && q.IsPublic == true);
+                    .FirstOrDefaultAsync(q => q.Id == quizId && q.IsPublic);
 
-                if (existingQuiz == null || !existingQuiz.IsPublic)
+                if (existingQuiz == null)
                 {
                     result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "quiz", quizId);
                     return result;
@@ -584,8 +584,6 @@ namespace StudyNest.Business.v1
 
                 if (await _context.SaveChangesAsync() > 0)
                 {
-
-                    await _context.SaveChangesAsync();
                     result.Result = forkedQuiz;
                 }
                 else
