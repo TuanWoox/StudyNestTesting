@@ -2,24 +2,21 @@ import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import * as signalR from "@microsoft/signalr";
 import { message } from "antd";
-import type { RootState, AppDispatch } from "@/store/store";
+import { RootState, AppDispatch } from "@/store/store";
 import {
   addJob,
   updateJob,
-  markViewed,
   cleanupOldJobs,
   QuizJob,
 } from "@/store/quizJobSlice";
 import { QuizJobContext } from "./QuizJobContextValue";
 import useGetProcessingJobs from "@/hooks/quizJobHook/useGetProcessingJobs";
 import useGetRecentJobs from "@/hooks/quizJobHook/useGetRecentJobs";
-import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
 import { selectRole } from "@/store/authSlice";
 
 interface ProviderProps {
   children: ReactNode;
   hubUrl?: string;
-  getAccessToken?: () => string | null;
 }
 
 const API_BASE = import.meta.env.VITE_API_URL_BASIC;
@@ -37,23 +34,15 @@ const loadJobsFromCache = (): QuizJob[] => {
   try {
     const cached = localStorage.getItem(STORAGE_KEY);
     if (!cached) return [];
-
     const jobs: QuizJob[] = JSON.parse(cached);
-
-    // Filter out old jobs (older than 1 hour)
     const oneHourAgo = Date.now() - 60 * 60 * 1000;
     return jobs.filter((job) => job.createdAt > oneHourAgo);
   } catch (error) {
-    console.error("Failed to load jobs from cache:", error);
     return [];
   }
 };
 
-export const QuizJobProvider = ({
-  children,
-  hubUrl,
-  getAccessToken,
-}: ProviderProps) => {
+export const QuizJobProvider = ({ children, hubUrl }: ProviderProps) => {
   const dispatch = useDispatch<AppDispatch>();
   const jobs = useSelector((s: RootState) => s.quizJob);
   const unreadCount = useMemo(
@@ -65,68 +54,47 @@ export const QuizJobProvider = ({
   const [connectionStatus, setConnectionStatus] = useState<
     "disconnected" | "connecting" | "connected" | "reconnecting"
   >("disconnected");
-  const [lastDisconnectTime, setLastDisconnectTime] = useState<number | null>(
-    null
-  );
+  
+  const [lastDisconnectTime, setLastDisconnectTime] = useState<number | null>(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const role = useReduxSelector(selectRole);
+  const role = useSelector(selectRole);
 
-  // Get access token
-  const accessToken = useMemo(() =>
-    getAccessToken ? getAccessToken() : localStorage.getItem("accessToken"),
-    [getAccessToken]
-  );
-
-  // Determine if we should fetch data
-  const shouldFetchData = useMemo(() =>
-    Boolean(role && accessToken),
-    [role, accessToken]
-  );
+  const accessToken = useMemo(() => localStorage.getItem("accessToken"), []);
+  const shouldFetchData = useMemo(() => Boolean(role && accessToken), [role, accessToken]);
 
   useEffect(() => {
-    // Only load from cache if we have authentication
     if (!shouldFetchData) {
       setIsInitialLoad(false);
       return;
     }
-
     const cachedJobs = loadJobsFromCache();
     if (cachedJobs.length > 0) {
-      console.log(`Loaded ${cachedJobs.length} jobs from cache (instant)`);
-      cachedJobs.forEach((job) => {
-        dispatch(addJob(job));
-      });
+      cachedJobs.forEach((job) => dispatch(addJob(job)));
     }
     setIsInitialLoad(false);
   }, [dispatch, shouldFetchData]);
 
-  // Only fetch processing jobs when authenticated
-  const { data: processingJobs } =
-    useGetProcessingJobs({
-      enabled: !isInitialLoad && shouldFetchData,
-      refetchInterval: false,
-    });
+  const { data: processingJobs } = useGetProcessingJobs({
+    enabled: !isInitialLoad && shouldFetchData,
+    refetchInterval: false, 
+  });
 
-  // Only fetch recent jobs when authenticated
   const { data: recentJobs, refetch: refetchRecent } = useGetRecentJobs({
-    enabled: false, // Only fetch manually on reconnect
+    enabled: false, 
     sinceEpochMs: lastDisconnectTime ?? Date.now(),
   });
 
   useEffect(() => {
     if (processingJobs && processingJobs.length > 0) {
-      console.log(`Fetched ${processingJobs.length} fresh jobs from API`);
-      processingJobs.forEach((job) => {
-        dispatch(addJob(job));
-      });
+      processingJobs.forEach((job) => dispatch(addJob(job)));
     }
   }, [processingJobs, dispatch]);
 
   useEffect(() => {
     if (recentJobs && recentJobs.length > 0) {
-      console.log(`Syncing ${recentJobs.length} recent jobs to Redux`);
+      console.log(`[Sync] Found ${recentJobs.length} jobs while disconnected`);
       recentJobs.forEach((job) => {
-        if (job.status !== "processing") {
+        if (job.status !== "processing" && job.status !== "queued") {
           dispatch(updateJob({ jobId: job.jobId, updates: job }));
         } else {
           dispatch(addJob(job));
@@ -142,63 +110,52 @@ export const QuizJobProvider = ({
   }, [jobs, isInitialLoad, shouldFetchData]);
 
   useEffect(() => {
-    const resolvedHubUrl =
-      hubUrl ?? (API_BASE ? `${API_BASE.replace(/\/+$/, "")}/hub/quiz-create` : "/hub/quiz-create");
-
+    const resolvedHubUrl = hubUrl ?? (API_BASE ? `${API_BASE.replace(/\/+$/, "")}/hub/quiz-create` : "/hub/quiz-create");
     const tokenFactory = () => accessToken ?? "";
 
-    // Early return if no role or no token
-    if (!shouldFetchData || !resolvedHubUrl) {
-      return;
-    }
+    if (!shouldFetchData || !resolvedHubUrl) return;
 
     const connection = new signalR.HubConnectionBuilder()
       .withUrl(resolvedHubUrl, { accessTokenFactory: tokenFactory })
       .withAutomaticReconnect({
-        nextRetryDelayInMilliseconds: (retryContext) => {
-          const delays = [0, 2000, 5000, 10000];
-          return delays[Math.min(retryContext.previousRetryCount, delays.length - 1)];
-        },
+        nextRetryDelayInMilliseconds: (ctx) => [0, 2000, 5000, 10000][Math.min(ctx.previousRetryCount, 3)],
       })
       .build();
 
-    type ConnectionWithTimeouts = {
-      serverTimeoutInMilliseconds?: number;
-      keepAliveIntervalInMilliseconds?: number;
-    };
-
-    const connWithTimeouts = connection as unknown as ConnectionWithTimeouts;
-    connWithTimeouts.serverTimeoutInMilliseconds = 30_000;
-    connWithTimeouts.keepAliveIntervalInMilliseconds = 10_000;
+    (connection as any).serverTimeoutInMilliseconds = 30_000;
+    (connection as any).keepAliveIntervalInMilliseconds = 10_000;
 
     connection.onreconnecting(() => {
-      console.log("SignalR reconnecting...");
+      console.warn("SignalR Reconnecting...");
       setConnectionStatus("reconnecting");
       setLastDisconnectTime(Date.now());
     });
 
     connection.onreconnected(async () => {
-      console.log("SignalR reconnected, syncing missed updates...");
+      console.log("SignalR Reconnected. Syncing missed data...");
       setConnectionStatus("connected");
-      await refetchRecent();
+      await refetchRecent(); 
     });
 
-    connection.onclose(() => {
-      console.log("SignalR connection closed");
-      setConnectionStatus("disconnected");
-    });
+    connection.onclose(() => setConnectionStatus("disconnected"));
 
     connection.on(
       "CreateStarted",
-      (jobId: string, noteTitle: string, timestamp: string) => {
+      (
+        jobId: string, 
+        noteTitle: string, 
+        timestamp: string, 
+        status: "queued" | "processing"
+      ) => {
+        console.log("[SignalR] Job Update:", { jobId, status });
         dispatch(
           addJob({
             jobId,
             noteTitle,
             timestamp,
-            status: "processing",
+            status: status,
             isViewed: false,
-            createdAt: Date.now(),
+            createdAt: new Date(timestamp).getTime(),
           })
         );
       }
@@ -211,7 +168,7 @@ export const QuizJobProvider = ({
           updateJob({
             jobId,
             updates: {
-              status: success ? "success" : "error",
+              status: success ? "success" : "failed",
               quizId,
               errorMessage,
               isViewed: false,
@@ -221,16 +178,12 @@ export const QuizJobProvider = ({
 
         if (!success && errorMessage) {
           message.error({
-            content: `Quiz creation failed: ${errorMessage}`,
-            duration: 5,
+            content: `Quiz failed: ${errorMessage}`,
             style: { fontFamily: "'Courier New', monospace" },
           });
-        }
-
-        if (success) {
+        } else if (success) {
           message.success({
             content: "Quiz created successfully!",
-            duration: 3,
             style: { fontFamily: "'Courier New', monospace" },
           });
         }
@@ -238,16 +191,13 @@ export const QuizJobProvider = ({
     );
 
     let stopped = false;
-
     const start = async () => {
       try {
         setConnectionStatus("connecting");
         await connection.start();
         connRef.current = connection;
         setConnectionStatus("connected");
-        console.log("QuizJob SignalR connected");
       } catch (err) {
-        console.error("QuizJob SignalR start error:", err);
         setConnectionStatus("disconnected");
         if (!stopped) setTimeout(start, 2000);
       }
@@ -258,46 +208,32 @@ export const QuizJobProvider = ({
     return () => {
       stopped = true;
       connRef.current = null;
-      connection.stop().catch(() => {
-        /* noop */
-      });
+      connection.stop().catch(() => {});
     };
   }, [dispatch, hubUrl, accessToken, shouldFetchData, refetchRecent]);
 
   useEffect(() => {
-    // Only cleanup if authenticated
     if (!shouldFetchData) return;
-
     const id = setInterval(() => {
       dispatch(cleanupOldJobs());
-
-      // Also cleanup localStorage cache
-      const currentJobs = loadJobsFromCache();
-      const oneHourAgo = Date.now() - 60 * 60 * 1000;
-      const validJobs = currentJobs.filter((job) => job.createdAt > oneHourAgo);
-
-      if (validJobs.length !== currentJobs.length) {
-        saveJobsToCache(validJobs);
-      }
     }, 30_000);
-
     return () => clearInterval(id);
   }, [dispatch, shouldFetchData]);
+
+  const markAsViewed = (jobId: string) => {
+    dispatch(updateJob({ jobId, updates: { isViewed: true } }));
+  };
 
   const value = useMemo(
     () => ({
       jobs,
       unreadCount,
-      markViewed: (jobId: string) => dispatch(markViewed(jobId)),
+      markViewed: markAsViewed,
       connectionStatus,
-      isLoading:
-        connectionStatus === "connecting" ||
-        connectionStatus === "reconnecting",
+      isLoading: connectionStatus === "connecting" || connectionStatus === "reconnecting",
     }),
-    [jobs, unreadCount, dispatch, connectionStatus]
+    [jobs, unreadCount, connectionStatus]
   );
 
-  return (
-    <QuizJobContext.Provider value={value}>{children}</QuizJobContext.Provider>
-  );
+  return <QuizJobContext.Provider value={value}>{children}</QuizJobContext.Provider>;
 };

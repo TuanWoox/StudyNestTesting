@@ -5,6 +5,7 @@ import {
   HourglassOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
+  ClockCircleOutlined, // ✅ For "queued"
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuizJobContext } from "@/context/QuizJobProvider/QuizJobContextValue";
@@ -14,7 +15,7 @@ const { Text } = Typography;
 const { useToken } = theme;
 
 function statusTag(
-  status: "processing" | "success" | "error",
+  status: "queued" | "processing" | "success" | "failed",
   tokenColors: any
 ) {
   const iconStyle = {
@@ -28,6 +29,18 @@ function statusTag(
   };
 
   switch (status) {
+    case "queued":
+      return (
+        <div
+          style={{
+            ...iconStyle,
+            backgroundColor: `${tokenColors.colorInfo}20`,
+            color: tokenColors.colorInfo,
+          }}
+        >
+          <ClockCircleOutlined />
+        </div>
+      );
     case "processing":
       return (
         <div
@@ -52,7 +65,7 @@ function statusTag(
           <CheckCircleOutlined />
         </div>
       );
-    case "error":
+    case "failed":
       return (
         <div
           style={{
@@ -73,11 +86,9 @@ export default function QuizJobBell() {
   const navigate = useNavigate();
   const { token } = useToken();
 
-  // Theme constants
   const borderColor = `2px solid ${token.colorPrimary}E0`;
   const shadowColor = `4px 4px 0px ${token.colorPrimary}55`;
 
-  // chỉ lấy 8 job gần nhất để menu gọn
   const topJobs = useMemo(() => jobs.slice(0, 8), [jobs]);
 
   const items: MenuProps["items"] = topJobs.map((j) => ({
@@ -85,11 +96,13 @@ export default function QuizJobBell() {
     label: (
       <Tooltip
         title={
-          j.status === "error" && j.errorMessage
+          j.status === "failed" && j.errorMessage
             ? `Error: ${j.errorMessage}`
             : j.status === "success"
               ? "Click to view quiz"
-              : "Quiz is being created..."
+              : j.status === "queued"
+                ? "Waiting to start..."
+                : "Quiz is being created..."
         }
         placement="left"
         overlayStyle={{
@@ -103,12 +116,11 @@ export default function QuizJobBell() {
             alignItems: "center",
             gap: 12,
             cursor: j.status === "success" ? "pointer" : "default",
-            opacity: j.status === "processing" ? 0.9 : 1,
+            opacity: j.status === "processing" || j.status === "queued" ? 0.9 : 1,
             transition: "all 0.2s ease",
             fontFamily: "monospace",
           }}
           onClick={(e) => {
-            // Nếu đã success thì điều hướng; đồng thời markViewed
             if (j.status === "success" && j.quizId) {
               markViewed(j.jobId);
               navigate(`/user/quiz/${j.quizId}`);
@@ -116,13 +128,10 @@ export default function QuizJobBell() {
             e.stopPropagation();
           }}
           onMouseEnter={(e) => {
-            if (j.status === "error") {
+            if (j.status === "failed") {
               markViewed(j.jobId);
             }
             e.stopPropagation();
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "transparent";
           }}
         >
           {statusTag(j.status, token)}
@@ -153,7 +162,6 @@ export default function QuizJobBell() {
     ),
   }));
 
-  // Khi không có job
   if (items.length === 0) {
     items.push({
       key: "empty",

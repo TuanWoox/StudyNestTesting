@@ -2,10 +2,10 @@ export interface QuizJobDTO {
   jobId: string;
   userId: string;
   noteTitle: string;
-  status: string;
+  status: "queued" | "processing" | "success" | "failed";
+  timestamp: string;
   quizId?: string;
   errorMessage?: string;
-  timestamp: string;
-  isViewed: boolean;
-  createdAt: string;
+  isViewed?: boolean;
+  createdAt: number;
 }

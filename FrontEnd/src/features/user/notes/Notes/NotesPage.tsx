@@ -111,6 +111,7 @@ const NotesPage: React.FC = () => {
             ownerId: "1",
             noteTags: [],
             folder: folder,
+            noteVersions: []
         };
         setSelectedNote(newNote);
         setIsEditorVisible(true);

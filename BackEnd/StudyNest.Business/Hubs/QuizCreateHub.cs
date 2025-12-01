@@ -9,7 +9,7 @@ namespace StudyNest.Business.Hubs
 {
     public interface IQuizCreateHub
     {
-        Task CreateStarted(string jobId, string noteTitle, DateTimeOffset timestamp);
+        Task CreateStarted(string jobId, string noteTitle, DateTimeOffset timestamp, string status);
         Task CreateFinished(string jobId, bool success, string? quizId, string? errorMessage);
     }
     public class QuizCreateHub : Hub<IQuizCreateHub>
