@@ -512,7 +512,18 @@ namespace StudyNest.Business.v1
                     else
                     {
                         quiz.IsPublic = true;
-                        quiz.FriendlyURL = quiz.Id;
+
+                        // Generate a unique friendly URL
+                        string newFriendlyUrl;
+                        bool isUnique;
+                        do
+                        {
+                            newFriendlyUrl = Guid.NewGuid().ToString().Replace("-", "");
+                            isUnique = !await _context.Quizzes.AnyAsync(q => q.FriendlyURL == newFriendlyUrl);
+                        } while (!isUnique);
+
+                        quiz.FriendlyURL = newFriendlyUrl;
+
                         if (await _context.SaveChangesAsync() > 0)
                         {
                             result.Result = true;
