@@ -72,6 +72,10 @@ const quizService = {
     const { data } = await instance.get<ReturnResult<QuizDetail>>(`/Quiz/GetByFriendlyURL/${friendlyURL}`)
     return data.result;
   },
+  changeFriendlyUrl: async (quizId: string, newFriendlyUrL: string): Promise<boolean> => {
+    const { data } = await instance.put<ReturnResult<boolean>>(`/Quiz/ChangeFriendlyURl/${quizId}?newFriendlyUrl=${newFriendlyUrL}`)
+    return data.result;
+  }
 };
 
 export default quizService;

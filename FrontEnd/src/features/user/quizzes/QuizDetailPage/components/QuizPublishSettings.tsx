@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { Card, Switch, Input, Button, Space, Typography, message, theme, Collapse } from "antd";
+import { Switch, Input, Button, Space, Typography, theme, Collapse } from "antd";
 import { GlobalOutlined, LinkOutlined, SaveOutlined, CloseOutlined, CopyOutlined } from "@ant-design/icons";
-import useUpdateQuiz from "@/hooks/quizHook/useUpdateQuiz";
 import { useAntDesignTheme } from "@/hooks/common";
 import usePublishQuiz from "@/hooks/quizHook/usePublishQuiz";
 import { toast } from "sonner";
+import { useChangeFriendlyUrl } from "@/hooks/quizHook/useChangeFriendlyUrl";
 
-const { Text, Title } = Typography;
+const { Text } = Typography;
 const { useToken } = theme;
 const { Panel } = Collapse;
 
@@ -26,7 +26,8 @@ export const QuizPublishSettings: React.FC<QuizPublishSettingsProps> = ({
     const [isEditingUrl, setIsEditingUrl] = useState(false);
     const [editedFriendlyUrl, setEditedFriendlyUrl] = useState("");
     const { borderColor, shadowColor } = useAntDesignTheme();
-    const { mutate: publishQuiz, isPending: isLoading } = usePublishQuiz();
+    const { mutate: publishQuiz, isPending: isPublishing } = usePublishQuiz();
+    const { mutate: changeFriendlyUrl, isPending: isChangingUrl } = useChangeFriendlyUrl();
 
     const handleTogglePublish = async (checked: boolean) => {
         publishQuiz(quiz.id);
@@ -39,7 +40,40 @@ export const QuizPublishSettings: React.FC<QuizPublishSettingsProps> = ({
     };
 
     const handleSaveUrl = async () => {
+        const trimmedUrl = editedFriendlyUrl.trim();
 
+        if (!trimmedUrl) {
+            toast.error("Friendly URL cannot be empty");
+            return;
+        }
+
+        if (trimmedUrl.length < 3) {
+            toast.error("Friendly URL must be at least 3 characters");
+            return;
+        }
+
+        if (trimmedUrl.length > 100) {
+            toast.error("Friendly URL must be less than 100 characters");
+            return;
+        }
+
+        if (!/^[a-zA-Z0-9_-]+$/.test(trimmedUrl)) {
+            toast.error("Friendly URL can only contain letters, numbers, hyphens, and underscores");
+            return;
+        }
+
+        changeFriendlyUrl(
+            { quizId: quiz.id, newFriendlyUrl: trimmedUrl },
+            {
+                onSuccess: (data) => {
+                    if (data) {
+                        setIsEditingUrl(false);
+                        setEditedFriendlyUrl("");
+                        onDirtyChange(false);
+                    }
+                },
+            }
+        );
     };
 
     const handleCancelUrlEdit = () => {
@@ -90,7 +124,7 @@ export const QuizPublishSettings: React.FC<QuizPublishSettingsProps> = ({
                         <Switch
                             checked={quiz.isPublic}
                             onChange={handleTogglePublish}
-                            loading={isLoading}
+                            loading={isPublishing}
                             checkedChildren="Public"
                             unCheckedChildren="Private"
                         />
@@ -134,7 +168,7 @@ export const QuizPublishSettings: React.FC<QuizPublishSettingsProps> = ({
                                         type="primary"
                                         icon={<SaveOutlined />}
                                         onClick={handleSaveUrl}
-                                        loading={isLoading}
+                                        loading={isChangingUrl}
                                         style={{
                                             borderRadius: 0,
                                             border: `1px solid ${borderColor}`,

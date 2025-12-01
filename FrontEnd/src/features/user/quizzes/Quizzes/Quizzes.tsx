@@ -15,7 +15,7 @@ import QuizDeleteModal from "./components/QuizDeleteModal";
 import QuizPagination from "./components/QuizPagination";
 import QuizFilterModal from "./components/QuizFilterModal";
 import QuizCreateModal from "./components/QuizCreateModal";
-import ForkQuizModal, { ForkQuizModalRef } from "./components/ForkQuizModal";
+import ForkQuizModal, { QuizForkModalRef } from "./components/QuizForkModal";
 
 const { useToken } = theme;
 
@@ -58,7 +58,7 @@ const Quizzes: React.FC = () => {
 
   const { deleteQuizAsync, isLoading: isDeleting } = useDeleteQuiz();
   const { createManualQuizAsync } = useCreateManualQuiz();
-  const forkQuizModalRef = useRef<ForkQuizModalRef>(null);
+  const forkQuizModalRef = useRef<QuizForkModalRef>(null);
 
   const quizzes = quizData?.data || [];
   const totalElements = quizData?.page.totalElements || 0;

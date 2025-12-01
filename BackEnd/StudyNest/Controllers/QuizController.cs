@@ -155,7 +155,7 @@ namespace StudyNest.Controllers
         [HttpGet("GetByFriendlyURL/{friendlyURL}")]
         public async Task<IActionResult> GetQuizByFriendlyURL(string friendlyURL)
         {
-            var rs = new ReturnResult<Quiz>();
+            var rs = new ReturnResult<QuizDTO>();
             try
             {
                 rs = await _quizBusiness.GetQuizDetailByFriendlyURL(friendlyURL);
@@ -167,7 +167,7 @@ namespace StudyNest.Controllers
             return Ok(rs);
         }
         [HttpPut("ChangeFriendlyURl/{id}")]
-        public async Task<IActionResult> ChangeFriendlyUrl(string id,[FromBody] string newFriendlyUrl)
+        public async Task<IActionResult> ChangeFriendlyUrl(string id,[FromQuery] string newFriendlyUrl)
         {
             ReturnResult<bool> result = new ReturnResult<bool>();
             try
@@ -180,6 +180,5 @@ namespace StudyNest.Controllers
             }
             return Ok(result);
         }
-
     }
 }

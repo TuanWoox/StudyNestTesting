@@ -18,6 +18,7 @@ using StudyNest.Common.Utils.Extensions;
 using StudyNest.Common.Utils.Helper;
 using StudyNest.Data;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace StudyNest.Business.v1
 {
@@ -572,9 +573,9 @@ namespace StudyNest.Business.v1
             }
             return result;
         }
-        public async Task<ReturnResult<Quiz>> GetQuizDetailByFriendlyURL(string friendlyURL)
+        public async Task<ReturnResult<QuizDTO>> GetQuizDetailByFriendlyURL(string friendlyURL)
         {
-            ReturnResult<Quiz> result = new ReturnResult<Quiz>();
+            ReturnResult<QuizDTO> result = new ReturnResult<QuizDTO>();
             try
             {
                 if (string.IsNullOrWhiteSpace(friendlyURL))
@@ -586,6 +587,9 @@ namespace StudyNest.Business.v1
                     .Where(q => q.FriendlyURL == friendlyURL)
                     .Include(q => q.Questions)
                         .ThenInclude(qn => qn.Choices)
+
+                    .Include(q => q.Owner)
+                    .AsNoTracking()
                     .FirstOrDefaultAsync();
                 if (quiz == null || !quiz.IsPublic)
                 {
@@ -594,7 +598,8 @@ namespace StudyNest.Business.v1
                 quiz.Questions = quiz.Questions
                     .OrderByDescending(q => q.DateModified)
                     .ToList();
-                result.Result = quiz;
+
+                result.Result = _mapper.Map<QuizDTO>(quiz);
             }
             catch (Exception ex)
             {
@@ -605,42 +610,77 @@ namespace StudyNest.Business.v1
         }
         public async Task<ReturnResult<bool>> ChangeFriendlyUrl(string id, string newFriendlyUrl)
         {
-            ReturnResult<bool> result = new ReturnResult<bool>();
+            var result = new ReturnResult<bool>();
+
             try
             {
-                var existingQuiz = await _context.Quizzes.Where(x => x.Id == id.Trim() && x.OwnerId == _userContext.UserId)
-                                                         .FirstOrDefaultAsync();
-                if (existingQuiz != null)
+                // ===== VALIDATION =====
+                if (string.IsNullOrWhiteSpace(newFriendlyUrl))
                 {
-                    var existingQuizFriendlyUrl = await _context.Quizzes.Where(x => x.FriendlyURL == newFriendlyUrl.Trim())
-                                                                        .FirstOrDefaultAsync();
-                    if(existingQuizFriendlyUrl == null)
-                    {
-                        existingQuiz.FriendlyURL = newFriendlyUrl.Trim();
-                        if (await _context.SaveChangesAsync() > 0)
-                        {
-                            result.Result = true;
-                        }
-                        else 
-                        {
-                            result.Message = "Change Friendly Url fail, try again later";
-                        }
-                    }
-                    else
-                    {
-                        result.Message = "This friendly url has been used, consider to use another";
-                    }
+                    result.Message = "Friendly URL cannot be empty";
+                    return result;
+                }
+
+                newFriendlyUrl = newFriendlyUrl.Trim();
+
+                if (newFriendlyUrl.Length < 3)
+                {
+                    result.Message = "Friendly URL must be at least 3 characters";
+                    return result;
+                }
+
+                if (newFriendlyUrl.Length > 100)
+                {
+                    result.Message = "Friendly URL must be less than 100 characters";
+                    return result;
+                }
+
+                if (!Regex.IsMatch(newFriendlyUrl, "^[a-zA-Z0-9_-]+$"))
+                {
+                    result.Message = "Friendly URL can only contain letters, numbers, hyphens, and underscores";
+                    return result;
+                }
+
+                // ===== FETCH QUIZ =====
+                var existingQuiz = await _context.Quizzes
+                    .FirstOrDefaultAsync(x => x.Id == id.Trim() && x.OwnerId == _userContext.UserId);
+
+                if (existingQuiz == null)
+                {
+                    result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "quiz", id);
+                    return result;
+                }
+
+                // ===== CHECK URL ALREADY USED (excluding current quiz) =====
+                bool friendlyUrlTaken = await _context.Quizzes
+                    .AnyAsync(x => x.FriendlyURL == newFriendlyUrl && x.Id != id);
+
+                if (friendlyUrlTaken)
+                {
+                    result.Message = "This friendly URL has already been used. Please choose another.";
+                    return result;
+                }
+
+                // ===== APPLY CHANGE =====
+                existingQuiz.FriendlyURL = newFriendlyUrl;
+
+                int saveResult = await _context.SaveChangesAsync();
+
+                if (saveResult > 0)
+                {
+                    result.Result = true;
                 }
                 else
                 {
-                    result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "quiz", id);
+                    result.Message = "Failed to update the friendly URL. Please try again later.";
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                result.Message = ex.Message;
+                result.Message = "An unexpected error occurred.";
                 StudyNestLogger.Instance.Error(ex);
             }
+
             return result;
         }
     }

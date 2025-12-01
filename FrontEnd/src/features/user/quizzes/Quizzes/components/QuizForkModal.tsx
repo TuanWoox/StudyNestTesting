@@ -14,11 +14,11 @@ import {
     SearchOutlined,
     FileTextOutlined,
     TrophyOutlined,
+    UserOutlined,
 } from "@ant-design/icons";
 import StudynestModal from "@/components/StudyNestModal/StudynestModal";
 import { useAntDesignTheme } from "@/hooks/common";
 import useForkQuiz from "@/hooks/quizHook/useForkQuiz";
-import useGetQuizDetail from "@/hooks/quizHook/useGetQuizDetail";
 import Spinner from "@/components/Spinner/Spinner";
 import { QuestionItem } from "@/features/user/quizzes/QuizDetailPage/components/QuestionItem";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
@@ -26,16 +26,16 @@ import useGetQuizDetailByFriendlyURL from "@/hooks/quizHook/useGetQuizDetailByFr
 
 const { Title, Text } = Typography;
 
-export interface ForkQuizModalRef {
+export interface QuizForkModalRef {
     open: () => void;
     close: () => void;
 }
 
-interface ForkQuizModalProps {
+interface QuizForkModalProps {
     // Add props as needed
 }
 
-const ForkQuizModal = forwardRef<ForkQuizModalRef, ForkQuizModalProps>((props, ref) => {
+const QuizForkModal = forwardRef<QuizForkModalRef, QuizForkModalProps>((props, ref) => {
     const [visible, setVisible] = useState(false);
     const [quizFriendlyUrl, setQuizFriendlyUrl] = useState("");
     const [quizFriendlyUrlToSearch, setQuizFriendlyUrlToSearch] = useState("");
@@ -78,13 +78,15 @@ const ForkQuizModal = forwardRef<ForkQuizModalRef, ForkQuizModalProps>((props, r
     };
 
     const handleFork = () => {
-        forkQuiz(quizFriendlyUrlToSearch, {
-            onSuccess: (data) => {
-                if (data) {
-                    handleClose();
-                }
-            },
-        });
+        if (data?.id) {
+            forkQuiz(data.id, {
+                onSuccess: (data) => {
+                    if (data) {
+                        handleClose();
+                    }
+                },
+            });
+        }
     };
 
     const handleFetchQuiz = () => {
@@ -181,6 +183,16 @@ const ForkQuizModal = forwardRef<ForkQuizModalRef, ForkQuizModalProps>((props, r
                                     </Text>
                                 </div>
 
+                                {/* Owner Information */}
+                                {data.owner && (
+                                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                        <UserOutlined style={{ color: "#8c8c8c" }} />
+                                        <Text type="secondary" style={{ fontSize: 13 }}>
+                                            Created by: <Text strong>{data.owner.userName || data.owner.email}</Text>
+                                        </Text>
+                                    </div>
+                                )}
+
                                 <Divider style={{ margin: "8px 0" }} />
 
                                 {/* Quiz Metadata */}
@@ -266,6 +278,6 @@ const ForkQuizModal = forwardRef<ForkQuizModalRef, ForkQuizModalProps>((props, r
     );
 });
 
-ForkQuizModal.displayName = "ForkQuizModal";
+QuizForkModal.displayName = "QuizForkModal";
 
-export default ForkQuizModal;
+export default QuizForkModal;

@@ -16,6 +16,7 @@ export interface QuizDetail {
   questions: Question[];
   isPublic: boolean;
   friendlyUrl: string | undefined;
+  owner: Owner | undefined
 }
 
 export interface Question {
@@ -31,4 +32,10 @@ export interface Choice {
   id: string;
   text: string;
   isCorrect: boolean;
+}
+
+export interface Owner {
+  id: string;
+  email: string;
+  userName: string;
 }
