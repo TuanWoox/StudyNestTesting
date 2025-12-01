@@ -14,6 +14,7 @@ using StudyNest.Common.Models.DTOs.EntityDTO.Choice;
 using StudyNest.Common.Models.DTOs.EntityDTO.Question;
 using StudyNest.Common.Models.DTOs.EntityDTO.Quizzes;
 using StudyNest.Common.Models.Paging;
+using StudyNest.Common.Utils.Enums;
 using StudyNest.Common.Utils.Extensions;
 using StudyNest.Common.Utils.Helper;
 using StudyNest.Data;
@@ -88,29 +89,32 @@ namespace StudyNest.Business.v1
                 // Pass note content to generator
                 dto.NoteContent = note.Content;
 
-                var jobId = Guid.NewGuid().ToString();
                 var timestamp = DateTimeOffset.UtcNow;
+                var quizJob = new QuizJob
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    UserId = _userContext.UserId,
+                    NoteId = dto.NoteId.ToString(),
+                    NoteTitle = note.Title,
+                    Status = QuizJobStatus.Queued,
+                    DateCreated = timestamp,
+                    DateModified = timestamp
+                };
+                _context.QuizJobs.Add(quizJob);
+                await _context.SaveChangesAsync();
 
-                // Enqueue background job
                 var hangfireJobId = BackgroundJob.Enqueue<IQuizBusiness>(x =>
-                    x.GenerateQuizInBackground(jobId, dto, _userContext.UserId));
+                    x.GenerateQuizInBackground(quizJob.Id, dto, _userContext.UserId));
 
-                // Store queryable metadata for this job
-                var connection = JobStorage.Current.GetConnection();
-                connection.SetJobParameter(hangfireJobId, "CustomJobId", jobId);
-                connection.SetJobParameter(hangfireJobId, "UserId", _userContext.UserId);
-                connection.SetJobParameter(hangfireJobId, "NoteId", dto.NoteId.ToString());
-                connection.SetJobParameter(hangfireJobId, "NoteTitle", note.Title);
-                connection.SetJobParameter(hangfireJobId, "Difficulty", dto.Difficulty);
-                connection.SetJobParameter(hangfireJobId, "Timestamp", timestamp.ToString("o"));
+                quizJob.HangfireJobId = hangfireJobId;
+                await _context.SaveChangesAsync();
 
-                // Notify client that creation has started
                 await _hubContext.Clients.User(_userContext.UserId)
-                    .CreateStarted(jobId, note.Title, timestamp);
+                    .CreateStarted(quizJob.Id, note.Title, timestamp, "queued");
 
                 result.Result = new CreateQuizJobResponseDTO
                 {
-                    JobId = jobId,
+                    JobId = quizJob.Id,
                     NoteTitle = note.Title,
                     Timestamp = timestamp
                 };
@@ -129,45 +133,67 @@ namespace StudyNest.Business.v1
             await GenerateQuizInBackground(jobId, dto, userId, null);
         }
 
-        public async Task GenerateQuizInBackground(string jobId, CreateQuizDTO dto, string userId, PerformContext context = null)
+        public async Task GenerateQuizInBackground(string quizJobId, CreateQuizDTO dto, string userId, PerformContext context = null)
         {
             try
             {
+                var jobEntity = await _context.QuizJobs.FindAsync(quizJobId);
+                if (jobEntity == null) return;
+
+                jobEntity.Status = QuizJobStatus.Processing;
+                jobEntity.DateModified = DateTimeOffset.UtcNow;
+                await _context.SaveChangesAsync();
+
+                // Notify frontend that job is now processing
+                await _hubContext.Clients.User(userId).CreateStarted(
+                    quizJobId, jobEntity.NoteTitle, jobEntity.DateModified.Value, "processing");
+
                 var newQuiz = await _llm.GenerateAsync(dto, userId);
 
                 if (newQuiz is null || newQuiz.Questions is null || newQuiz.Questions.Count == 0)
                 {
-                    // Failure
-                    await _hubContext.Clients.User(userId).CreateFinished(
-                        jobId, false, null, "Note is insufficient or meaningless.");
+                    await HandleJobFailure(jobEntity, "Note is insufficient or meaningless.", userId);
                     return;
                 }
+
                 newQuiz.Difficulty = dto.Difficulty.ToLower().Trim();
-                // Save quiz
                 newQuiz.IsBeingConvertToSnapShot = true;
+                newQuiz.NoteId = dto.NoteId.ToString();
+
                 await _context.AddAsync(newQuiz);
                 await _context.SaveChangesAsync();
 
-                if (context?.BackgroundJob?.Id != null)
-                {
-                    var connection = JobStorage.Current.GetConnection();
-                    connection.SetJobParameter(context.BackgroundJob.Id, "QuizId", newQuiz.Id.ToString());
-                }
+                jobEntity.Status = QuizJobStatus.Success;
+                jobEntity.ResultQuizId = newQuiz.Id;
+                jobEntity.DateModified = DateTimeOffset.UtcNow;
+                await _context.SaveChangesAsync();
 
-                // Enqueue snapshot creation
                 BackgroundJob.Enqueue<IQuizAttemptSnapshotBusiness>(x =>
-                    x.CreateSnapShot(newQuiz.Id.ToString().Trim()));
+                    x.CreateSnapShot(newQuiz.Id.Trim()));
 
-                // Success
                 await _hubContext.Clients.User(userId).CreateFinished(
-                    jobId, true, newQuiz.Id.ToString(), null);
+                    quizJobId, true, newQuiz.Id, null);
             }
             catch (Exception ex)
             {
-                StudyNestLogger.Instance.Error($"Quiz generation failed for jobId {jobId}: {ex}");
-                await _hubContext.Clients.User(userId).CreateFinished(
-                    jobId, false, null, "An unexpected error occurred.");
+                StudyNestLogger.Instance.Error($"Quiz generation failed for QuizJobId {quizJobId}: {ex}");
+
+                var jobEntity = await _context.QuizJobs.FindAsync(quizJobId);
+                if (jobEntity != null)
+                {
+                    await HandleJobFailure(jobEntity, "An unexpected error occurred.", userId);
+                }
             }
+        }
+        private async Task HandleJobFailure(QuizJob job, string message, string userId)
+        {
+            job.Status = QuizJobStatus.Failed;
+            job.ErrorMessage = message;
+            job.DateModified = DateTimeOffset.UtcNow;
+            await _context.SaveChangesAsync();
+
+            await _hubContext.Clients.User(userId).CreateFinished(
+                job.Id, false, null, message);
         }
         public async Task<ReturnResult<string>> CreateQuizFromScratch(CreateManualQuizDTO request)
         {

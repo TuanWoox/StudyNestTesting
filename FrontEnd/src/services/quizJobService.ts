@@ -15,11 +15,11 @@ const quizJobService = {
       jobId: dto.jobId,
       noteTitle: dto.noteTitle,
       timestamp: dto.timestamp,
-      status: dto.status as "processing" | "success" | "error",
+      status: dto.status as QuizJob["status"],
       quizId: dto.quizId,
       errorMessage: dto.errorMessage,
-      isViewed: dto.isViewed,
-      createdAt: new Date(dto.timestamp).getTime(),
+      isViewed: false,
+      createdAt: new Date(dto.createdAt).getTime(),
     }));
   },
 
@@ -34,11 +34,11 @@ const quizJobService = {
       jobId: dto.jobId,
       noteTitle: dto.noteTitle,
       timestamp: dto.timestamp,
-      status: dto.status as "processing" | "success" | "error",
+      status: dto.status as QuizJob["status"],
       quizId: dto.quizId,
       errorMessage: dto.errorMessage,
-      isViewed: dto.isViewed,
-      createdAt: new Date(dto.timestamp).getTime(),
+      isViewed: false,
+      createdAt: new Date(dto.createdAt).getTime(),
     }));
   },
 };
