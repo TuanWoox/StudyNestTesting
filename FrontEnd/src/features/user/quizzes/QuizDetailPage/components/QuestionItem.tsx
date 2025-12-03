@@ -8,6 +8,7 @@ import {
   Card,
   Divider,
   theme,
+  Image,
 } from "antd";
 import { CheckCircleFilled } from "@ant-design/icons";
 import type { Question } from "@/types/quiz/quiz";
@@ -146,6 +147,30 @@ export const QuestionItem: React.FC<QuestionItemProps> = ({
           margin: isMobile ? `${token.margin}px 0` : `${token.marginLG}px 0`,
         }}
       />
+
+      {/* Question Image */}
+      {question?.imageUrl && (
+        <div
+          style={{
+            marginBottom: isMobile ? token.margin : token.marginLG,
+            textAlign: "center",
+            padding: isMobile ? token.paddingSM : token.padding,
+            backgroundColor: token.colorBgLayout,
+            border: `1px solid ${token.colorBorder}`,
+            borderRadius: 4,
+          }}
+        >
+          <Image
+            src={question.imageUrl}
+            alt="Question image"
+            style={{
+              maxWidth: "100%",
+              maxHeight: 400,
+              objectFit: "contain",
+            }}
+          />
+        </div>
+      )}
 
       {/* Choices */}
       <div

@@ -1,4 +1,4 @@
-import { Card, Row, Col, Tag, Typography, Space, theme } from "antd";
+import { Card, Row, Col, Tag, Typography, Space, theme, Image } from "antd";
 import { ChoiceDTO } from "@/types/choice/choiceDTO";
 import { QuestionDTO } from "@/types/question/questionDTO";
 import { QuizAttemptAnswerDTO } from "@/types/quizAttemptAnswer/quizAttemptAnswerDTO";
@@ -75,6 +75,34 @@ const QuestionResultCard = ({ question, answer, index }: QuestionResultCardProps
                     </Tag>
                 </Col>
             </Row>
+
+            {/* === Question Image === */}
+            {question.imageUrl && (
+                <div
+                    style={{
+                        marginBottom: 16,
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        padding: 12,
+                        backgroundColor: darkMode ? "#1f1f1f" : "#fafafa",
+                        border: `1px solid ${darkMode ? "#434343" : "#d9d9d9"}`,
+                        borderRadius: 4,
+                    }}
+                >
+                    <Image
+                        src={question.imageUrl}
+                        alt="Question image"
+                        style={{
+                            maxWidth: "100%",
+                            maxHeight: 400,
+                            width: "auto",
+                            height: "auto",
+                            objectFit: "contain",
+                        }}
+                    />
+                </div>
+            )}
 
             {/* === Content === */}
             <Space direction="vertical" size="small" className="w-full">

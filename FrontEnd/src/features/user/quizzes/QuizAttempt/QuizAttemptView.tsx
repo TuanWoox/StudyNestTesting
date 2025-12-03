@@ -67,8 +67,7 @@ const QuizView: React.FC = () => {
                 quizAttemptSnapshotId: resultQuizSnapshot.result.id,
                 quizAttemptSnapshot: JSON.stringify(resultQuizSnapshot?.result),
                 createQuizAttemptAnswerList: [],
-                questionId:
-                    resultQuizSnapshot?.result?.quizQuestionsParsed?.[0]?.id ?? "",
+                questionId: resultQuizSnapshot?.result?.quizQuestionsParsed?.[0]?.id ?? "",
                 isNeededToSubmit: false,
             })
         );
@@ -87,8 +86,10 @@ const QuizView: React.FC = () => {
 
 
     if (quizSnapshotLoading) return <QuizContentViewSkeleton />;
+
     if (!resultQuizSnapshot?.result && !resultQuizSnapshot?.message)
         return <QuizSnapshotNotReady />;
+
     if (resultQuizSnapshot.message || error)
         return (
             <ErrorDisplay

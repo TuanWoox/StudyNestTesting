@@ -7,4 +7,5 @@ export interface QuestionDTO extends BaseEntity<string> {
     type: string;           // e.g., "mcq" | "msq" | "tf" if you want stricter typing
     explanation: string;
     choices: ChoiceDTO[];
+    imageUrl: string | undefined;
 }

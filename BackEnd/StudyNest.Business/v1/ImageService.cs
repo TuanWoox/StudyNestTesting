@@ -73,5 +73,52 @@ namespace StudyNest.Business.v1
             }
             return result;
         }
+        public async Task<ReturnResult<object>> UploadQuestionImage(IFormFile file)
+        {
+            ReturnResult<object> result = new ReturnResult<object>();
+            try
+            {
+                if (!file.HasValidImageExtension())
+                {
+                    result.Message = "File is invalid";
+                }
+                else
+                {
+                    await using var stream = file.OpenReadStream();
+                    var folder = (await _settingBusiness.GetOneByKeyAndGroup("Question_Folder", "CloudinarySettings", true)).Result?.Value;
+                    var uploadParams = new ImageUploadParams
+                    {
+                        File = new FileDescription(file.FileName, stream),
+                        Folder = !string.IsNullOrEmpty(folder) ? folder : "StudyNest/Question"
+                    };
+                    ImageUploadResult uploadResult = await _cloudinary.UploadAsync(uploadParams);
+                    if (uploadResult.Error != null)
+                    {
+                        result.Result = new
+                        {
+                            Success = 0,
+                        };
+                        result.Message = uploadResult.Error.Message;
+                    }
+                    else
+                    {
+                        result.Result = new
+                        {
+                            Success = 1,
+                            File = new EditorJsImageResultDTO
+                            {
+                                Url = uploadResult.SecureUrl.ToString(),
+                            }
+                        };
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                StudyNestLogger.Instance.Error(ex);
+            }
+            return result;
+        }
     }
 }

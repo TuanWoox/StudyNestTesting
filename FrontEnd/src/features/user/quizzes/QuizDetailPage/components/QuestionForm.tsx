@@ -1,7 +1,8 @@
 // QuestionForm component for creating/editing questions
 
 import React, { useState, useEffect, useRef } from "react";
-import { Form, Card, message } from "antd";
+import { Form, Card, message, Upload, Button, Image } from "antd";
+import { PictureOutlined, DeleteOutlined, UndoOutlined } from "@ant-design/icons";
 import type { Question, Choice } from "@/types/quiz/quiz";
 import { ChoiceEditor } from "./ChoiceEditor";
 import { QuestionTypeSelector } from "./QuestionTypeSelector";
@@ -9,6 +10,7 @@ import { QuestionTextInput } from "./QuestionTextInput";
 import { ExplanationInput } from "./ExplanationInput";
 import { FormActions } from "./FormActions";
 import { QuestionFormValidation } from "./QuestionFormValidation";
+import useUploadQuestionImage from "@/hooks/imageHook/useUploadQuestionImage";
 import {
   validateQuestion,
   getDefaultChoices,
@@ -39,6 +41,11 @@ export const QuestionForm: React.FC<QuestionFormProps> = ({
   const [choices, setChoices] = useState<Choice[]>(
     question?.choices || getDefaultChoices("MCQ", question?.id || "")
   );
+
+  const [imageUrl, setImageUrl] = useState<string | null>(question?.imageUrl ?? "");
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+
+  const { mutateAsync: uploadImage, isPending: isUploading } = useUploadQuestionImage();
 
   // Store original choices when converting to TF to allow reverting back
   const [originalChoicesBeforeTF, setOriginalChoicesBeforeTF] = useState<
@@ -102,8 +109,49 @@ export const QuestionForm: React.FC<QuestionFormProps> = ({
     prevTypeRef.current = questionType;
   }, [questionType]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onCancel();
+      }
+      if (e.ctrlKey && e.key === "s") {
+        e.preventDefault();
+        handleSubmit();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [choices, questionType]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleTypeChange = (newType: "MCQ" | "MSQ" | "TF") => {
     setQuestionType(newType);
+  };
+
+  const handleImageUpload = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      setImageUrl(reader.result as string);
+      setUploadedFile(file);
+      onDirtyChange(true);
+    };
+    reader.readAsDataURL(file);
+    return false; // Prevent auto upload
+  };
+
+  const handleRemoveImage = () => {
+    setImageUrl(null);
+    setUploadedFile(null);
+    onDirtyChange(true);
+  };
+
+  const handleRestoreImage = () => {
+    if (question?.imageUrl) {
+      setImageUrl(question.imageUrl);
+      setUploadedFile(null);
+      onDirtyChange(true);
+    }
   };
 
   const handleSubmit = async () => {
@@ -130,6 +178,28 @@ export const QuestionForm: React.FC<QuestionFormProps> = ({
         return;
       }
 
+      // Upload image if new file exists
+      let imageUrlToSave: string | undefined = undefined;
+      if (uploadedFile) {
+        try {
+          const uploadResult = await uploadImage(uploadedFile);
+          if (uploadResult.success === 1 && uploadResult.file) {
+            imageUrlToSave = uploadResult.file.url;
+          } else {
+            message.error("Failed to upload image");
+            return;
+          }
+        } catch (error) {
+          console.error("Image upload failed:", error);
+          message.error("Failed to upload image");
+          return;
+        }
+      } else if (imageUrl && !uploadedFile) {
+        // Keep existing image URL if no new file uploaded
+        imageUrlToSave = imageUrl;
+      }
+      // If imageUrl is null and no uploadedFile, imageUrlToSave remains undefined (image removed)
+
       // Create question object
       const questionData: Partial<Question> = {
         id: question?.id,
@@ -137,6 +207,7 @@ export const QuestionForm: React.FC<QuestionFormProps> = ({
         type: questionType,
         explanation,
         choices,
+        imageUrl: imageUrlToSave,
       };
 
       // Call save handler
@@ -145,22 +216,6 @@ export const QuestionForm: React.FC<QuestionFormProps> = ({
       console.error("Form validation failed:", error);
     }
   };
-
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        onCancel();
-      }
-      if (e.ctrlKey && e.key === "s") {
-        e.preventDefault();
-        handleSubmit();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyPress);
-    return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [choices, questionType]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <Card
@@ -217,6 +272,83 @@ export const QuestionForm: React.FC<QuestionFormProps> = ({
           />
         </Form.Item>
 
+        {/* Image Upload Section */}
+        <Form.Item label="Question Image (Optional)">
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              minHeight: imageUrl ? "auto" : 200,
+              border: "2px dashed #d9d9d9",
+              borderRadius: 8,
+              padding: 16,
+              backgroundColor: "#fafafa",
+            }}
+          >
+            {imageUrl ? (
+              <div style={{ position: "relative", width: "100%", textAlign: "center" }}>
+                <Image
+                  src={imageUrl}
+                  alt="Question image"
+                  style={{
+                    maxWidth: "100%",
+                    maxHeight: 500,
+                    width: "auto",
+                    height: "auto",
+                    objectFit: "contain",
+                  }}
+                />
+                <Button
+                  danger
+                  icon={<DeleteOutlined />}
+                  onClick={handleRemoveImage}
+                  size="large"
+                  style={{
+                    position: "absolute",
+                    top: 8,
+                    right: 8,
+                  }}
+                >
+                  Remove Image
+                </Button>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12, alignItems: "center" }}>
+                <Upload
+                  accept="image/*"
+                  beforeUpload={handleImageUpload}
+                  showUploadList={false}
+                  disabled={isLoading || isUploading}
+                >
+                  <Button
+                    disabled={isLoading || isUploading}
+                    size="large"
+                    type="dashed"
+                    style={{ height: 100, width: 200 }}
+                  >
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+                      <PictureOutlined style={{ fontSize: 24 }} />
+                      <span>Upload Image</span>
+                    </div>
+                  </Button>
+                </Upload>
+
+                {question?.imageUrl && (
+                  <Button
+                    icon={<UndoOutlined />}
+                    onClick={handleRestoreImage}
+                    disabled={isLoading || isUploading}
+                    type="default"
+                  >
+                    Restore Original Image
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
+        </Form.Item>
+
         {/* Choices Editor */}
         <Form.Item>
           <ChoiceEditor
@@ -241,7 +373,7 @@ export const QuestionForm: React.FC<QuestionFormProps> = ({
           <FormActions
             onSave={handleSubmit}
             onCancel={onCancel}
-            isLoading={isLoading}
+            isLoading={isLoading || isUploading}
             isEditing={!!question}
           />
         </Form.Item>

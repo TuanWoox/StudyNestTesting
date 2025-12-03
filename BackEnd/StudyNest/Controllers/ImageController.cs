@@ -32,5 +32,19 @@ namespace StudyNest.Controllers
             }
             return Ok(result);
         }
+        [HttpPost("Question")]
+        public async Task<IActionResult> UploadQuestionImage(IFormFile file)
+        {
+            ReturnResult<object> result = new ReturnResult<object>();
+            try
+            {
+                result = await _imageService.UploadQuestionImage(file);
+            }
+            catch (Exception ex)
+            {
+                StudyNestLogger.Instance.Error(ex);
+            }
+            return Ok(result);
+        }
     }
 }

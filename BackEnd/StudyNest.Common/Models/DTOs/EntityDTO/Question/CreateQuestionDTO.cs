@@ -18,6 +18,7 @@ namespace StudyNest.Common.Models.DTOs.EntityDTO.Question
         [TrimmedRequired]
         public string Type { get; set; } = string.Empty;  // mcq/msq/tf
         public string Explanation { get; set; } = string.Empty;
+        public string? ImageUrl { get; set; } = string.Empty;
         public List<ChoiceDTO> Choices { get; set; } = new List<ChoiceDTO>();
     }
     [AutoMap(typeof(StudyNest.Common.DbEntities.Entities.Choice), ReverseMap = true)]

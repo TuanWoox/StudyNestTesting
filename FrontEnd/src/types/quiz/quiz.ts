@@ -25,6 +25,7 @@ export interface Question {
   type: "MCQ" | "TF" | "MSQ";
   explanation: string;
   choices: Choice[];
+  imageUrl?: string;
 }
 
 export interface Choice {
