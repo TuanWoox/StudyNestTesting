@@ -57,6 +57,7 @@ const QuestionList: React.FC<QuestionListProps> = ({
       type: questionData.type!,
       explanation: questionData.explanation || "",
       choices: questionData.choices!,
+      imageUrl: questionData.imageUrl,
     };
 
     await updateQuestionAsync(payload);
@@ -74,6 +75,7 @@ const QuestionList: React.FC<QuestionListProps> = ({
         text: c.text,
         isCorrect: c.isCorrect,
       })),
+      imageUrl: questionData.imageUrl
     };
 
     await createQuestionAsync(payload);

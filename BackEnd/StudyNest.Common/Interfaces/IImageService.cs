@@ -12,5 +12,6 @@ namespace StudyNest.Common.Interfaces
     public interface IImageService
     {
         public Task<ReturnResult<object>> UploadImage(IFormFile file);
+        public Task<ReturnResult<object>> UploadQuestionImage(IFormFile file);
     }
 }

@@ -61,7 +61,8 @@ namespace StudyNest.Business.v1
                     Name = request.Name,
                     Type = request.Type,
                     Explanation = request.Explanation,
-                    Choices = choices
+                    Choices = choices,
+                    ImageUrl = request.ImageUrl ?? string.Empty,
                 };
 
                 await _context.Questions.AddAsync(newQuestion);
@@ -107,6 +108,7 @@ namespace StudyNest.Business.v1
                 existingQuestion.Name = request.Name;
                 existingQuestion.Type = request.Type;
                 existingQuestion.Explanation = request.Explanation;
+                existingQuestion.ImageUrl = !string.IsNullOrEmpty(request.ImageUrl) ? request.ImageUrl : string.Empty;
 
                 var incomingChoices = request.Choices ?? new List<Choice>();
 
@@ -187,7 +189,6 @@ namespace StudyNest.Business.v1
             }
             return rs;
         }
-
 
         public static string ValidateQuestion(string name, string type, string explanation, List<Choice> choices, bool isUpdate = false, string? questionId = null)
         {

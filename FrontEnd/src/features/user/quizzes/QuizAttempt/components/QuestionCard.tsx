@@ -5,7 +5,7 @@ import TrueFalseQuestion from "./QuestionType/TrueFalseQuestion";
 import { QuestionTypeBadge } from "./QuestionTypeBadge";
 import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
 import { selectQuizCard } from "@/store/quizAttemptSlice";
-import { Card } from "antd";
+import { Card, Image } from "antd";
 import React from "react";
 import useAntDesignTheme from "@/hooks/common/useAntDesignTheme";
 
@@ -49,6 +49,34 @@ const QuestionCard: React.FC = () => {
                     </h2>
                 </div>
             </div>
+
+            {/* Question Image */}
+            {question.imageUrl && (
+                <div
+                    style={{
+                        marginBottom: 16,
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        padding: 16,
+                        backgroundColor: "#fafafa",
+                        border: "1px solid #d9d9d9",
+                        borderRadius: 4,
+                    }}
+                >
+                    <Image
+                        src={question.imageUrl}
+                        alt="Question image"
+                        style={{
+                            maxWidth: "100%",
+                            maxHeight: 500,
+                            width: "auto",
+                            height: "auto",
+                            objectFit: "contain",
+                        }}
+                    />
+                </div>
+            )}
 
             {/* Render Question Types */}
             {question.type.toLowerCase() === "mcq" && (

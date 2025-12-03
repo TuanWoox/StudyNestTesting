@@ -4,6 +4,7 @@ export interface CreateQuestionDTO {
   type: "MCQ" | "MSQ" | "TF";
   explanation?: string;
   choices: ChoiceDTO[];
+  imageUrl: string | undefined
 }
 
 export interface ChoiceDTO {

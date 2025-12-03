@@ -18,6 +18,7 @@ namespace StudyNest.Common.DbEntities.Entities
         public string Type { get; set; } = string.Empty;  // mcq/msq/tf
         public string Explanation { get; set; } = string.Empty;
         public Quiz? Quiz { get; set; }
+        public string? ImageUrl { get; set; } = string.Empty;
         public ICollection<Choice> Choices { get; set; } = new List<Choice>();
     }
 }

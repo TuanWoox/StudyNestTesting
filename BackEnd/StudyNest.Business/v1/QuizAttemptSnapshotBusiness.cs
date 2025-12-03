@@ -239,7 +239,8 @@ namespace StudyNest.Business.v1
                     curr.Name != snap.Name ||
                     curr.Type != snap.Type ||
                     curr.Explanation != snap.Explanation ||
-                    currentSorted[i].SortedChoices?.Count != snapshotSorted[i].SortedChoices?.Count)
+                    currentSorted[i].SortedChoices?.Count != snapshotSorted[i].SortedChoices?.Count ||
+                    curr.ImageUrl != snap.ImageUrl)
                 {
                     return true;
                 }

@@ -21,7 +21,7 @@ namespace StudyNest.Controllers
             this._questionBusiness = questionBusiness;
         }
         [HttpPost]
-        public async Task<IActionResult> CreateQuiz(CreateQuestionDTO request)
+        public async Task<IActionResult> CreateQuestion(CreateQuestionDTO request)
         {
             var rs = new ReturnResult<bool>();
             try

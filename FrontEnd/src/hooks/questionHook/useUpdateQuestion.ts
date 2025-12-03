@@ -28,12 +28,7 @@ const useUpdateQuestion = (options?: UseUpdateQuestionOptions) => {
       queryClient.invalidateQueries({ queryKey: ["quiz", variables.quizId] });
       queryClient.invalidateQueries({ queryKey: ["quizzes"] });
       onSuccess?.(data);
-    },
-    onError: (error) => {
-      // Error toast already shown by the interceptor; just pass it through
-      toast.error("Failed to update question");
-      onError?.(error);
-    },
+    }
   });
 
   return {

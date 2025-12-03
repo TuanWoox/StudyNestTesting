@@ -44,12 +44,12 @@ export function useQuestionValidation(): UseQuestionValidationReturn {
       choices: ChoiceDTO[]
     ): boolean => {
       const result = validateCreateQuestion(name, type, explanation, choices);
-      
+
       if (!result.isValid) {
         setValidationError({ message: result.error || "Validation failed" });
         return false;
       }
-      
+
       setValidationError(null);
       return true;
     },
@@ -71,12 +71,12 @@ export function useQuestionValidation(): UseQuestionValidationReturn {
         explanation,
         choices
       );
-      
+
       if (!result.isValid) {
         setValidationError({ message: result.error || "Validation failed" });
         return false;
       }
-      
+
       setValidationError(null);
       return true;
     },
