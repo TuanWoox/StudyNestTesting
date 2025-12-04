@@ -18,6 +18,8 @@ namespace StudyNest.Common.Models.DTOs.EntityDTO.Quizzes
         public int TotalQuestion { get; set; }
         public string Difficulty { get; set; }
         public string? NoteTitle { get; set; }
+        public string? FriendlyURL { get; set; }
+        public string? IsPublic { get; set; }
         public void Mapping(Profile profile)
         {
             var map = profile.CreateMap<Quiz, QuizListDTO>();

@@ -75,6 +75,10 @@ const quizService = {
   changeFriendlyUrl: async (quizId: string, newFriendlyUrl: string): Promise<boolean> => {
     const { data } = await instance.put<ReturnResult<boolean>>(`/Quiz/ChangeFriendlyUrl/${quizId}?newFriendlyUrl=${newFriendlyUrl}`)
     return data.result;
+  },
+  explorePublicQuizzes: async (payload: Page<string>): Promise<PagedData<QuizDetail, string>> => {
+    const { data } = await instance.post<ReturnResult<PagedData<QuizDetail, string>>>("/Quiz/ExplorePublicQuizzes", payload);
+    return data.result;
   }
 };
 

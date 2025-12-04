@@ -15,7 +15,7 @@ import QuizDeleteModal from "./components/QuizDeleteModal";
 import QuizPagination from "./components/QuizPagination";
 import QuizFilterModal from "./components/QuizFilterModal";
 import QuizCreateModal from "./components/QuizCreateModal";
-import ForkQuizModal, { QuizForkModalRef } from "./components/QuizForkModal";
+import ForkQuizModal, { QuizForkModalRef } from "../QuizzesExplore/components/QuizForkModal";
 
 const { useToken } = theme;
 
@@ -58,7 +58,6 @@ const Quizzes: React.FC = () => {
 
   const { deleteQuizAsync, isLoading: isDeleting } = useDeleteQuiz();
   const { createManualQuizAsync } = useCreateManualQuiz();
-  const forkQuizModalRef = useRef<QuizForkModalRef>(null);
 
   const quizzes = quizData?.data || [];
   const totalElements = quizData?.page.totalElements || 0;
@@ -167,7 +166,6 @@ const Quizzes: React.FC = () => {
           onSearchChange={setSearchTerm}
           onOpenFilter={() => setIsFilterModalOpen(true)}
           onCreateQuiz={() => setIsCreateModalOpen(true)}
-          onForkQuiz={() => forkQuizModalRef.current?.open()}
         />
 
         <QuizGrid
@@ -220,10 +218,6 @@ const Quizzes: React.FC = () => {
         onCancel={() => setIsCreateModalOpen(false)}
         onGenerateFromNote={handleGenerateFromNote}
         onCreateFromScratch={handleCreateFromScratch}
-      />
-
-      <ForkQuizModal
-        ref={forkQuizModalRef}
       />
     </div>
   );

@@ -28,6 +28,7 @@ import { NotFoundPage } from "./components/NotFoundPage/NotFoundPage";
 // Admin features
 import SettingsConfig from "./features/admin/settings/SettingsConfig";
 import AdminFeedBacks from "./features/admin/feedbacks/Feedbacks/FeedBacks";
+import QuizzesExplore from "./features/user/quizzes/QuizzesExplore/QuizzesExplore";
 
 export const router = createBrowserRouter([
   {
@@ -48,6 +49,7 @@ export const router = createBrowserRouter([
       { index: true, element: <Navigate to="/user/notes" /> },
       { path: "notes", element: <NotesPage /> },
       { path: "quiz", element: <Quizzes /> },
+      { path: "exploreQuiz", element: <QuizzesExplore /> },
       { path: "quiz/generate", element: <QuizGeneration /> },
       { path: "quiz/:id", element: <QuizDetailPage /> },
       { path: "quiz/history/:id", element: <QuizHistory /> },
