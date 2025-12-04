@@ -82,6 +82,7 @@ namespace StudyNest.Business.v1
                                                                                 .FirstOrDefault(q => q.Id == g.Key.SnapshotQuestionId) ?? new QuestionDTO(),
                                                             WrongCounts = g.Count()
                                                         })
+                                                        .OrderBy(x => x.WrongCounts)
                                                         .ToList();
 
 
@@ -92,7 +93,6 @@ namespace StudyNest.Business.v1
                         TotalRightQuestion = totalRight,
                         TotalWrongQuestion = totalQuestions - totalRight,
                         QuestionErrorCounts = questionErrorCounts
-
                     };
                     //Score Statistics
                     quizStats.ScoreStatistics = new QuizScoreStatisticsDTO

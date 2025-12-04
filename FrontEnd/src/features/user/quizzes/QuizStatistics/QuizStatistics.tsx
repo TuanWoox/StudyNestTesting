@@ -21,10 +21,13 @@ export interface QuizStatisticsRef {
 
 const QuizStatistics = forwardRef<QuizStatisticsRef, QuizStatisticsProps>(
     ({ quizId }, ref) => {
-        const [dateFilter, setDateFilter] = useState<[Dayjs | null, Dayjs | null]>([
-            dayjs().subtract(7, "day"),
-            dayjs(),
-        ]);
+        const getDefaultRange = (): [Dayjs, Dayjs] => {
+            const today = dayjs();
+            const oneMonthAgo = today.subtract(1, "month");
+            return [oneMonthAgo, today];
+        };
+
+        const [dateFilter, setDateFilter] = useState<[Dayjs | null, Dayjs | null]>(getDefaultRange());
 
         const { data, isLoading } = useGetOneStatisticsByQuizId(quizId, dateFilter);
         const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -47,7 +50,7 @@ const QuizStatistics = forwardRef<QuizStatisticsRef, QuizStatisticsProps>(
 
         useEffect(() => {
             if (isOpen) {
-                setDateFilter([dayjs().subtract(7, "day"), dayjs()]);
+                setDateFilter(getDefaultRange());
             }
         }, [isOpen]);
 
