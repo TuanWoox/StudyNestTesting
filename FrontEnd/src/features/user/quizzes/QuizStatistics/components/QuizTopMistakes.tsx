@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ReturnResult } from "@/types/common/return-result";
 import { QuizStatisticsDTO } from "@/types/quizStatistics/QuizStatisticsDTO";
 import { QuestionItem } from "../../QuizDetailPage/components";
@@ -16,14 +16,22 @@ const QuizTopMistakes: React.FC<{
     const questionErrorCounts =
         data?.result?.attemptSummary?.questionErrorCounts || [];
 
-    const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
+    const [expandedKey, setExpandedKey] = useState<string | undefined>(undefined);
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(5);
+
+    // Reset expanded key when page changes
+    useEffect(() => {
+        setExpandedKey(undefined);
+    }, [page, pageSize]);
+
 
     if (!data || !questionErrorCounts.length) return null;
 
     const handleCollapseChange = (keys: string | string[]) => {
-        setExpandedKeys(Array.isArray(keys) ? keys : [keys]);
+        // For accordion mode, Ant Design passes an array with a single active key or empty array
+        const keysArray = Array.isArray(keys) ? keys : [keys];
+        setExpandedKey(keysArray.length > 0 ? keysArray[0] : undefined);
     };
 
     const startIndex = (page - 1) * pageSize;
@@ -45,9 +53,9 @@ const QuizTopMistakes: React.FC<{
 
             {/* Collapsable items with pagination applied */}
             <StudyNestCollapsable
-                activeKey={expandedKeys}
+                activeKey={expandedKey}
                 onChange={handleCollapseChange}
-                accordion={false}
+                accordion={true}
                 items={pagedData.map((item, index) => {
                     const q = item.question as Question;
                     return {
@@ -66,7 +74,7 @@ const QuizTopMistakes: React.FC<{
                                     width: "100%",
                                 }}
                             >
-                                <div>❌ Mistake {startIndex + index + 1}: {q.name}</div>
+                                <div>❌ Mistake: {q.name}</div>
                                 <div style={{ opacity: 0.6, fontSize: 13, marginLeft: 8 }}>
                                     Errors: {item.wrongCounts}
                                 </div>

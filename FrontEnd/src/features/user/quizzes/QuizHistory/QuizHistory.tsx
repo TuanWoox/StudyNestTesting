@@ -63,11 +63,11 @@ const QuizHistory: React.FC = () => {
     navigate("/user/quiz");
   };
 
-  if (isLoadingQuiz || isLoadingAttempts) {
+  if (isLoadingQuiz) {
     return <SpinnerFull />;
   }
 
-  if (quizError || attemptsError || !quiz) {
+  if (quizError || !quiz) {
     return (
       <div
         style={{
@@ -176,7 +176,35 @@ const QuizHistory: React.FC = () => {
         </div>
 
         {/* Attempts List */}
-        {attempts.length === 0 ? (
+        {attemptsError ? (
+          <div
+            style={{
+              textAlign: "center",
+              borderRadius: 0,
+              backgroundColor: token.colorBgContainer,
+            }}
+          >
+            <EmptyState
+              type="error"
+              title="Failed to Load Attempts"
+              description={attemptsError.message || "Unable to load quiz attempts. Please try again."}
+              actionLabel="Retry"
+              actionIcon={<ReloadOutlined />}
+              onAction={() => refetch()}
+            />
+          </div>
+        ) : isLoadingAttempts ? (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              minHeight: "40vh",
+            }}
+          >
+            <SpinnerFull />
+          </div>
+        ) : attempts.length === 0 ? (
           <div
             style={{
               textAlign: "center",
