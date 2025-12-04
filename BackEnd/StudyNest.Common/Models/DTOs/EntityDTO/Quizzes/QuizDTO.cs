@@ -20,6 +20,7 @@ namespace StudyNest.Common.Models.DTOs.EntityDTO.Quizzes
         public string? FriendlyURL { get; set; } = string.Empty;
         public ICollection<DbEntities.Entities.Question> Questions { get; set; } = new List<DbEntities.Entities.Question>();
         public ICollection<DbEntities.Entities.QuizAttemptSnapshot> QuizAttemptSnapshots { get; set; } = new List<DbEntities.Entities.QuizAttemptSnapshot>();
+        public ICollection<QuizStar> QuizStars { get; set; } = new List<QuizStar>();
     }
 
     [AutoMap(typeof(ApplicationUser), ReverseMap = true, PreserveReferences = true)]

@@ -16,6 +16,9 @@ interface QuizExploreGridProps {
     onViewDetails: (quiz: QuizDetail) => void;
     isForkingId: string | null;
     isForking: boolean;
+    onStar: (quizId: string, friendlyUrl?: string) => void;
+    isStarringId: string | null;
+    isStarring: boolean;
 }
 
 const QuizExploreGrid: React.FC<QuizExploreGridProps> = ({
@@ -26,6 +29,9 @@ const QuizExploreGrid: React.FC<QuizExploreGridProps> = ({
     onViewDetails,
     isForkingId,
     isForking,
+    onStar,
+    isStarringId,
+    isStarring,
 }) => {
     const { token } = useToken();
     const borderColor = `2px solid ${token.colorPrimary}E0`;
@@ -76,6 +82,9 @@ const QuizExploreGrid: React.FC<QuizExploreGridProps> = ({
                         onViewDetails={onViewDetails}
                         isForkingId={isForkingId}
                         isForking={isForking}
+                        onStar={onStar}
+                        isStarringId={isStarringId}
+                        isStarring={isStarring}
                     />
                 </Col>
             ))}

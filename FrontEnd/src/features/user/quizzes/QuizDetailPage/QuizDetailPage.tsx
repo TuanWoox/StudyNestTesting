@@ -156,6 +156,7 @@ const QuizDetailPage: React.FC = () => {
             questionCount={quiz?.questions?.length ?? 0}
             dateCreated={quiz.dateCreated}
             difficulty={quiz.difficulty}
+            starCount={quiz?.quizStars?.length ?? 0}
           />
           <QuizPublishSettings
             quiz={quiz}

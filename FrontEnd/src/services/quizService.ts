@@ -79,6 +79,10 @@ const quizService = {
   explorePublicQuizzes: async (payload: Page<string>): Promise<PagedData<QuizDetail, string>> => {
     const { data } = await instance.post<ReturnResult<PagedData<QuizDetail, string>>>("/Quiz/ExplorePublicQuizzes", payload);
     return data.result;
+  },
+  starQuiz: async (quizId: string): Promise<boolean> => {
+    const { data } = await instance.post<ReturnResult<boolean>>(`/Quiz/StarQuiz/${quizId}`);
+    return data.result;
   }
 };
 

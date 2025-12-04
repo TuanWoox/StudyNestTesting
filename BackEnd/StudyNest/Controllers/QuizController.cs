@@ -174,7 +174,7 @@ namespace StudyNest.Controllers
             {
                 result = await _quizBusiness.ChangeFriendlyUrl(id, newFriendlyUrl);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 StudyNestLogger.Instance.Error(ex);
             }
@@ -193,6 +193,20 @@ namespace StudyNest.Controllers
                 StudyNestLogger.Instance.Error(ex);
             }
             return Ok(result);
+        }
+        [HttpPost("StarQuiz/{id}")]
+        public async Task<IActionResult> StarQuiz(string id)
+        {
+            var rs = new ReturnResult<bool>();
+            try
+            {
+                rs = await _quizBusiness.StarQuiz(id);
+            }
+            catch (Exception ex)
+            {
+                StudyNestLogger.Instance.Error(ex);
+            }
+            return Ok(rs);
         }
     }
 }

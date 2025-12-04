@@ -3,6 +3,7 @@ import { theme } from "antd";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
 import useExplorePublicQuizzes from "@/hooks/quizHook/useExplorePublicQuizzes";
 import useForkQuiz from "@/hooks/quizHook/useForkQuiz";
+import useStarQuiz from "@/hooks/quizHook/useStarQuiz";
 import useDebounce from "@/hooks/common/useDebounce";
 import { SortOrderType } from "@/constants/sortOrderType";
 import { Dayjs } from "dayjs";
@@ -25,6 +26,7 @@ const QuizzesExplore: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
     const [isForkingId, setIsForkingId] = useState<string | null>(null);
+    const [isStarringId, setIsStarringId] = useState<string | null>(null);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [selectedQuiz, setSelectedQuiz] = useState<QuizDetail | null>(null);
 
@@ -53,6 +55,7 @@ const QuizzesExplore: React.FC = () => {
     });
 
     const { mutateAsync: forkQuizAsync, isPending: isForking } = useForkQuiz();
+    const { mutate: starQuiz, isPending: isStarring } = useStarQuiz();
     const forkQuizModalRef = useRef<QuizForkModalRef>(null);
 
     const quizzes = quizData?.data || [];
@@ -77,6 +80,15 @@ const QuizzesExplore: React.FC = () => {
     const handleViewDetails = (quiz: QuizDetail) => {
         setSelectedQuiz(quiz);
         setIsDetailModalOpen(true);
+    };
+
+    const handleStar = (quizId: string, friendlyUrl?: string) => {
+        setIsStarringId(quizId);
+        starQuiz({ quizId, friendlyUrl }, {
+            onSettled: () => {
+                setIsStarringId(null);
+            }
+        });
     };
 
     if (isError || (!isPending && !quizData)) {
@@ -120,9 +132,12 @@ const QuizzesExplore: React.FC = () => {
                     isPending={isPending}
                     pageSize={pageSize}
                     onFork={handleFork}
+                    onStar={handleStar}
                     onViewDetails={handleViewDetails}
                     isForkingId={isForkingId}
                     isForking={isForking}
+                    isStarringId={isStarringId}
+                    isStarring={isStarring}
                 />
 
                 {totalElements > 0 && (
@@ -160,11 +175,19 @@ const QuizzesExplore: React.FC = () => {
                     setSelectedQuiz(null);
                 }}
                 onFork={handleFork}
+                onStar={handleStar}
                 isForkingId={isForkingId}
                 isForking={isForking}
+                isStarringId={isStarringId}
+                isStarring={isStarring}
             />
 
-            <ForkQuizModal ref={forkQuizModalRef} />
+            <ForkQuizModal
+                ref={forkQuizModalRef}
+                onStar={handleStar}
+                isStarringId={isStarringId}
+                isStarring={isStarring}
+            />
         </div>
     );
 };

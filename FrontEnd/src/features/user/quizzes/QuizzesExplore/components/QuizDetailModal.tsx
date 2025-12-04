@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Modal, Typography, Space, Divider, theme, Tag, Button, Collapse } from "antd";
+import { Modal, Typography, Space, Divider, theme, Tag, Button, Collapse, message } from "antd";
 import {
     QuestionCircleOutlined,
     CalendarOutlined,
@@ -9,10 +9,15 @@ import {
     DownOutlined,
     UpOutlined,
     LinkOutlined,
+    StarOutlined,
+    StarFilled,
+    CopyOutlined,
 } from "@ant-design/icons";
 import { QuizDetail } from "@/types/quiz/quiz";
 import { formatDMY } from "@/utils/date";
 import { QuestionItem } from "@/features/user/quizzes/QuizDetailPage/components/QuestionItem";
+import { selectUserId } from "@/store/authSlice";
+import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
 
 const { Title, Text } = Typography;
 const { useToken } = theme;
@@ -24,6 +29,9 @@ interface QuizDetailModalProps {
     onFork: (quizId: string) => void;
     isForkingId: string | null;
     isForking: boolean;
+    onStar: (quizId: string, friendlyUrl?: string) => void;
+    isStarringId: string | null;
+    isStarring: boolean;
 }
 
 const QuizDetailModal: React.FC<QuizDetailModalProps> = ({
@@ -33,12 +41,19 @@ const QuizDetailModal: React.FC<QuizDetailModalProps> = ({
     onFork,
     isForkingId,
     isForking,
+    onStar,
+    isStarringId,
+    isStarring,
 }) => {
     const { token } = useToken();
+    const userId = useReduxSelector(selectUserId);
     const [expandedAll, setExpandedAll] = useState(false);
     const [activeKeys, setActiveKeys] = useState<string[]>([]);
 
     if (!quiz) return null;
+
+    const starCount = quiz.quizStars?.length || 0;
+    const isStarred = quiz.quizStars?.some(star => star.userId === userId) || false;
 
     const borderColor = `${token.colorPrimary}55`;
     const shadowColor = `${token.colorPrimary}55`;
@@ -75,6 +90,25 @@ const QuizDetailModal: React.FC<QuizDetailModalProps> = ({
                     }}
                 >
                     Close
+                </Button>,
+                <Button
+                    key="star"
+                    type={isStarred ? "primary" : "default"}
+                    icon={isStarred ? <StarFilled /> : <StarOutlined />}
+                    onClick={() => onStar(quiz.id, quiz.friendlyURL)}
+                    loading={isStarringId === quiz.id && isStarring}
+                    disabled={isStarring}
+                    style={{
+                        borderRadius: 0,
+                        fontWeight: 600,
+                        boxShadow: `2px 2px 0 ${token.colorPrimary}55`,
+                        border: `1px solid ${token.colorPrimary}E0`,
+                        fontFamily: "monospace",
+                        backgroundColor: isStarred ? token.colorWarning : undefined,
+                        borderColor: isStarred ? token.colorWarning : undefined,
+                    }}
+                >
+                    {isStarred ? `Starred (${starCount})` : `Star (${starCount})`}
                 </Button>,
                 <Button
                     key="fork"
@@ -212,12 +246,47 @@ const QuizDetailModal: React.FC<QuizDetailModalProps> = ({
                                         fontFamily: "monospace",
                                         fontSize: 14,
                                         wordBreak: "break-all",
+                                        flex: 1,
                                     }}
                                 >
                                     {quiz.friendlyURL}
                                 </Text>
+                                <Button
+                                    type="default"
+                                    size="small"
+                                    icon={<CopyOutlined />}
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(quiz.friendlyURL || "");
+                                        message.success("Friendly URL copied to clipboard!");
+                                    }}
+                                    style={{
+                                        borderRadius: 0,
+                                        border: `1px solid ${token.colorPrimary}E0`,
+                                        fontFamily: "monospace",
+                                    }}
+                                >
+                                    Copy
+                                </Button>
                             </div>
                         )}
+
+                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                            {isStarred ? <StarFilled style={{ fontSize: 16, color: token.colorWarning }} /> : <StarOutlined style={{ fontSize: 16, color: token.colorPrimary }} />}
+                            <Text strong style={{ fontFamily: "monospace", fontSize: 15 }}>
+                                Stars:
+                            </Text>
+                            <Tag
+                                color={isStarred ? "gold" : "default"}
+                                style={{
+                                    borderRadius: 0,
+                                    fontFamily: "monospace",
+                                    fontWeight: 600,
+                                    border: "none",
+                                }}
+                            >
+                                {starCount}
+                            </Tag>
+                        </div>
                     </Space>
                 </div>
 

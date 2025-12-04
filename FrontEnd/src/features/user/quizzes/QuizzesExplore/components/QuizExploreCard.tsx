@@ -1,8 +1,10 @@
 import React from "react";
-import { Card, theme, Grid, Button, Space, Typography } from "antd";
-import { ForkOutlined, CalendarOutlined, QuestionCircleOutlined, UserOutlined, EyeOutlined, LinkOutlined } from "@ant-design/icons";
+import { Card, theme, Grid, Button, Space, Typography, message } from "antd";
+import { ForkOutlined, CalendarOutlined, QuestionCircleOutlined, UserOutlined, EyeOutlined, LinkOutlined, StarOutlined, StarFilled, CopyOutlined } from "@ant-design/icons";
 import { QuizDetail } from "@/types/quiz/quiz";
 import { formatDMY } from "@/utils/date";
+import { selectUserId } from "@/store/authSlice";
+import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
 
 const { useToken } = theme;
 const { useBreakpoint } = Grid;
@@ -14,6 +16,9 @@ interface QuizExploreCardProps {
     onViewDetails: (quiz: QuizDetail) => void;
     isForkingId: string | null;
     isForking: boolean;
+    onStar: (quizId: string, friendlyUrl?: string) => void;
+    isStarringId: string | null;
+    isStarring: boolean;
 }
 
 const QuizExploreCard: React.FC<QuizExploreCardProps> = ({
@@ -22,9 +27,16 @@ const QuizExploreCard: React.FC<QuizExploreCardProps> = ({
     onViewDetails,
     isForkingId,
     isForking,
+    onStar,
+    isStarringId,
+    isStarring,
 }) => {
     const { token } = useToken();
     const screens = useBreakpoint();
+    const userId = useReduxSelector(selectUserId);
+
+    const starCount = quiz.quizStars?.length || 0;
+    const isStarred = quiz.quizStars?.some(star => star.userId === userId) || false;
 
     const borderColor = `2px solid ${token.colorPrimary}E0`;
     const shadowColor = `4px 4px 0px ${token.colorPrimary}55`;
@@ -146,11 +158,27 @@ const QuizExploreCard: React.FC<QuizExploreCardProps> = ({
                                     fontFamily: "monospace",
                                     fontSize: 13,
                                     color: token.colorTextSecondary,
+                                    flex: 1,
                                 }}
                                 ellipsis
                             >
                                 {quiz.friendlyURL}
                             </Text>
+                            <Button
+                                type="text"
+                                size="small"
+                                icon={<CopyOutlined />}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigator.clipboard.writeText(quiz.friendlyURL || "");
+                                    message.success("Friendly URL copied!");
+                                }}
+                                style={{
+                                    padding: "0 4px",
+                                    height: "auto",
+                                    color: token.colorPrimary,
+                                }}
+                            />
                         </div>
                     )}
                 </Space>
@@ -181,25 +209,48 @@ const QuizExploreCard: React.FC<QuizExploreCardProps> = ({
                     >
                         View Details
                     </Button>
-                    <Button
-                        type="primary"
-                        icon={<ForkOutlined />}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onFork(quiz.id);
-                        }}
-                        loading={isForkingId === quiz.id && isForking}
-                        disabled={isForking}
-                        block
-                        style={{
-                            borderRadius: 0,
-                            fontWeight: 600,
-                            boxShadow: `2px 2px 0 ${token.colorPrimary}55`,
-                            border: `1px solid ${token.colorPrimary}E0`,
-                        }}
-                    >
-                        Fork Quiz
-                    </Button>
+                    <Space size={8} style={{ width: "100%", display: "flex" }}>
+                        <Button
+                            type={isStarred ? "primary" : "default"}
+                            icon={isStarred ? <StarFilled /> : <StarOutlined />}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onStar(quiz.id, quiz.friendlyURL);
+                            }}
+                            loading={isStarringId === quiz.id && isStarring}
+                            disabled={isStarring}
+                            style={{
+                                borderRadius: 0,
+                                fontWeight: 600,
+                                boxShadow: `2px 2px 0 ${token.colorPrimary}55`,
+                                border: `1px solid ${token.colorPrimary}E0`,
+                                flex: 1,
+                                backgroundColor: isStarred ? token.colorWarning : undefined,
+                                borderColor: isStarred ? token.colorWarning : undefined,
+                            }}
+                        >
+                            {starCount}
+                        </Button>
+                        <Button
+                            type="primary"
+                            icon={<ForkOutlined />}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onFork(quiz.id);
+                            }}
+                            loading={isForkingId === quiz.id && isForking}
+                            disabled={isForking}
+                            style={{
+                                borderRadius: 0,
+                                fontWeight: 600,
+                                boxShadow: `2px 2px 0 ${token.colorPrimary}55`,
+                                border: `1px solid ${token.colorPrimary}E0`,
+                                flex: 2,
+                            }}
+                        >
+                            Fork Quiz
+                        </Button>
+                    </Space>
                 </Space>
             </div>
         </Card>

@@ -15,6 +15,8 @@ import {
     FileTextOutlined,
     TrophyOutlined,
     UserOutlined,
+    StarOutlined,
+    StarFilled,
 } from "@ant-design/icons";
 import StudynestModal from "@/components/StudyNestModal/StudynestModal";
 import { useAntDesignTheme } from "@/hooks/common";
@@ -23,6 +25,8 @@ import Spinner from "@/components/Spinner/Spinner";
 import { QuestionItem } from "@/features/user/quizzes/QuizDetailPage/components/QuestionItem";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
 import useGetQuizDetailByFriendlyUrl from "@/hooks/quizHook/useGetQuizDetailByFriendlyUrl";
+import { selectUserId } from "@/store/authSlice";
+import { useReduxSelector } from "@/hooks/reduxHook/useReduxSelector";
 const { Title, Text } = Typography;
 
 export interface QuizForkModalRef {
@@ -31,17 +35,23 @@ export interface QuizForkModalRef {
 }
 
 interface QuizForkModalProps {
-    // Add props as needed
+    onStar?: (quizId: string, friendlyUrl?: string) => void;
+    isStarringId?: string | null;
+    isStarring?: boolean;
 }
 
-const QuizForkModal = forwardRef<QuizForkModalRef, QuizForkModalProps>((props, ref) => {
+const QuizForkModal = forwardRef<QuizForkModalRef, QuizForkModalProps>(({ onStar, isStarringId, isStarring }, ref) => {
     const [visible, setVisible] = useState(false);
     const [quizFriendlyUrl, setQuizFriendlyUrl] = useState("");
     const [quizFriendlyUrlToSearch, setQuizFriendlyUrlToSearch] = useState("");
     const [initialFetching, setInitialFetching] = useState(true);
     const { borderColor, shadowColor, modalStyles } = useAntDesignTheme();
     const { mutate: forkQuiz, isPending: isForking } = useForkQuiz();
-    const { data, refetch: fetchQuizDetail, isLoading: isFetching } = useGetQuizDetailByFriendlyUrl(quizFriendlyUrlToSearch, { enabled: false });
+    const { data, refetch: fetchQuizDetail, isLoading: isFetching } = useGetQuizDetailByFriendlyUrl(quizFriendlyUrlToSearch, { enabled: !!quizFriendlyUrlToSearch.trim() });
+    const userId = useReduxSelector(selectUserId);
+
+    const starCount = data?.quizStars?.length || 0;
+    const isStarred = data?.quizStars?.some(star => star.userId === userId) || false;
 
     useImperativeHandle(ref, () => ({
         open: () => setVisible(true),
@@ -50,12 +60,6 @@ const QuizForkModal = forwardRef<QuizForkModalRef, QuizForkModalProps>((props, r
             setQuizFriendlyUrl("");
         },
     }));
-
-    useEffect(() => {
-        if (quizFriendlyUrlToSearch.trim()) {
-            fetchQuizDetail();
-        }
-    }, [quizFriendlyUrlToSearch, fetchQuizDetail]);
 
     useEffect(() => {
         setInitialFetching(false)
@@ -106,6 +110,22 @@ const QuizForkModal = forwardRef<QuizForkModalRef, QuizForkModalProps>((props, r
                     <Button onClick={handleClose} style={buttonStyle}>
                         Cancel
                     </Button>
+                    {onStar && (
+                        <Button
+                            type={isStarred ? "primary" : "default"}
+                            icon={isStarred ? <StarFilled /> : <StarOutlined />}
+                            onClick={() => onStar(data.id, data.friendlyURL)}
+                            loading={isStarringId === data.id && isStarring}
+                            disabled={isStarring}
+                            style={{
+                                ...buttonStyle,
+                                backgroundColor: isStarred ? "#faad14" : undefined,
+                                borderColor: isStarred ? "#faad14" : undefined,
+                            }}
+                        >
+                            {isStarred ? `Starred (${starCount})` : `Star (${starCount})`}
+                        </Button>
+                    )}
                     <Button
                         type="primary"
                         onClick={handleFork}
@@ -218,6 +238,13 @@ const QuizForkModal = forwardRef<QuizForkModalRef, QuizForkModalProps>((props, r
                                             {data.difficulty}
                                         </Tag>
                                     )}
+                                    <Tag
+                                        icon={isStarred ? <StarFilled /> : <StarOutlined />}
+                                        color={isStarred ? "gold" : "default"}
+                                        style={{ borderRadius: 0 }}
+                                    >
+                                        {starCount} Stars
+                                    </Tag>
                                 </Space>
                             </Space>
                         </Card>
