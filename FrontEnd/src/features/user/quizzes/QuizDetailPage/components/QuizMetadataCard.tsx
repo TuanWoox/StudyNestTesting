@@ -1,5 +1,6 @@
 import React from "react";
 import { Card, Space, Tag, Typography, theme } from "antd";
+import { StarFilled } from "@ant-design/icons";
 import { formatDMY } from "@/utils/date";
 
 const { Text } = Typography;
@@ -9,12 +10,14 @@ interface QuizMetadataCardProps {
   questionCount: number;
   dateCreated?: string;
   difficulty?: string;
+  starCount?: number;
 }
 
 export const QuizMetadataCard: React.FC<QuizMetadataCardProps> = ({
   questionCount,
   dateCreated,
   difficulty,
+  starCount = 0,
 }) => {
   const { token } = useToken();
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
@@ -22,7 +25,7 @@ export const QuizMetadataCard: React.FC<QuizMetadataCardProps> = ({
   // Theme constants
   const borderColor = `2px solid ${token.colorPrimary}E0`;
   const shadowColor = `4px 4px 0px ${token.colorPrimary}55`;
-  
+
   const getDifficultyColor = (diff?: string) => {
     if (!diff) return token.colorPrimary;
     switch (diff.toLowerCase()) {
@@ -50,10 +53,10 @@ export const QuizMetadataCard: React.FC<QuizMetadataCardProps> = ({
         padding: isMobile ? token.paddingSM : token.padding,
       }}
     >
-      <Space 
-        size="middle" 
+      <Space
+        size="middle"
         wrap
-        style={{ 
+        style={{
           width: "100%",
           justifyContent: isMobile ? "flex-start" : "space-between"
         }}
@@ -75,7 +78,7 @@ export const QuizMetadataCard: React.FC<QuizMetadataCardProps> = ({
             {difficulty}
           </Tag>
         )}
-        
+
         <Tag
           color="blue"
           style={{
@@ -87,6 +90,20 @@ export const QuizMetadataCard: React.FC<QuizMetadataCardProps> = ({
           }}
         >
           {questionCount} Question{questionCount !== 1 ? "s" : ""}
+        </Tag>
+
+        <Tag
+          icon={<StarFilled />}
+          color="gold"
+          style={{
+            fontSize: isMobile ? 13 : 14,
+            padding: isMobile ? "4px 10px" : "5px 12px",
+            borderRadius: 0,
+            fontWeight: 500,
+            fontFamily: "monospace",
+          }}
+        >
+          {starCount} Star{starCount !== 1 ? "s" : ""}
         </Tag>
 
         <Text

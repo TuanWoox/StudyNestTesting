@@ -54,6 +54,10 @@ export const selectRole = (state: RootState) => {
     return state.authReducer.role;
 }
 
+export const selectUserId = (state: RootState) => {
+    return state.authReducer.userId;
+}
+
 export const selectActiveLogout = (state: RootState) => {
     return state.authReducer.activeLogout;
 }

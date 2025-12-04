@@ -27,5 +27,6 @@ namespace StudyNest.Common.DbEntities.Entities
         public string? FriendlyURL { get; set; } = string.Empty;
         public ICollection<Question> Questions { get; set; } = new List<Question>();
         public ICollection<QuizAttemptSnapshot> QuizAttemptSnapshots { get; set; } = new List<QuizAttemptSnapshot>();
+        public ICollection<QuizStar> QuizStars { get; set; } = new List<QuizStar>();
     }
 }

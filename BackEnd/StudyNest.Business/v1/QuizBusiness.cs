@@ -290,6 +290,8 @@ namespace StudyNest.Business.v1
                     .Where(q => q.Id == id && q.OwnerId == _userContext.UserId)
                     .Include(q => q.Questions)
                         .ThenInclude(qn => qn.Choices)
+                    .Include(q => q.QuizStars)
+                    .AsNoTracking()
                     .FirstOrDefaultAsync();
                 if (quiz is null)
                 {
@@ -502,7 +504,6 @@ namespace StudyNest.Business.v1
                     if (quiz.IsPublic)
                     {
                         quiz.IsPublic = false;
-                        quiz.FriendlyURL = string.Empty;
                         if (await _context.SaveChangesAsync() > 0)
                         {
                             result.Result = true;
@@ -622,8 +623,8 @@ namespace StudyNest.Business.v1
                     .Where(q => q.FriendlyURL == friendlyURL)
                     .Include(q => q.Questions)
                         .ThenInclude(qn => qn.Choices)
-
                     .Include(q => q.Owner)
+                    .Include(q => q.QuizStars)
                     .AsNoTracking()
                     .FirstOrDefaultAsync();
                 if (quiz == null || !quiz.IsPublic)
@@ -727,10 +728,60 @@ namespace StudyNest.Business.v1
                                             .Include(n => n.Owner)
                                             .Include(n => n.Questions)
                                             .ThenInclude(n => n.Choices)
+                                            .Include(n => n.QuizStars)
                                             .AsNoTracking()
                                             .OrderByDescending(q => q.DateModified ?? DateTimeOffset.MinValue)
                                             .AsQueryable();
                 result.Result = await _repository.GetPagingAsync<Page<string>, QuizDTO>(query, page, false);
+            }
+            catch (Exception ex)
+            {
+                result.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
+                StudyNestLogger.Instance.Error(ex);
+            }
+            return result;
+        }
+        public async Task<ReturnResult<bool>> StarQuiz(string quizId)
+        {
+            ReturnResult<bool> result = new ReturnResult<bool>();
+            result.Result = false;
+            try
+            {
+                var existingQuiz = await _context.Quizzes.FirstOrDefaultAsync(q => q.Id == quizId && q.IsPublic);
+                if (existingQuiz == null)
+                {
+                    result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "quiz", quizId);
+                    return result;
+                }
+                else
+                { 
+                    var existingStar = await _context.QuizStars.FirstOrDefaultAsync(qs => qs.QuizId == quizId && qs.UserId == _userContext.UserId);
+                    if (existingStar == null) { 
+                        var newStar = new QuizStar
+                        {
+                            QuizId = quizId,
+                            UserId = _userContext.UserId,
+                        };
+                        var addStar = await _context.QuizStars.AddAsync(newStar);
+                        if(await _context.SaveChangesAsync() > 0)
+                        {
+                            result.Result = true;
+                        } 
+                    } 
+                    else
+                    {
+                        existingStar.Deleted = !existingStar.Deleted;
+                        _context.Update(existingStar);
+                        if (await _context.SaveChangesAsync() > 0)
+                        {
+                            result.Result = true;
+                        }
+                    }
+                }
+                if(result.Result == false)
+                {
+                    result.Message = "Fail to star quiz, please try again";
+                }
             }
             catch (Exception ex)
             {

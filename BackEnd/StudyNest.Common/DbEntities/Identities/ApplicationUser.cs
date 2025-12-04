@@ -30,6 +30,7 @@ namespace StudyNest.Common.DbEntities.Identities
         public ICollection<Note> Notes { get; set; } = new List<Note>();
         public ICollection<Folder> Folders { get; set; } = new List<Folder>();
         public ICollection<QuizAttempt> QuizAttempts { get; set; } = new List<QuizAttempt>();
+        public ICollection<QuizStar> QuizStars { get; set; } = new List<QuizStar>();
 
     }
 }
