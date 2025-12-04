@@ -131,7 +131,6 @@ namespace StudyNest.Business.v1
         {
             await GenerateQuizInBackground(jobId, dto, userId, null);
         }
-
         public async Task GenerateQuizInBackground(string quizJobId, CreateQuizDTO dto, string userId, PerformContext context = null)
         {
             try
@@ -717,6 +716,27 @@ namespace StudyNest.Business.v1
                 StudyNestLogger.Instance.Error(ex);
             }
 
+            return result;
+        }
+        public async Task<ReturnResult<PagedData<QuizDTO, string>>> ExplorePublicQuizzes(Page<string> page)
+        {
+            ReturnResult<PagedData<QuizDTO, string>> result = new ReturnResult<PagedData<QuizDTO, string>>();
+            try
+            {
+                var query = _context.Quizzes.Where(n => n.IsPublic == true && n.OwnerId != _userContext.UserId)
+                                            .Include(n => n.Owner)
+                                            .Include(n => n.Questions)
+                                            .ThenInclude(n => n.Choices)
+                                            .AsNoTracking()
+                                            .OrderByDescending(q => q.DateModified ?? DateTimeOffset.MinValue)
+                                            .AsQueryable();
+                result.Result = await _repository.GetPagingAsync<Page<string>, QuizDTO>(query, page, false);
+            }
+            catch (Exception ex)
+            {
+                result.Message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
+                StudyNestLogger.Instance.Error(ex);
+            }
             return result;
         }
     }

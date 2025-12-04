@@ -180,5 +180,19 @@ namespace StudyNest.Controllers
             }
             return Ok(result);
         }
+        [HttpPost("ExplorePublicQuizzes")]
+        public async Task<IActionResult> ExplorePublicQuizzes(Page<string> page)
+        {
+            ReturnResult<PagedData<QuizDTO, string>> result = new ReturnResult<PagedData<QuizDTO, string>>();
+            try
+            {
+                result = await _quizBusiness.ExplorePublicQuizzes(page);
+            }
+            catch (Exception ex)
+            {
+                StudyNestLogger.Instance.Error(ex);
+            }
+            return Ok(result);
+        }
     }
 }

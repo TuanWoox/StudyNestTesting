@@ -1,19 +1,19 @@
 import React from "react";
 import { Input, Button, theme, Grid } from "antd";
-import { SearchOutlined, FilterOutlined, PlusOutlined, ForkOutlined } from "@ant-design/icons";
+import { SearchOutlined, FilterOutlined, ForkOutlined } from "@ant-design/icons";
 
-interface QuizSearchControlsProps {
+interface QuizExploreSearchControlsProps {
     searchTerm: string;
     onSearchChange: (value: string) => void;
     onOpenFilter: () => void;
-    onCreateQuiz: () => void;
+    onForkQuiz: () => void;
 }
 
-const QuizSearchControls: React.FC<QuizSearchControlsProps> = ({
+const QuizExploreSearchControls: React.FC<QuizExploreSearchControlsProps> = ({
     searchTerm,
     onSearchChange,
     onOpenFilter,
-    onCreateQuiz,
+    onForkQuiz,
 }) => {
     const { token } = theme.useToken();
     const { useBreakpoint } = Grid;
@@ -33,7 +33,7 @@ const QuizSearchControls: React.FC<QuizSearchControlsProps> = ({
         >
             {/* Search Input */}
             <Input
-                placeholder="Search quizzes..."
+                placeholder="Search public quizzes..."
                 prefix={<SearchOutlined />}
                 value={searchTerm}
                 onChange={(e) => onSearchChange(e.target.value)}
@@ -73,11 +73,12 @@ const QuizSearchControls: React.FC<QuizSearchControlsProps> = ({
                 >
                     {screens.sm ? "Filter" : ""}
                 </Button>
-                {/* Create New Quiz Button */}
+
+                {/* Fork Quiz Button */}
                 <Button
                     type="primary"
-                    icon={<PlusOutlined />}
-                    onClick={onCreateQuiz}
+                    icon={<ForkOutlined />}
+                    onClick={onForkQuiz}
                     style={{
                         borderRadius: 0,
                         border: `1px solid ${borderColor}`,
@@ -88,11 +89,11 @@ const QuizSearchControls: React.FC<QuizSearchControlsProps> = ({
                         justifyContent: "center"
                     }}
                 >
-                    {screens.sm ? "Create New Quiz" : ""}
+                    {screens.sm ? "Find By FriendlyUrl" : ""}
                 </Button>
             </div>
         </div>
     );
 };
 
-export default QuizSearchControls;
+export default QuizExploreSearchControls;

@@ -127,8 +127,14 @@ const InnerLayout: React.FC<InnerLayoutProps> = ({
           menu={{
             request: async () => menus,
           }}
-          menuItemRender={(item, dom) => (
-            <div onClick={() => navigate(item.path || "/")}>{dom}</div>
+          menuItemRender={(item, dom) => {
+            if (item.children && item.children.length > 0) {
+              return dom;
+            }
+            return <div onClick={() => item.path && navigate(item.path)}>{dom}</div>;
+          }}
+          subMenuItemRender={(item, dom) => (
+            <div onClick={() => item.path && navigate(item.path)}>{dom}</div>
           )}
           style={{ height: "100dvh" }}
           contentStyle={{

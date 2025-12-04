@@ -26,6 +26,7 @@ namespace StudyNest.Common.Interfaces
         Task<ReturnResult<Quiz>> ForkQuiz(string quizId);
         Task<ReturnResult<QuizDTO>> GetQuizDetailByFriendlyURL(string friendlyURL);
         Task<ReturnResult<bool>> ChangeFriendlyUrl(string id, string newFriendlyUrl);
+        Task<ReturnResult<PagedData<QuizDTO, string>>> ExplorePublicQuizzes(Page<string> page);
     }
 }
     

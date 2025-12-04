@@ -6,6 +6,7 @@ import {
     EditOutlined,
     SettingOutlined,
 } from '@ant-design/icons';
+import path from 'path';
 
 export const adminMenus = [
     { path: '/admin/settings', name: 'Settings', icon: <SettingOutlined /> },
@@ -15,6 +16,13 @@ export const adminMenus = [
 
 export const userMenus = [
     { path: '/user/notes', name: 'Notes', icon: <FileTextOutlined /> },
-    { path: '/user/quiz', name: 'Quiz', icon: <EditOutlined /> },
+    {
+        name: 'Quiz',
+        icon: <EditOutlined />,
+        children: [
+            { path: '/user/quiz', name: 'My Quizzes', key: '/user/quiz' },
+            { path: '/user/exploreQuiz', name: 'Explore', key: '/exploreQuiz' },
+        ]
+    },
     { path: '/user/feedbacks', name: 'Feedback', icon: <MessageOutlined /> },
 ];

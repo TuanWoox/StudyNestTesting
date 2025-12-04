@@ -22,7 +22,7 @@ import useForkQuiz from "@/hooks/quizHook/useForkQuiz";
 import Spinner from "@/components/Spinner/Spinner";
 import { QuestionItem } from "@/features/user/quizzes/QuizDetailPage/components/QuestionItem";
 import { EmptyState } from "@/components/EmptyState/EmptyState";
-import useGetQuizDetailByFriendlyUrl from "@/hooks/quizHook/useGetQuizDetailByFriendlyURL";
+import useGetQuizDetailByFriendlyUrl from "@/hooks/quizHook/useGetQuizDetailByFriendlyUrl";
 const { Title, Text } = Typography;
 
 export interface QuizForkModalRef {
