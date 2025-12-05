@@ -68,6 +68,11 @@ const InnerLayout: React.FC<InnerLayoutProps> = ({
   const menus = role === ERole.Admin ? adminMenus : userMenus;
   const path = role === ERole.Admin ? "admin" : "user";
 
+  const shadowColor = darkMode ? "#818CF855" : "#3b5bdb55";
+  const bgColor = darkMode ? "#1A1A1A" : "#FCFCFC";
+  const borderColor = darkMode ? "#818CF8" : "#3b5bdb";
+  const textColor = darkMode ? "#E5E7EB" : "#3b5bdb";
+
   const handleLogout = () => {
     dispatch(logOut());
     window.localStorage.removeItem("accessToken");
@@ -92,6 +97,10 @@ const InnerLayout: React.FC<InnerLayoutProps> = ({
           onClick: handleLogout,
         },
       ]}
+      style={{
+        border: `2px solid ${borderColor}`,
+        boxShadow: `4px 4px 0px ${shadowColor}`,
+      }}
     />
   );
 
@@ -131,10 +140,10 @@ const InnerLayout: React.FC<InnerLayoutProps> = ({
             if (item.children && item.children.length > 0) {
               return dom;
             }
-            return <div onClick={() => item.path && navigate(item.path)}>{dom}</div>;
+            return <div className="select-none" onClick={() => item.path && navigate(item.path)}>{dom}</div>;
           }}
           subMenuItemRender={(item, dom) => (
-            <div onClick={() => item.path && navigate(item.path)}>{dom}</div>
+            <div className="select-none" onClick={() => item.path && navigate(item.path)}>{dom}</div>
           )}
           style={{ height: "100dvh" }}
           contentStyle={{
@@ -146,23 +155,33 @@ const InnerLayout: React.FC<InnerLayoutProps> = ({
           }}
           rightContentRender={() => (
             <>
-              <QuizJobBell />
-              <Space style={{ marginLeft: 10 }}>
+              <div className="flex gap-2 my-auto">
+                <QuizJobBell />
                 {/* Dark Mode Toggle */}
                 <button
                   onClick={() => dispatch(toggleDarkMode())}
-                  className={`relative flex items-center w-14 h-7 rounded-full transition-all duration-300 ${darkMode ? "bg-indigo-500" : "bg-[#3b5bdb]"
-                    }`}
+                  className={`relative flex items-center w-15 h-10 transition-all duration-300`}
+                  style={{
+                    background: bgColor,
+                    border: `2px solid ${borderColor}`,
+                    boxShadow: `1.5px 1.5px 0px ${shadowColor}`,
+                  }}
                 >
                   <span
-                    className={`absolute left-1 top-1 w-5 h-5 rounded-full bg-white shadow-md transform transition-all duration-300 ${darkMode ? "translate-x-7" : "translate-x-0"
-                      }`}
+                    className={`absolute left-1 top-1 w-6 h-7 transform transition-all duration-300 ${darkMode ? "translate-x-6" : "translate-x-0"}`}
+                    style={{
+                      background: borderColor
+                    }}
                   />
-                  <span className="absolute left-1.5 text-yellow-400">
-                    <SunIcon className="w-4 h-4" />
+                  <span className="absolute left-1.5 text-white"
+                  >
+                    <SunIcon className="w-5 h-5" />
                   </span>
-                  <span className="absolute right-1.5 text-black">
-                    <MoonIcon className="w-4 h-4" />
+                  <span className={`absolute right-1.5`}
+                    style={{
+                      color: textColor
+                    }}>
+                    <MoonIcon className="w-5 h-5" />
                   </span>
                 </button>
 
@@ -172,12 +191,15 @@ const InnerLayout: React.FC<InnerLayoutProps> = ({
                     size={40}
                     style={{
                       cursor: "pointer",
-                      backgroundColor: darkMode ? "#6366F1" : "#3b5bdb",
+                      background: bgColor,
+                      border: `2px solid ${borderColor}`,
+                      borderRadius: 0,
+                      boxShadow: `1.5px 1.5px 0px ${shadowColor}`,
                     }}
-                    icon={<UserOutlined />}
+                    icon={<UserOutlined style={{ color: textColor }} />}
                   />
                 </Dropdown>
-              </Space>
+              </div>
             </>
           )}
         >
