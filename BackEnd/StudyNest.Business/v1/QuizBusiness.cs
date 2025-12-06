@@ -164,6 +164,7 @@ namespace StudyNest.Business.v1
                 jobEntity.Status = QuizJobStatus.Success;
                 jobEntity.ResultQuizId = newQuiz.Id;
                 jobEntity.DateModified = DateTimeOffset.UtcNow;
+                _context.Update(jobEntity);
                 await _context.SaveChangesAsync();
 
                 BackgroundJob.Enqueue<IQuizAttemptSnapshotBusiness>(x =>
