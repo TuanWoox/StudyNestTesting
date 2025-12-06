@@ -45,7 +45,7 @@ const HomePage: React.FC = () => {
             style={{
                 fontFamily: "'IBM Plex Mono', monospace",
                 backgroundColor: bgColor,
-                color: textColor
+                color: textColor,
             }}
         >
 
@@ -303,7 +303,7 @@ const HomePage: React.FC = () => {
                         >
                             Email
                         </h3>
-                        <p className="text-xs sm:text-sm">support@studynest.com</p>
+                        <p className="text-xs sm:text-sm">studynest284@gmail.com</p>
                     </Card>
                     <Card
                         className="p-4 sm:p-6 text-center"
@@ -367,7 +367,7 @@ const HomePage: React.FC = () => {
                         <h4 className="font-semibold mb-3" style={{ color: token.colorPrimary }}>
                             Contact
                         </h4>
-                        <p className="text-sm ">support@studynest.com</p>
+                        <p className="text-sm ">studynest284@gmail.com</p>
                         <p className="text-sm mt-1">Ho Chi Minh City, Vietnam</p>
                     </div>
                 </div>
@@ -401,28 +401,35 @@ export function LandingPage() {
                 },
             }}
         >
-            <HomePage />
-
-            {/* FLOATING THEME TOGGLE BUTTON */}
-            <button
-                onClick={() => dispatch(toggleDarkMode())}
-                className="fixed z-50 flex items-center gap-2 cursor-pointer"
+            <div
                 style={{
-                    bottom: "60px",
-                    right: "20px",
-                    padding: "10px 14px",
-                    border: `1.5px solid ${darkMode ? "#818CF8" : "#3b5bdb"}`,
-                    backgroundColor: `${darkMode ? "#1A1A1A" : "#FCFCFC"}`,
-                    color: `${darkMode ? "#E5E7EB" : "#3b5bdb"}`,
-                    boxShadow: `3px 3px 0 ${darkMode ? "#818CF8" : "#3b5bdb"}55`,
-                    fontFamily: "'IBM Plex Mono', monospace",
-                    transition: "transform 0.2s ease",
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-2px)")}
-                onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}
-            >
-                {darkMode ? <SunOutlined /> : <MoonOutlined />}
-            </button>
+                    height: "100vh",
+                    scrollbarWidth: "none",
+                    overflowY: "auto"
+                }}>
+                <HomePage />
+
+                {/* FLOATING THEME TOGGLE BUTTON */}
+                <button
+                    onClick={() => dispatch(toggleDarkMode())}
+                    className="fixed z-50 flex items-center gap-2 cursor-pointer"
+                    style={{
+                        bottom: "60px",
+                        right: "20px",
+                        padding: "10px 14px",
+                        border: `1.5px solid ${darkMode ? "#818CF8" : "#3b5bdb"}`,
+                        backgroundColor: `${darkMode ? "#1A1A1A" : "#FCFCFC"}`,
+                        color: `${darkMode ? "#E5E7EB" : "#3b5bdb"}`,
+                        boxShadow: `3px 3px 0 ${darkMode ? "#818CF8" : "#3b5bdb"}55`,
+                        fontFamily: "'IBM Plex Mono', monospace",
+                        transition: "transform 0.2s ease",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-2px)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}
+                >
+                    {darkMode ? <SunOutlined /> : <MoonOutlined />}
+                </button>
+            </div>
         </ConfigProvider>
     );
 }

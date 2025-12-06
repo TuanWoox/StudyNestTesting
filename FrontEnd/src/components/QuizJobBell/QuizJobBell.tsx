@@ -209,12 +209,12 @@ export default function QuizJobBell() {
           style={{
             width: 40,
             height: 40,
-            borderRadius: 100,
             border: `2px solid ${token.colorBorder}`,
+            boxShadow: `1.5px 1.5px 0px ${token.colorPrimary}55`,
             display: "grid",
             placeItems: "center",
             cursor: isLoading ? "wait" : "pointer",
-            background: token.colorBgContainer,
+            background: token.colorBgLayout,
             transition: "all 0.3s ease",
             opacity: isLoading ? 0.7 : 1,
           }}
