@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualBasic;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Query.Expressions.Internal;
+using OpenAI;
+using OpenAI.Chat;
 using StudyNest.Business.v1;
 using StudyNest.Common.DbEntities.Entities;
 using StudyNest.Common.Interfaces;
@@ -20,7 +22,7 @@ namespace StudyNest.Controllers
     {
         private readonly IQuizBusiness _quizBusiness;
 
-        public QuizController(IQuizBusiness quizBusiness)
+        public QuizController(IQuizBusiness quizBusiness, OpenAIClient openAIClient)
         {
             this._quizBusiness = quizBusiness;
         }
