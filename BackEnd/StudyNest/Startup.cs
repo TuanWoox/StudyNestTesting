@@ -7,12 +7,15 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Microsoft.Win32;
 using Newtonsoft.Json;
+using OpenAI;
+using OpenAI.Chat;
 using StudyNest.Business.Repository;
 using StudyNest.Business.v1;
 using StudyNest.Common.DbEntities.Identities;
@@ -68,6 +71,7 @@ namespace StudyNest
             ConfigurePolicy(services);
             AddSwaggerService(services);
             ConfigureCloudinary(services);
+            ConfigureOpenAiClient(services, Configuration);
             ConfigureScopedServices(services);
         }
 
@@ -351,6 +355,18 @@ namespace StudyNest
                 var account = new Account(cloudName, apiKey, apiSecret);
                 var cloudinary = new Cloudinary(account);
                 services.AddSingleton(cloudinary);
+            }
+        }
+        #endregion
+
+        #region Configure OpenAi Client
+        public void ConfigureOpenAiClient(IServiceCollection services, IConfiguration config)
+        {
+            var apiKey = Configuration.GetValue<string>("OpenAi:ApiKey");
+            if (!string.IsNullOrEmpty(apiKey))
+            {
+                StudyNestLogger.Instance.Info("Adding Open AI");
+                services.AddSingleton(new OpenAIClient(apiKey));
             }
         }
         #endregion
