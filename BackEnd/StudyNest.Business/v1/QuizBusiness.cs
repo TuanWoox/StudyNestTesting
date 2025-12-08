@@ -189,6 +189,7 @@ namespace StudyNest.Business.v1
             job.Status = QuizJobStatus.Failed;
             job.ErrorMessage = message;
             job.DateModified = DateTimeOffset.UtcNow;
+            _context.Update(job);
             await _context.SaveChangesAsync();
 
             await _hubContext.Clients.User(userId).CreateFinished(
