@@ -87,7 +87,15 @@ namespace StudyNest.Common.Llm
                         }
                     }
                 }
-                catch (Exception) { }
+                catch (InvalidOperationException ex)
+                {
+                    StudyNestLogger.Instance.Error("LLM GenerateAsync (business) error: " + ex.Message);
+                    throw;
+                }
+                catch (Exception ex) {
+                    StudyNestLogger.Instance.Error("Unexpected error in LLM GenerateAsync: " + ex);
+                    throw new Exception("An unexpected error occurred while generating quiz.", ex);
+                }
 
                 if (attempt == 1 && finalQuestions.Count == 0) break;
             }
