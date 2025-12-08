@@ -107,7 +107,7 @@ namespace StudyNest.Common.Llm.Providers
                     var model = "gemini-2.5-flash";
                     var endpoint = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={config.Key}";
 
-                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(120));
                     using var req = new HttpRequestMessage(HttpMethod.Post, endpoint)
                     {
                         Content = new StringContent(jsonPayload, Encoding.UTF8, "application/json")
@@ -159,6 +159,7 @@ namespace StudyNest.Common.Llm.Providers
                 {
                     lastException = ex;
                     StudyNestLogger.Instance.Warn($"Unknown error with Key Priority {config.Priority}: {ex.Message}. Switching...");
+                    await Task.Delay(5000);
                     continue;
                 }
             }
