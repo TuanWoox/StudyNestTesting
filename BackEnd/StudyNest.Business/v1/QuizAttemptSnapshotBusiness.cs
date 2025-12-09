@@ -38,7 +38,7 @@ namespace StudyNest.Business.v1
             this._userContext = userContext;
             this._snapshotHub = snapshotHub;
         }
-        public async Task<ReturnResult<QuizAttemptSnapshotDTO>> GetOneByIdForAttempting(string quizId)
+        public async Task<ReturnResult<QuizAttemptSnapshotDTO>> GetOneByIdForAttempting(string quizId, bool? keepIsCorrect = false)
         {
             ReturnResult<QuizAttemptSnapshotDTO> result = new ReturnResult<QuizAttemptSnapshotDTO>();
             try
@@ -62,9 +62,12 @@ namespace StudyNest.Business.v1
                         //Remove the IsCorrect property from the choices to prevent cheating
                         foreach (var question in mappedResult.QuizQuestionsParsed.Where(q => q.Choices != null && q.Choices.Count > 0))
                         {
-                            foreach (var choice in question.Choices)
+                            if(keepIsCorrect == false)
                             {
-                                choice.IsCorrect = false;
+                                foreach (var choice in question.Choices)
+                                {
+                                    choice.IsCorrect = false;
+                                }
                             }
                         }
                         //After that set quiz questions to "" for cleaner result
@@ -86,14 +89,11 @@ namespace StudyNest.Business.v1
                     var fetchedQuiz = await _context.Quizzes.IgnoreQueryFilters().Where(x => x.Id == quizId).FirstOrDefaultAsync();
                     if(fetchedQuiz != null)
                     {
-                        if(fetchedQuiz.IsBeingConvertToSnapShot)
+                        if(!fetchedQuiz.IsBeingConvertToSnapShot)
                         {
-                            return result;
+                            BackgroundJob.Enqueue<IQuizAttemptSnapshotBusiness>(x => x.CreateSnapShot(quizId));
                         }
-                        else
-                        {
-                            _ = await CreateSnapShot(fetchedQuiz.Id);
-                        }
+                        return result;
                     }
                     else
                     {
@@ -153,7 +153,7 @@ namespace StudyNest.Business.v1
             }
             return result;
         }
-        private async Task<ReturnResult<bool>> CompareQuizSnapShotContentForCreatingNewOne(QuizAttemptSnapshot existingSnapshot,string quizId)
+        public async Task<ReturnResult<bool>> CompareQuizSnapShotContentForCreatingNewOne(QuizAttemptSnapshot existingSnapshot,string quizId)
         {
             ReturnResult<bool> result = new ReturnResult<bool>();
 

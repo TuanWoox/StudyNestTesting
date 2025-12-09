@@ -496,6 +496,9 @@ namespace StudyNest.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("QuizSessionId")
+                        .HasColumnType("text");
+
                     b.Property<int>("Score")
                         .HasColumnType("integer");
 
@@ -508,6 +511,8 @@ namespace StudyNest.Migrations
                     b.HasIndex("Deleted");
 
                     b.HasIndex("QuizAttemptSnapshotId");
+
+                    b.HasIndex("QuizSessionId");
 
                     b.HasIndex("UserId");
 
@@ -669,6 +674,59 @@ namespace StudyNest.Migrations
                     b.HasIndex("Deleted");
 
                     b.ToTable("QuizJobs");
+                });
+
+            modelBuilder.Entity("StudyNest.Common.DbEntities.Entities.QuizSession", b =>
+                {
+                    b.Property<string>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text");
+
+                    b.Property<int>("CurrentQuestionIndex")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset?>("DateCreated")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DateDeleted")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DateModified")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DateTimeEnded")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("GamePin")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("OwnerId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("QuizAttemptSnapshotId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TimeForEachQuestion")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Deleted");
+
+                    b.HasIndex("OwnerId");
+
+                    b.HasIndex("QuizAttemptSnapshotId");
+
+                    b.ToTable("QuizSessions");
                 });
 
             modelBuilder.Entity("StudyNest.Common.DbEntities.Entities.QuizStar", b =>
@@ -1186,6 +1244,10 @@ namespace StudyNest.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("StudyNest.Common.DbEntities.Entities.QuizSession", "QuizSession")
+                        .WithMany("QuizAttempts")
+                        .HasForeignKey("QuizSessionId");
+
                     b.HasOne("StudyNest.Common.DbEntities.Identities.ApplicationUser", "User")
                         .WithMany("QuizAttempts")
                         .HasForeignKey("UserId")
@@ -1193,6 +1255,8 @@ namespace StudyNest.Migrations
                         .IsRequired();
 
                     b.Navigation("QuizAttemptSnapshot");
+
+                    b.Navigation("QuizSession");
 
                     b.Navigation("User");
                 });
@@ -1228,6 +1292,25 @@ namespace StudyNest.Migrations
                         .IsRequired();
 
                     b.Navigation("Quiz");
+                });
+
+            modelBuilder.Entity("StudyNest.Common.DbEntities.Entities.QuizSession", b =>
+                {
+                    b.HasOne("StudyNest.Common.DbEntities.Identities.ApplicationUser", "Owner")
+                        .WithMany()
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("StudyNest.Common.DbEntities.Entities.QuizAttemptSnapshot", "QuizAttemptSnapshot")
+                        .WithMany("QuizSessions")
+                        .HasForeignKey("QuizAttemptSnapshotId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Owner");
+
+                    b.Navigation("QuizAttemptSnapshot");
                 });
 
             modelBuilder.Entity("StudyNest.Common.DbEntities.Entities.QuizStar", b =>
@@ -1326,6 +1409,13 @@ namespace StudyNest.Migrations
                 });
 
             modelBuilder.Entity("StudyNest.Common.DbEntities.Entities.QuizAttemptSnapshot", b =>
+                {
+                    b.Navigation("QuizAttempts");
+
+                    b.Navigation("QuizSessions");
+                });
+
+            modelBuilder.Entity("StudyNest.Common.DbEntities.Entities.QuizSession", b =>
                 {
                     b.Navigation("QuizAttempts");
                 });

@@ -228,5 +228,138 @@ namespace StudyNest.Business.v1
             }
             return result;
         }
+        public async Task<ReturnResult<List<QuizAttemptDTO>>> CreateQuizAttemptForQuizSession(List<string> userIds, string QuizAttemptSnapshotId, string quizSessionId)
+        {
+            ReturnResult<List<QuizAttemptDTO>> result = new ReturnResult<List<QuizAttemptDTO>>();
+            try
+            {
+                // Validate input
+                if (userIds == null || !userIds.Any())
+                {
+                    result.Message = "User list cannot be empty.";
+                    return result;
+                }
+
+                // Find the snapshot for this quiz session
+                var snapshot = await _dbContext.QuizAttemptSnapshots.Where(x => x.Id == QuizAttemptSnapshotId)
+                                                .Include(x => x.Quiz)
+                                                .AsNoTracking()
+                                                .FirstOrDefaultAsync();
+
+                if (snapshot == null)
+                {
+                    result.Message = string.Format(
+                        ResponseMessage.MESSAGE_ITEM_NOT_FOUND,
+                        "quiz attempt snapshot",
+                        QuizAttemptSnapshotId
+                    );
+                    return result;
+                }
+
+                if (snapshot.Quiz == null)
+                {
+                    result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "quiz", snapshot.QuizId);
+                    return result;
+                }
+
+                // Create quiz attempts for all users in the session
+                var quizAttemptsToCreate = new List<QuizAttempt>();
+
+                foreach (var userId in userIds)
+                {
+                    quizAttemptsToCreate.Add(new QuizAttempt
+                    {
+                        UserId = userId,
+                        QuizAttemptSnapshotId = snapshot.Id.ToString(),
+                        QuizSessionId = quizSessionId.Trim(),
+                        Score = 0 // Initialize score to 0 for quiz session
+                    });
+                }
+
+                // Bulk insert all quiz attempts
+                await _dbContext.QuizAttempts.AddRangeAsync(quizAttemptsToCreate);
+
+                if (await _dbContext.SaveChangesAsync() > 0)
+                {
+                    result.Result = _mapper.Map<List<QuizAttemptDTO>>(quizAttemptsToCreate);
+                }
+                else
+                {
+                    result.Message = "Failed to create quiz attempts for the session.";
+                }
+            }
+            catch (Exception ex)
+            {
+                result.Message = ex.Message ?? ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
+                StudyNestLogger.Instance.Error(ex);
+            }
+            return result;
+        }
+        public async Task<ReturnResult<QuizAttemptAnswerDTO>> CreateOneAnswerForQuizSession(CreateQuizAttemptAnswerDTO submittedAnswer)
+        {
+            ReturnResult<QuizAttemptAnswerDTO> result = new ReturnResult<QuizAttemptAnswerDTO>();
+            try
+            {
+                var existingAttempt = await _dbContext.QuizAttempts.Where(x => x.Id == submittedAnswer.QuizAttemptId
+                                                                    && x.QuizSessionId != null)
+                                                                    .Include(x => x.QuizAttemptSnapshot)
+                                                                    .Include(x => x.QuizAttemptAnswers)
+                                                                    .FirstOrDefaultAsync();
+                if (existingAttempt != null)
+                {
+                    if (existingAttempt.QuizAttemptSnapshot != null)
+                    {
+                        // Create the answer
+                        result = await _quizAttemptAnswerBusiness.CreateQuizAttemptAnswerForQuizSession(existingAttempt.Id, submittedAnswer);
+
+                        // If answer was created successfully, recalculate the score
+                        if (result.Result != null)
+                        {
+                            // Parse the quiz questions from the snapshot
+                            var jsonString = existingAttempt.QuizAttemptSnapshot.QuizQuestions;
+                            if (!string.IsNullOrEmpty(jsonString))
+                            {
+                                List<QuestionDTO> parsedQuestions = JsonSerializer.Deserialize<List<QuestionDTO>>(jsonString)!;
+
+                                if (parsedQuestions != null && parsedQuestions.Any())
+                                {
+                                    // Reload the attempt with all answers to calculate the score
+                                    var updatedAttempt = await _dbContext.QuizAttempts
+                                                                        .Where(x => x.Id == existingAttempt.Id)
+                                                                        .Include(x => x.QuizAttemptAnswers)
+                                                                        .FirstOrDefaultAsync();
+
+                                    if (updatedAttempt != null)
+                                    {
+                                        // Calculate the score (Percentage of correct answers)
+                                        int totalQuestions = parsedQuestions.Count;
+                                        int correctAnswers = updatedAttempt.QuizAttemptAnswers.Count(x => x.IsCorrect);
+                                        updatedAttempt.Score = (int)Math.Round((double)(correctAnswers * 100) / totalQuestions);
+
+                                        // Update the attempt with the new score
+                                        _dbContext.QuizAttempts.Update(updatedAttempt);
+                                        await _dbContext.SaveChangesAsync();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "quiz attempt snapshot", existingAttempt.QuizAttemptSnapshotId);
+                    }
+                }
+                else
+                {
+                    result.Message = string.Format(ResponseMessage.MESSAGE_ITEM_NOT_FOUND, "quiz attempt", submittedAnswer.QuizAttemptId);
+                }
+            }
+            catch (Exception ex)
+            {
+                result.Message = ex.Message ?? ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
+                StudyNestLogger.Instance.Error(ex);
+            }
+            return result;
+        }
     }
 }

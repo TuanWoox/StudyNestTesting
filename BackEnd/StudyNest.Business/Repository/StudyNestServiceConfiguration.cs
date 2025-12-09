@@ -42,6 +42,7 @@ namespace StudyNest.Business.Repository
             services.AddScoped<IQuizStatisticsBusiness, QuizStatisticsBusiness>();
             services.AddScoped<IFeedBackBusiness, FeedBackBusiness>();
             services.AddScoped<IEmailBusiness, EmailBusiness>();
+            services.AddScoped<IQuizSessionBusiness, QuizSessionBusiness>();
             services.AddScoped<QuizPromptBuilder>();
             return services;
         }
