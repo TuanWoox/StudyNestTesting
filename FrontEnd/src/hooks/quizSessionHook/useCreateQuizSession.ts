@@ -9,9 +9,11 @@ const useCreateQuizSession = () => {
     const { mutate, mutateAsync, data, isPending, isError, error } = useMutation({
         mutationFn: (createQuizSession: CreateQuizSessionDTO) => 
             quizSessionService.createQuizSession(createQuizSession),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['quiz-sessions'] });
-            toast.success("Quiz session created successfully!");
+        onSuccess: (data) => {
+            if(data) {
+                queryClient.invalidateQueries({ queryKey: ['quiz-sessions'] });
+                toast.success("Quiz session created successfully!");
+            }
         },
         onError: (error: any) => {
             toast.error(error?.message || "Failed to create quiz session");

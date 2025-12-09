@@ -13,10 +13,13 @@ export const useTerminateQuizSession = () => {
   } = useMutation({
     mutationFn: (quizSessionId: string) =>
       quizSessionService.terminateQuizSession(quizSessionId),
-    onSuccess: () => {
-      message.success("Quiz session terminated successfully");
-      queryClient.invalidateQueries({ queryKey: ["quiz-sessions"] });
-      queryClient.invalidateQueries({ queryKey: ["active-quiz-session"] });
+    onSuccess: (data) => {
+      if(data)
+      {
+        message.success("Quiz session terminated successfully");
+        queryClient.invalidateQueries({ queryKey: ["quiz-sessions"] });
+        queryClient.invalidateQueries({ queryKey: ["active-quiz-session"] });
+      }
     },
     onError: (error: any) => {
       message.error(

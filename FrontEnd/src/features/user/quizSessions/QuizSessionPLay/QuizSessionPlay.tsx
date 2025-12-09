@@ -35,7 +35,6 @@ import {
     setQuizSessionAttemptsEnded,
     resetState
 } from "@/store/quizSessionAtemptSlice";
-import useStartQuizSession from "@/hooks/quizSessionHook/useStartQuizSession";
 import { EQuizSessionStatus } from "@/utils/enums/EQuizSessionStatus";
 
 const QuizSessionPlay: React.FC = () => {
@@ -72,7 +71,6 @@ const QuizSessionPlay: React.FC = () => {
             }
         } catch (error) {
             console.error("Join session error:", error);
-            toast.error("An error occurred while joining the session");
         }
     }, [connection, sessionId, dispatch]);
 
@@ -80,8 +78,7 @@ const QuizSessionPlay: React.FC = () => {
     useEffect(() => {
         if (isHost && 
             quizSession?.status !== EQuizSessionStatus.Abandoned && 
-            quizSession?.status !== EQuizSessionStatus.Completed && 
-            quizSession?.status !== EQuizSessionStatus.InProgress) {
+            quizSession?.status !== EQuizSessionStatus.Completed) {
             handleJoinSession(quizSession?.gamePin);
         }
     }, [isHost, quizSession?.gamePin, quizSession?.status, handleJoinSession]);
@@ -184,10 +181,10 @@ const QuizSessionPlay: React.FC = () => {
         };
     }, [dispatch]);
 
-    // Show closed screen if quiz session is completed or abandoned
+    // Show closed screen if quiz session is completed, abandoned, or in progress (and not joined)
     if (quizSession?.status === EQuizSessionStatus.Completed || 
         quizSession?.status === EQuizSessionStatus.Abandoned || 
-        quizSession?.status === EQuizSessionStatus.InProgress) {
+        (quizSession?.status === EQuizSessionStatus.InProgress && !isJoined)) {
         return <QuizSessionClosed status={quizSession.status} />;
     }
 
