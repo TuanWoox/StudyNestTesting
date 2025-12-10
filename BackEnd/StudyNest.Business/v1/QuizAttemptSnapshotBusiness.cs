@@ -115,7 +115,7 @@ namespace StudyNest.Business.v1
             try
             {
                 // Simulate some delay for demonstration purposes, keep this for SignalR demonstration
-                await Task.Delay(5000); 
+                await Task.Delay(2000); 
                 var existingQuiz = await _context.Quizzes.Where(x => x.Id == quizId.Trim())
                                                 .Include(x => x.Questions)
                                                 .ThenInclude(q => q.Choices)

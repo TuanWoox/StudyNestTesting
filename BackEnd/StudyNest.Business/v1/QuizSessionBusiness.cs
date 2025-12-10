@@ -108,7 +108,7 @@ namespace StudyNest.Business.v1
                 // many logic that is nested with each other, just reuse again
                 if (existingSnapshot == null || (await _quizAttemptSnapshotBusiness.CompareQuizSnapShotContentForCreatingNewOne(existingSnapshot, newEntity.QuizId)).Result)
                 {
-                    result.Message = "Invalid creation quiz session";
+                    result.Message = "Waiting your snapshot to be created";
                     return result;
                 }
 
