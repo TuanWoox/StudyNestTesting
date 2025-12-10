@@ -108,6 +108,9 @@ namespace StudyNest.Business.v1
                 // many logic that is nested with each other, just reuse again
                 if (existingSnapshot == null || (await _quizAttemptSnapshotBusiness.CompareQuizSnapShotContentForCreatingNewOne(existingSnapshot, newEntity.QuizId)).Result)
                 {
+                    if(existingSnapshot == null ){
+                        BackgroundJob.Enqueue<IQuizAttemptSnapshotBusiness>(x => x.CreateSnapShot(newEntity.QuizId));
+                    }
                     result.Message = "Waiting your snapshot to be created";
                     return result;
                 }

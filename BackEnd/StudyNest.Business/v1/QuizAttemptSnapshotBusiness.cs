@@ -124,14 +124,17 @@ namespace StudyNest.Business.v1
                 if(existingQuiz != null)
 
                 {
+                    existingQuiz.IsBeingConvertToSnapShot = true;
+                    _context.Quizzes.Update(existingQuiz);
+                    await _context.SaveChangesAsync();
+
                     var questionsDto = _mapper.Map<List<QuestionDTO>>(existingQuiz.Questions);
 
                     var quizSnapShot = new QuizAttemptSnapshot()
                     {
                         QuizId = existingQuiz.Id,
                         QuizQuestions = JsonSerializer.Serialize(questionsDto)
-                    };
-
+                    };       
                     result = await _repository.CreateAsync(quizSnapShot);
                     existingQuiz.IsBeingConvertToSnapShot = false;
                     _context.Quizzes.Update(existingQuiz);
@@ -190,10 +193,7 @@ namespace StudyNest.Business.v1
                 // Enqueue background job if snapshot creation is needed
                 if (result.Result)
                 {
-                    existingQuiz.IsBeingConvertToSnapShot = true;
-                    _context.Quizzes.Update(existingQuiz);
                     BackgroundJob.Enqueue<IQuizAttemptSnapshotBusiness>(x => x.CreateSnapShot(quizId));
-                    await _context.SaveChangesAsync();
                 }
             }
             catch (Exception ex)
