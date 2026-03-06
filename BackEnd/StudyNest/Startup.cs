@@ -127,7 +127,7 @@ namespace StudyNest
             {
                 options.GroupNameFormat = "'v'VVV";
                 options.SubstituteApiVersionInUrl = true;
-            });
+            }); s
         }
         #endregion
 
