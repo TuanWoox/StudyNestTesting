@@ -1,0 +1,27 @@
+name: Build Solution
+
+on:
+    pull_request:
+        branches:
+            - main
+
+jobs:
+    build-backend:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup .NET
+              uses: actions/setup-dotnet@v4
+              with:
+                  dotnet-version: "9.0.x"
+
+            - name: Restore dependencies
+              run: dotnet restore
+              working-directory: ./BackEnd
+
+            - name: Build
+              run: dotnet build --no-restore --configuration Release
+              working-directory: ./BackEnd
