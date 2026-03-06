@@ -128,6 +128,7 @@ namespace StudyNest
                 options.GroupNameFormat = "'v'VVV";
                 options.SubstituteApiVersionInUrl = true;
             });
+            int abc = 3;
         }
         #endregion
 
